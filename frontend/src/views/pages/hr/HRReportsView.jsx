@@ -59,6 +59,7 @@ export function HRReportsView({
   setReportsCustomEndDate,
   getReportsWeekRange,
   getReportsCompanyMonthRange,
+  role,
 }) {
   const totalHours = todayAttendance?.reduce((s, r) => s + (r.totalHours || 0), 0) || 0;
 
@@ -133,7 +134,7 @@ export function HRReportsView({
       });
       doc.setFontSize(9);
       doc.text(`Generated: ${todayStr}`, 196, 20, { align: 'right' });
-      doc.text('Role: HR Manager', 196, 25, { align: 'right' });
+      doc.text(`Role: ${role === 'superadmin' ? 'Administrator' : 'HR Manager'}`, 196, 25, { align: 'right' });
 
       doc.setDrawColor(226, 232, 240);
       doc.setLineWidth(0.5);

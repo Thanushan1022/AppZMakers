@@ -10,19 +10,28 @@ export function useAdminController() {
   const [dashboardStats, setDashboardStats] = useState({});
   const [pendingLeaves, setPendingLeaves] = useState([]);
 
-  const [reportType, setReportType] = useState('attendance');
-  const [reportsFilterType, setReportsFilterType] = useState('all');
-  const [reportsSelectedDate, setReportsSelectedDate] = useState(() => {
+  const getLocalDateString = () => {
     const d = new Date();
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  });
-  const [reportsSelectedMonth, setReportsSelectedMonth] = useState(() => {
+  };
+
+  const [reportType, setReportType] = useState('attendance');
+  const [reportsFilterType, setReportsFilterType] = useState('monthly'); // 'monthly', 'weekly', 'custom'
+  const [reportsSelectedYear, setReportsSelectedYear] = useState(() => String(new Date().getFullYear()));
+  const [reportsSelectedMonthNum, setReportsSelectedMonthNum] = useState(() => String(new Date().getMonth() + 1).padStart(2, '0'));
+  const [reportsSelectedWeekDate, setReportsSelectedWeekDate] = useState(getLocalDateString());
+  const [reportsCustomStartDate, setReportsCustomStartDate] = useState(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    d.setDate(1);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   });
+  const [reportsCustomEndDate, setReportsCustomEndDate] = useState(getLocalDateString());
   const [employeeStatsMap, setEmployeeStatsMap] = useState({});
   const [reportsSummary, setReportsSummary] = useState({
     totalEmployees: 0,
@@ -119,18 +128,52 @@ export function useAdminController() {
     }
   };
 
+  const getReportsWeekRange = (dateString) => {
+    const d = new Date(dateString);
+    const day = d.getDay();
+    const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.getFullYear(), d.getMonth(), diffToMon);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    
+    const format = (date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const dayVal = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${dayVal}`;
+    };
+    return { mondayStr: format(monday), sundayStr: format(sunday) };
+  };
+
+  const getReportsCompanyMonthRange = (yearStr, monthNumStr) => {
+    const yr = Number(yearStr);
+    const mo = Number(monthNumStr);
+    let prevYr = yr;
+    let prevMo = mo - 1;
+    if (prevMo === 0) {
+      prevMo = 12;
+      prevYr -= 1;
+    }
+    const startStr = `${prevYr}-${String(prevMo).padStart(2, '0')}-28`;
+    const endStr = `${yr}-${String(mo).padStart(2, '0')}-27`;
+    return { startStr, endStr };
+  };
+
   const fetchReports = async () => {
     try {
       let url = `${BACKEND_URL}/hr/reports`;
       const queryParams = [];
-      if (reportsFilterType === 'date' && reportsSelectedDate) {
-        queryParams.push(`startDate=${reportsSelectedDate}`);
-        queryParams.push(`endDate=${reportsSelectedDate}`);
-      } else if (reportsFilterType === 'month' && reportsSelectedMonth) {
-        const [year, month] = reportsSelectedMonth.split('-');
-        const lastDay = new Date(year, month, 0).getDate();
-        queryParams.push(`startDate=${year}-${month}-01`);
-        queryParams.push(`endDate=${year}-${month}-${String(lastDay).padStart(2, '0')}`);
+      if (reportsFilterType === 'monthly') {
+        const { startStr, endStr } = getReportsCompanyMonthRange(reportsSelectedYear, reportsSelectedMonthNum);
+        queryParams.push(`startDate=${startStr}`);
+        queryParams.push(`endDate=${endStr}`);
+      } else if (reportsFilterType === 'weekly') {
+        const { mondayStr, sundayStr } = getReportsWeekRange(reportsSelectedWeekDate);
+        queryParams.push(`startDate=${mondayStr}`);
+        queryParams.push(`endDate=${sundayStr}`);
+      } else if (reportsFilterType === 'custom') {
+        queryParams.push(`startDate=${reportsCustomStartDate}`);
+        queryParams.push(`endDate=${reportsCustomEndDate}`);
       }
       if (queryParams.length > 0) {
         url += `?${queryParams.join('&')}`;
@@ -157,7 +200,14 @@ export function useAdminController() {
 
   useEffect(() => {
     fetchReports();
-  }, [reportsFilterType, reportsSelectedDate, reportsSelectedMonth]);
+  }, [
+    reportsFilterType,
+    reportsSelectedYear,
+    reportsSelectedMonthNum,
+    reportsSelectedWeekDate,
+    reportsCustomStartDate,
+    reportsCustomEndDate
+  ]);
 
   useEffect(() => {
     const savedAuth = localStorage.getItem('wf_auth');
@@ -253,7 +303,7 @@ export function useAdminController() {
   };
 
   const getEmployeeStats = (empId) =>
-    employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0 };
+    employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
 
   const filteredEmployees = employees.filter(
     (e) =>
@@ -602,10 +652,18 @@ export function useAdminController() {
     setReportType,
     reportsFilterType,
     setReportsFilterType,
-    reportsSelectedDate,
-    setReportsSelectedDate,
-    reportsSelectedMonth,
-    setReportsSelectedMonth,
+    reportsSelectedYear,
+    setReportsSelectedYear,
+    reportsSelectedMonthNum,
+    setReportsSelectedMonthNum,
+    reportsSelectedWeekDate,
+    setReportsSelectedWeekDate,
+    reportsCustomStartDate,
+    setReportsCustomStartDate,
+    reportsCustomEndDate,
+    setReportsCustomEndDate,
+    getReportsWeekRange,
+    getReportsCompanyMonthRange,
     reportsSummary,
     leaveTypeData,
     monthlyTrend,
