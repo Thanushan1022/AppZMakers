@@ -400,8 +400,9 @@ export function AdminUsersView({
                             </span>
                           </div>
                           {rec.adjusted && (
-                            <div className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100/50 rounded-lg px-2 py-0.5 w-fit" title={`Reason: ${rec.adjustedReason || ''}`}>
-                              ✏️ Adjusted by {rec.adjustedBy || 'HR'}
+                            <div className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100/50 rounded-lg px-2 py-1.5 w-full space-y-0.5">
+                              <div className="font-semibold">✏️ Adjusted by {rec.adjustedBy || 'HR'}</div>
+                              <div className="text-amber-800">Reason: {rec.adjustedReason || 'Manual entry'}</div>
                             </div>
                           )}
                           <div className="flex justify-end gap-2 mt-1 pt-1.5 border-t border-slate-200/50">
