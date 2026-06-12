@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'http://localhost:5001/api';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
 
 export function useAdminController() {
   const [employees, setEmployees] = useState([]);

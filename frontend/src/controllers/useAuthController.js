@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const BACKEND_URL = 'http://localhost:5001/api/auth';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api/auth';
 
 const defaultPages = {
   employee: 'dashboard',
