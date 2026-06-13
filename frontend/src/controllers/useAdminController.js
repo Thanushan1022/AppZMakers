@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useAdminController() {
   const [employees, setEmployees] = useState([]);
@@ -44,6 +44,9 @@ export function useAdminController() {
   const [monthlyTrend, setMonthlyTrend] = useState([]);
   const [todayAttendance, setTodayAttendance] = useState([]);
   const [weeklyAttendanceData, setWeeklyAttendanceData] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
+  const [todayLabel, setTodayLabel] = useState('');
+  const [deptData, setDeptData] = useState([]);
 
   const [activeTab, setActiveTab] = useState('employees');
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,7 +103,7 @@ export function useAdminController() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/admin/dashboard`);
+      const res = await fetch(`${BACKEND_URL}/admin/dashboard?date=${selectedDate}`);
       if (res.ok) {
         const data = await res.json();
         setEmployees(data.employees || []);
@@ -108,6 +111,10 @@ export function useAdminController() {
         setCompanies(data.companies || []);
         setDashboardStats(data.stats || {});
         setPendingLeaves((data.pendingLeaves || []).filter((l) => l.status === 'pending'));
+        setTodayAttendance(data.todayAttendance || []);
+        setWeeklyAttendanceData(data.weeklyAttendanceData || []);
+        setDeptData(data.deptData || []);
+        setTodayLabel(data.todayLabel || '');
       }
 
       const leavesRes = await fetch(`${BACKEND_URL}/admin/leaves`);
@@ -195,6 +202,9 @@ export function useAdminController() {
 
   useEffect(() => {
     fetchData();
+  }, [selectedDate]);
+
+  useEffect(() => {
     fetchSettings();
   }, []);
 
@@ -670,5 +680,9 @@ export function useAdminController() {
     todayAttendance,
     weeklyAttendanceData,
     getEmployeeStats,
+    selectedDate,
+    setSelectedDate,
+    deptData,
+    todayLabel,
   };
 }

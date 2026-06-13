@@ -29,6 +29,18 @@ export const getEvents = async (req, res) => {
       if (emp) {
         country = emp.country || 'Sri Lanka';
         office = emp.office || 'Colombo';
+
+        // If employee is assigned to a client/company, show the client's country calendar/holidays
+        if (emp.companyId) {
+          let compQuery = { $or: [{ legacyId: emp.companyId }] };
+          if (mongoose.Types.ObjectId.isValid(emp.companyId)) {
+            compQuery.$or.push({ _id: emp.companyId });
+          }
+          const comp = await Company.findOne(compQuery);
+          if (comp && comp.country) {
+            country = comp.country;
+          }
+        }
       }
       localFilter = {
         $or: [
@@ -83,7 +95,7 @@ export const getEvents = async (req, res) => {
         approvedLeaves.forEach((leave) => {
           mergedEvents.push({
             id: leave._id,
-            title: `Leave: ${leave.type.charAt(0).toUpperCase() + leave.type.slice(1)}`,
+            title: `Leave: ${leave.employeeName || 'Employee'} (${leave.type.charAt(0).toUpperCase() + leave.type.slice(1)})`,
             description: `Approved ${leave.type} leave. Reason: ${leave.reason || 'None'}`,
             start: leave.startDate,
             end: leave.endDate,
@@ -93,6 +105,53 @@ export const getEvents = async (req, res) => {
           });
         });
       }
+    } else if (companyId) {
+      // Find company and fetch leaves of all its employees
+      let query = { $or: [{ legacyId: companyId }] };
+      if (mongoose.Types.ObjectId.isValid(companyId)) {
+        query.$or.push({ _id: companyId });
+      }
+      const comp = await Company.findOne(query);
+      if (comp) {
+        const compId = comp.legacyId || comp._id.toString();
+        const employees = await Employee.find({ companyId: compId });
+        const empIds = employees.map((emp) => emp.legacyId || emp._id.toString());
+        
+        const approvedLeaves = await LeaveRequest.find({
+          employeeId: { $in: empIds },
+          status: 'approved'
+        });
+        
+        approvedLeaves.forEach((leave) => {
+          mergedEvents.push({
+            id: leave._id,
+            title: `Leave: ${leave.employeeName} (${leave.type.charAt(0).toUpperCase() + leave.type.slice(1)})`,
+            description: `Approved ${leave.type} leave. Reason: ${leave.reason || 'None'}`,
+            start: leave.startDate,
+            end: leave.endDate,
+            type: `${leave.type}-leave`,
+            targetLocation: 'country',
+            targetValue: country
+          });
+        });
+      }
+    } else {
+      // HR and Super Admin view all approved leaves in the system
+      const approvedLeaves = await LeaveRequest.find({
+        status: 'approved'
+      });
+      approvedLeaves.forEach((leave) => {
+        mergedEvents.push({
+          id: leave._id,
+          title: `Leave: ${leave.employeeName} (${leave.type.charAt(0).toUpperCase() + leave.type.slice(1)})`,
+          description: `Approved ${leave.type} leave. Reason: ${leave.reason || 'None'}`,
+          start: leave.startDate,
+          end: leave.endDate,
+          type: `${leave.type}-leave`,
+          targetLocation: 'all',
+          targetValue: 'all'
+        });
+      });
     }
 
     let googleHolidays = [];

@@ -17,6 +17,7 @@ router.get('/employees/:id/leaves', employeeController.getLeaves);
 router.post('/employees/:id/leaves', employeeController.createLeaveRequest);
 router.put('/employees/:id/client', employeeController.updateClient);
 router.put('/employees/:id/profile', employeeController.updateProfile);
+router.get('/employees/:id/shift-notices', employeeController.getEmployeeShiftNotices);
 
 // ==========================================
 // HR / MANAGER ROUTES
@@ -28,10 +29,12 @@ router.post('/hr/leaves/:id/review', hrController.reviewLeave);
 router.get('/hr/employees', hrController.getEmployees);
 router.get('/hr/employees/:id', hrController.getEmployeeDetail);
 router.post('/hr/employees', hrController.createEmployee);
+router.put('/hr/employees/:id/status', hrController.updateEmployeeStatus);
 router.get('/hr/:id/profile', hrController.getProfile);
 router.put('/hr/:id/profile', hrController.updateProfile);
 router.put('/hr/attendance/:id', hrController.adjustAttendance);
 router.post('/hr/attendance', hrController.createManualAttendance);
+router.get('/hr/shift-notices', hrController.getHRShiftNotices);
 
 // ==========================================
 // HIRING COMPANY ROUTES
@@ -39,6 +42,8 @@ router.post('/hr/attendance', hrController.createManualAttendance);
 router.get('/companies/:id/dashboard', companyController.getDashboard);
 router.get('/companies/:id/profile', companyController.getProfile);
 router.put('/companies/:id/profile', companyController.updateProfile);
+router.get('/companies/:id/shift-notices', companyController.getCompanyShiftNotices);
+router.post('/companies/:id/shift-notices', companyController.createShiftNotice);
 
 // ==========================================
 // SUPERADMIN ROUTES

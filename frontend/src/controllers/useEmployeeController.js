@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 const parseBreakSeconds = (breakTimeSetting) => {
   let allowedBreakMin = 60;
@@ -52,6 +52,7 @@ export function useEmployeeController(userId) {
   const [currentBreakStart, setCurrentBreakStart] = useState(null);
   const [teaBreakGapRemainingSecs, setTeaBreakGapRemainingSecs] = useState(0);
   const [todayTasks, setTodayTasks] = useState([]);
+  const [shiftNotices, setShiftNotices] = useState([]);
 
   // Leave form states
   const [showForm, setShowForm] = useState(false);
@@ -172,6 +173,13 @@ export function useEmployeeController(userId) {
       if (leavesRes.ok) {
         const leavesData = await leavesRes.json();
         setAllLeaves(leavesData);
+      }
+
+      // Fetch Shift Notices
+      const noticesRes = await fetch(`${BACKEND_URL}/employees/${userId}/shift-notices`);
+      if (noticesRes.ok) {
+        const noticesData = await noticesRes.json();
+        setShiftNotices(noticesData || []);
       }
 
     } catch (err) {
@@ -330,6 +338,8 @@ export function useEmployeeController(userId) {
     return `${h}:${m}:${s}`;
   };
 
+  const [showTaskWarning, setShowTaskWarning] = useState(false);
+
   // Actions
   const handleCheckIn = async () => {
     const todayStr = getLocalTodayStr();
@@ -356,6 +366,10 @@ export function useEmployeeController(userId) {
   };
 
   const handleCheckOut = () => {
+    if (todayTasks.length === 0) {
+      setShowTaskWarning(true);
+      return;
+    }
     setShowCheckoutConfirm(true);
   };
 
@@ -591,7 +605,7 @@ export function useEmployeeController(userId) {
     const monday = new Date(d.getFullYear(), d.getMonth(), diffToMon);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-    
+
     const format = (date) => {
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -602,7 +616,7 @@ export function useEmployeeController(userId) {
   };
 
   const filteredLeaves = leaveFilter === 'all' ? allLeaves : allLeaves.filter(l => l.status === leaveFilter);
-  
+
   let filteredAttendance = [];
   if (filterType === 'monthly') {
     filteredAttendance = myAttendance.filter(a => isDateInCompanyMonth(a.date, selectedMonth));
@@ -690,6 +704,8 @@ export function useEmployeeController(userId) {
     handleUpdateProfile,
     handleAddTask,
     todayTasks,
+    showTaskWarning,
+    setShowTaskWarning,
 
     // Tea break helpers
     teaBreakEnabled: settings.teaBreakEnabled !== false,
@@ -706,6 +722,7 @@ export function useEmployeeController(userId) {
     setCustomStartDate,
     customEndDate,
     setCustomEndDate,
-    getWeekRange
+    getWeekRange,
+    shiftNotices
   };
 }

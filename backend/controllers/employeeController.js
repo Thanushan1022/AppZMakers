@@ -1,5 +1,6 @@
 import LeaveBalance from '../models/LeaveBalance.js';
 import LeaveRequest from '../models/LeaveRequest.js';
+import ShiftNotice from '../models/ShiftNotice.js';
 import Attendance from '../models/Attendance.js';
 import Company from '../models/Company.js';
 import User from '../models/User.js';
@@ -8,7 +9,7 @@ import { findEmployee, getEmployeeLegacyId } from '../utils/entityLookup.js';
 import { toEmployeeJSON, toAttendanceJSON, toLeaveJSON, toLeaveBalanceJSON } from '../utils/formatters.js';
 import { getSettings } from '../services/settingsService.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
-import { getSecsFromTime, finalizeClockOut } from '../utils/attendanceMath.js';
+import { getSecsFromTime, getTimeStringFromSecs, autoEndOverdueTeaBreaks, finalizeClockOut } from '../utils/attendanceMath.js';
 import { syncLeaveBalance } from '../services/leaveService.js';
 
 export const getProfile = async (req, res) => {
@@ -19,6 +20,13 @@ export const getProfile = async (req, res) => {
     const empId = getEmployeeLegacyId(emp);
     const balance = await syncLeaveBalance(empId, emp.joinDate);
     const settings = await getSettings();
+
+    // Auto end any overdue tea break
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayRecord = await Attendance.findOne({ employeeId: empId, date: todayStr });
+    if (todayRecord) {
+      await autoEndOverdueTeaBreaks(todayRecord, settings);
+    }
 
     res.json({
       employee: toEmployeeJSON(emp),
@@ -35,7 +43,9 @@ export const getAttendance = async (req, res) => {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
+    const settings = await getSettings();
     const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp) }).sort({ date: -1 });
+    await autoEndOverdueTeaBreaks(records, settings);
     res.json(records.map(toAttendanceJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -59,6 +69,10 @@ export const logAttendance = async (req, res) => {
       if (!todayRecord) {
         todayRecord = await Attendance.findOne({ employeeId: empId, date });
       }
+    }
+
+    if (todayRecord) {
+      await autoEndOverdueTeaBreaks(todayRecord, settings);
     }
 
     if (action === 'clock-in') {
@@ -305,6 +319,31 @@ export const updateProfile = async (req, res) => {
       message: 'Profile updated successfully',
       employee: toEmployeeJSON(emp),
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getEmployeeShiftNotices = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const emp = await findEmployee(id);
+    if (!emp) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    const eid = emp.legacyId || emp._id.toString();
+
+    // Query notices targeting this employee specifically, or targeting all employees under this client/company
+    const query = {
+      $or: [
+        { employeeId: eid },
+        { employeeId: 'all', companyId: emp.companyId }
+      ]
+    };
+
+    const notices = await ShiftNotice.find(query).sort({ createdAt: -1 });
+    res.json(notices);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

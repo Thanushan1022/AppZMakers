@@ -7,6 +7,41 @@ export const getSecsFromTime = (tStr) => {
   return h * 3600 + m * 60 + s;
 };
 
+export const getTimeStringFromSecs = (secs) => {
+  const s = secs % 86400;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+};
+
+export const autoEndOverdueTeaBreaks = async (records, settings) => {
+  if (!records) return;
+  const list = Array.isArray(records) ? records : [records];
+  const teaDuration = settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15; // in minutes
+  const limitSecs = teaDuration * 60;
+
+  for (const record of list) {
+    if (record.onTeaBreak && record.breaks) {
+      const activeTeaBreak = record.breaks.find(b => b.type === 'tea' && !b.end);
+      if (activeTeaBreak && activeTeaBreak.start) {
+        const startSecs = getSecsFromTime(activeTeaBreak.start);
+        const now = new Date();
+        const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const nowSecs = nowSecsRaw < startSecs ? (nowSecsRaw + 86400) : nowSecsRaw;
+
+        const elapsedSecs = nowSecs - startSecs;
+        if (elapsedSecs >= limitSecs) {
+          const endSecs = startSecs + limitSecs;
+          activeTeaBreak.end = getTimeStringFromSecs(endSecs);
+          record.onTeaBreak = false;
+          await record.save();
+        }
+      }
+    }
+  }
+};
+
 export const parseBreakMinutes = (breakTime) => {
   let allowedBreakMin = 60;
   if (breakTime) {

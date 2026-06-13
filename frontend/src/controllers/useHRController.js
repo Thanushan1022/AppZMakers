@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useHRController(hrId) {
   const getLocalDateString = () => {
@@ -16,6 +16,7 @@ export function useHRController(hrId) {
   const [employeesList, setEmployeesList] = useState([]);
   const [leavesList, setLeavesList] = useState([]);
   const [clients, setClients] = useState([]);
+  const [shiftNotices, setShiftNotices] = useState([]);
 
   const [todayAttendance, setTodayAttendance] = useState([]);
   const [weeklyAttendanceData, setWeeklyAttendanceData] = useState([]);
@@ -83,14 +84,19 @@ export function useHRController(hrId) {
 
   const fetchData = async () => {
     try {
-      const [dashRes, dbRes, leavesRes] = await Promise.all([
+      const [dashRes, dbRes, leavesRes, noticesRes] = await Promise.all([
         fetch(`${BACKEND_URL}/hr/dashboard?date=${selectedDate}`),
         fetch(`${BACKEND_URL}/admin/dashboard`),
         fetch(`${BACKEND_URL}/hr/leaves`),
+        fetch(`${BACKEND_URL}/hr/shift-notices`),
       ]);
 
       if (leavesRes.ok) {
         setLeavesList(await leavesRes.json());
+      }
+
+      if (noticesRes.ok) {
+        setShiftNotices(await noticesRes.json());
       }
 
       if (dashRes.ok) {
@@ -120,7 +126,7 @@ export function useHRController(hrId) {
     const monday = new Date(d.getFullYear(), d.getMonth(), diffToMon);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-    
+
     const format = (date) => {
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -406,6 +412,27 @@ export function useHRController(hrId) {
     }
   };
 
+  const handleUpdateEmployeeStatus = async (employeeId, status) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/hr/employees/${employeeId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || 'Employee status updated successfully.');
+        fetchData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update employee status.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while updating employee status.');
+    }
+  };
+
   const handleAddEmployee = async (e) => {
     if (e) e.preventDefault();
     try {
@@ -511,7 +538,8 @@ export function useHRController(hrId) {
 
     clients,
     handleAssignClient,
-    
+    handleUpdateEmployeeStatus,
+
     showModal,
     setShowModal,
     empForm,
@@ -522,5 +550,6 @@ export function useHRController(hrId) {
     handleUpdateHRProfile,
     handleAdjustAttendance,
     handleCreateManualAttendance,
+    shiftNotices,
   };
 }

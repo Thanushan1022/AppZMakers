@@ -1,4 +1,5 @@
 import Employee from '../models/Employee.js';
+import ShiftNotice from '../models/ShiftNotice.js';
 import LeaveRequest from '../models/LeaveRequest.js';
 import LeaveBalance from '../models/LeaveBalance.js';
 import Attendance from '../models/Attendance.js';
@@ -6,7 +7,7 @@ import Company from '../models/Company.js';
 import User from '../models/User.js';
 import HRUser from '../models/HRUser.js';
 import bcrypt from 'bcryptjs';
-import { finalizeClockOut, getSecsFromTime, parseBreakMinutes, parseStdHours } from '../utils/attendanceMath.js';
+import { finalizeClockOut, getSecsFromTime, parseBreakMinutes, parseStdHours, autoEndOverdueTeaBreaks } from '../utils/attendanceMath.js';
 import {
   getTodayString,
   formatDisplayDate,
@@ -231,7 +232,9 @@ export const getDashboard = async (req, res) => {
     const employees = await Employee.find();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
+    const settings = await getSettings();
     const attendanceRecords = await Attendance.find();
+    await autoEndOverdueTeaBreaks(attendanceRecords, settings);
     const attJson = attendanceRecords.map(toAttendanceJSON);
     const leaveRequests = await LeaveRequest.find();
     const leavesJson = leaveRequests.map(toLeaveJSON);
@@ -432,7 +435,7 @@ export const adjustAttendance = async (req, res) => {
       const inSecs = getSecsFromTime(record.checkIn);
       let outSecs = getSecsFromTime(record.checkOut || record.checkIn);
       if (outSecs < inSecs) outSecs += 86400;
-      
+
       let elapsedHrs = (outSecs - inSecs) / 3600;
       const extraBreakMin = Math.max(0, record.breakMinutes - allowedBreakMin);
       let totalHr = elapsedHrs - extraBreakMin / 60;
@@ -548,7 +551,7 @@ export const createManualAttendance = async (req, res) => {
       const inSecs = getSecsFromTime(record.checkIn);
       let outSecs = getSecsFromTime(record.checkOut || record.checkIn);
       if (outSecs < inSecs) outSecs += 86400;
-      
+
       let elapsedHrs = (outSecs - inSecs) / 3600;
       const extraBreakMin = Math.max(0, record.breakMinutes - allowedBreakMin);
       let totalHr = elapsedHrs - extraBreakMin / 60;
@@ -571,6 +574,37 @@ export const createManualAttendance = async (req, res) => {
       message: 'Attendance record created manually successfully',
       record: toAttendanceJSON(record),
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateEmployeeStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ error: 'Valid status ("active" or "inactive") is required.' });
+    }
+
+    const emp = await findEmployee(req.params.id);
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    emp.status = status;
+    await emp.save();
+
+    res.json({
+      message: `Employee account status updated to ${status} successfully.`,
+      employee: toEmployeeJSON(emp),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getHRShiftNotices = async (req, res) => {
+  try {
+    const notices = await ShiftNotice.find().sort({ createdAt: -1 });
+    res.json(notices);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

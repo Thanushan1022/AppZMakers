@@ -1,8 +1,10 @@
 import Company from '../models/Company.js';
 import Employee from '../models/Employee.js';
+import ShiftNotice from '../models/ShiftNotice.js';
 import Attendance from '../models/Attendance.js';
 import LeaveRequest from '../models/LeaveRequest.js';
 import User from '../models/User.js';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import {
   getTodayString,
@@ -108,6 +110,69 @@ export const updateProfile = async (req, res) => {
       message: 'Profile updated successfully',
       company: toCompanyJSON(comp),
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const createShiftNotice = async (req, res) => {
+  try {
+    const { id } = req.params; // Company ID
+    const { employeeId, date, time, reason } = req.body;
+
+    const company = await findCompany(id);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    const cid = company.legacyId || company._id.toString();
+
+    let empName = 'All Employees';
+    if (employeeId !== 'all') {
+      const emp = await Employee.findOne({
+        $or: [{ legacyId: employeeId }, { _id: mongoose.isValidObjectId(employeeId) ? employeeId : null }],
+      });
+      if (emp) empName = emp.name;
+    }
+
+    // 6 hours check logic
+    const shiftStart = new Date(`${date}T${time}`);
+    const now = new Date();
+    const diffMs = shiftStart - now;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const informHR = diffHours < 6;
+
+    const notice = await ShiftNotice.create({
+      companyId: cid,
+      companyName: company.name,
+      employeeId,
+      employeeName: empName,
+      date,
+      time,
+      reason,
+      informHR,
+    });
+
+    res.status(201).json({
+      message: 'Shift start notice sent successfully',
+      notice,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getCompanyShiftNotices = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const company = await findCompany(id);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    const cid = company.legacyId || company._id.toString();
+    const notices = await ShiftNotice.find({ companyId: cid }).sort({ createdAt: -1 });
+    res.json(notices);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

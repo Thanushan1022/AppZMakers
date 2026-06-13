@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useCompanyController(companyId) {
   const [company, setCompany] = useState({
@@ -23,6 +23,40 @@ export function useCompanyController(companyId) {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [shiftNotices, setShiftNotices] = useState([]);
+
+  const fetchShiftNotices = async () => {
+    if (!companyId) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/companies/${companyId}/shift-notices`);
+      if (res.ok) {
+        setShiftNotices(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateShiftNotice = async (noticeData) => {
+    if (!companyId) return { success: false, error: 'No company ID' };
+    try {
+      const res = await fetch(`${BACKEND_URL}/companies/${companyId}/shift-notices`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(noticeData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchShiftNotices();
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, error: data.error };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: err.message };
+    }
+  };
 
   const fetchData = async () => {
     if (!companyId) return;
@@ -40,6 +74,7 @@ export function useCompanyController(companyId) {
         setPendingLeaves(data.stats?.pendingLeaves || 0);
         setTotalHours(data.stats?.totalHours || 0);
       }
+      await fetchShiftNotices();
     } catch (err) {
       console.error(err);
     }
@@ -95,5 +130,8 @@ export function useCompanyController(companyId) {
     setStatusFilter,
     filteredEmployees,
     handleUpdateCompanyProfile,
+    shiftNotices,
+    handleCreateShiftNotice,
+    fetchShiftNotices,
   };
 }

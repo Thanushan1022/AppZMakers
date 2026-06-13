@@ -1,14 +1,37 @@
 import React, { useState } from 'react';
-import { Search, Calendar, Clock } from 'lucide-react';
+import { Search, Calendar, Clock, ClipboardList } from 'lucide-react';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
 export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = [] }) {
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(() => new Date().toISOString().split('T')[0]);
   const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedTasks, setSelectedTasks] = useState(null);
 
-  // Filter attendance history based on search, date, and status
-  const filteredHistory = attendanceHistory.filter(rec => {
+  // Resolve logs: if dateFilter is specified, ensure all employees are shown (generate virtual absent logs if missing)
+  const resolvedLogs = React.useMemo(() => {
+    if (!dateFilter) return attendanceHistory;
+    return myEmployees.map(emp => {
+      const existing = attendanceHistory.find(rec => rec.employeeId === emp.id && rec.date === dateFilter);
+      if (existing) return existing;
+      return {
+        id: `virtual-absent-${emp.id}-${dateFilter}`,
+        employeeId: emp.id,
+        date: dateFilter,
+        status: 'absent',
+        checkIn: null,
+        checkOut: null,
+        totalHours: 0,
+        breakMinutes: 0,
+        extraHours: 0,
+        lessHours: 0,
+        breaks: []
+      };
+    });
+  }, [myEmployees, attendanceHistory, dateFilter]);
+
+  // Filter attendance logs based on search and status
+  const filteredHistory = resolvedLogs.filter(rec => {
     const emp = myEmployees.find(e => e.id === rec.employeeId);
     
     // Search query matches employee name or position
@@ -17,14 +40,35 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
       emp.position.toLowerCase().includes(search.toLowerCase())
     ));
 
-    // Date matches exactly
-    const matchesDate = dateFilter === '' || rec.date === dateFilter;
-
     // Status matches
     const matchesStatus = statusFilter === 'All' || rec.status === statusFilter.toLowerCase();
 
-    return matchesSearch && matchesDate && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
+
+  // Sort logs: present/late employees first sorted by check-in time, then absent employees
+  const sortedHistory = React.useMemo(() => {
+    return [...filteredHistory].sort((recA, recB) => {
+      const isPresentA = recA && recA.status !== 'absent';
+      const isPresentB = recB && recB.status !== 'absent';
+      
+      if (isPresentA && !isPresentB) return -1;
+      if (!isPresentA && isPresentB) return 1;
+      
+      if (isPresentA && isPresentB) {
+        const timeA = recA.checkIn || '99:99:99';
+        const timeB = recB.checkIn || '99:99:99';
+        return timeA.localeCompare(timeB);
+      }
+      
+      const empA = myEmployees.find(e => e.id === recA.employeeId);
+      const empB = myEmployees.find(e => e.id === recB.employeeId);
+      if (empA && empB) {
+        return empA.name.localeCompare(empB.name);
+      }
+      return 0;
+    });
+  }, [filteredHistory, myEmployees]);
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -138,13 +182,13 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-slate-50/50">
-                {['Employee', 'Date', 'Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status'].map(h => (
+                {['Employee', 'Date', 'Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map(h => (
                   <th key={h} className="text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredHistory.map(rec => {
+              {sortedHistory.map(rec => {
                 const emp = myEmployees.find(e => e.id === rec.employeeId);
                 const isAbsent = rec.status === 'absent';
                 return (
@@ -177,7 +221,15 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                             )}
                             <span>{rec.checkOut}</span>
                           </>
-                        ) : (rec.checkIn ? <span className="text-emerald-500 text-xs font-semibold">Active</span> : '—')
+                        ) : (rec.checkIn ? (
+                          rec.onBreak ? (
+                            <span className="text-amber-500 text-xs font-semibold">Meal Break</span>
+                          ) : rec.onTeaBreak ? (
+                            <span className="text-amber-500 text-xs font-semibold">Tea Break</span>
+                          ) : (
+                            <span className="text-emerald-500 text-xs font-semibold">Active</span>
+                          )
+                        ) : '—')
                       )}
                     </td>
                     <td className="py-3 px-4 text-slate-500 whitespace-nowrap font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
@@ -198,6 +250,19 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                     <td className="py-3 px-4">
                       {getStatusBadge(rec.status)}
                     </td>
+                    <td className="py-3 px-4 text-slate-400">
+                      {!isAbsent && rec.tasks && rec.tasks.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedTasks({ name: emp?.name || 'Employee', date: rec.date || 'Today', tasks: rec.tasks })}
+                          className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center font-semibold"
+                          title="View Completed Tasks"
+                        >
+                          <ClipboardList className="w-4 h-4" />
+                          <span className="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-full ml-1 font-bold">{rec.tasks.length}</span>
+                        </button>
+                      ) : '—'}
+                    </td>
                   </tr>
                 );
               })}
@@ -213,6 +278,59 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
           </table>
         </div>
       </div>
+
+      {/* View Tasks Modal */}
+      {selectedTasks && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-border shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-indigo-600" />
+                  <div>
+                    <h3 className="text-slate-800 font-bold text-base">Tasks Completed</h3>
+                    <p className="text-slate-400 text-xs mt-0.5">{selectedTasks.name} · {selectedTasks.date}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTasks(null)}
+                  className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {selectedTasks.tasks && selectedTasks.tasks.length > 0 ? (
+                  selectedTasks.tasks.map((task, idx) => (
+                    <div key={task._id || idx} className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm space-y-1">
+                      <p className="text-slate-700 font-medium leading-relaxed">{task.description}</p>
+                      {task.timeContext && (
+                        <span className="text-[10px] text-indigo-500 font-bold bg-indigo-50 px-2 py-0.5 rounded-full w-fit block font-mono">
+                          🕒 Logged at {task.timeContext}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-400 text-sm py-4 text-center">No tasks logged for this day.</p>
+                )}
+              </div>
+
+              <div className="mt-5 pt-3 border-t border-border flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedTasks(null)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

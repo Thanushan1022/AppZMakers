@@ -11,6 +11,24 @@ export const formatDisplayDate = (date = new Date()) =>
 export const getTodayAttendanceForEmployees = (employees, attendanceRecords, date = getTodayString()) =>
   employees.map((emp) => {
     const rec = attendanceRecords.find((r) => r.employeeId === emp.id && r.date === date);
+    let teaBreakCount = 0;
+    let teaBreakMinutes = 0;
+    if (rec && rec.breaks) {
+      rec.breaks.forEach((b) => {
+        if (b.type === 'tea') {
+          teaBreakCount++;
+          if (b.start) {
+            const partsStart = b.start.split(':').map(Number);
+            const endVal = b.end || b.start;
+            const partsEnd = endVal.split(':').map(Number);
+            const inSecs = (partsStart[0] || 0) * 3600 + (partsStart[1] || 0) * 60 + (partsStart[2] || 0);
+            let outSecs = (partsEnd[0] || 0) * 3600 + (partsEnd[1] || 0) * 60 + (partsEnd[2] || 0);
+            if (outSecs < inSecs) outSecs += 86400;
+            teaBreakMinutes += Math.round((outSecs - inSecs) / 60);
+          }
+        }
+      });
+    }
     return {
       employeeId: emp.id,
       employeeName: emp.name,
@@ -23,6 +41,12 @@ export const getTodayAttendanceForEmployees = (employees, attendanceRecords, dat
       breakMinutes: rec?.breakMinutes || 0,
       extraHours: rec?.extraHours || 0,
       lessHours: rec?.lessHours || 0,
+      breaks: rec?.breaks || [],
+      teaBreakCount,
+      teaBreakMinutes,
+      onBreak: rec?.onBreak || false,
+      onTeaBreak: rec?.onTeaBreak || false,
+      tasks: rec?.tasks || [],
     };
   });
 

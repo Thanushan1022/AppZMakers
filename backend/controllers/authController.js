@@ -217,6 +217,15 @@ export const login = async (req, res) => {
       });
     }
 
+    if (accountRole === 'employee') {
+      const emp = await Employee.findOne({ email: user.email.toLowerCase() });
+      if (emp && emp.status === 'inactive') {
+        return res.status(403).json({
+          error: 'Your account has been deactivated. Please contact HR.',
+        });
+      }
+    }
+
     res.json(await buildAuthResponse(user));
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -6,9 +6,16 @@ import LeaveBalance from '../models/LeaveBalance.js';
 import Attendance from '../models/Attendance.js';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
-import { getTodayString } from '../utils/helpers.js';
+import { 
+  getTodayString, 
+  getTodayAttendanceForEmployees, 
+  getWeeklyAttendanceData, 
+  getDeptAttendanceData, 
+  isEmployeeOnLeave, 
+  formatDisplayDate 
+} from '../utils/helpers.js';
 import { findEmployee, findHRUser, findCompany, findLeave } from '../utils/entityLookup.js';
-import { toCompanyJSON, toHRJSON, toEmployeeJSON, toLeaveJSON } from '../utils/formatters.js';
+import { toCompanyJSON, toHRJSON, toEmployeeJSON, toLeaveJSON, toAttendanceJSON } from '../utils/formatters.js';
 import {
   getSettings as fetchSystemSettings,
   updateSettings as updateSettingsDoc,
@@ -19,18 +26,46 @@ import { syncLeaveBalance } from '../services/leaveService.js';
 export const getDashboard = async (req, res) => {
   try {
     await syncCompanyEmployeeCounts();
-    const today = getTodayString();
+    let targetDateObj = new Date();
+    if (req.query.date) {
+      const [year, month, day] = req.query.date.split('-').map(Number);
+      targetDateObj = new Date(year, month - 1, day);
+    }
+    const today = getTodayString(targetDateObj);
+    const todayLabel = formatDisplayDate(targetDateObj);
+
     const companies = (await Company.find()).map(toCompanyJSON);
     const hrUsers = (await HRUser.find()).map(toHRJSON);
     const employees = (await Employee.find()).map(toEmployeeJSON);
     const pendingLeaves = (await LeaveRequest.find({ status: 'pending' })).map(toLeaveJSON);
     const activeEmployees = employees.filter((e) => e.status === 'active');
-    const todayAttendanceRecords = await Attendance.countDocuments({ date: today });
+    
+    const attendanceRecords = await Attendance.find();
+    const attJson = attendanceRecords.map(toAttendanceJSON);
+    const leaveRequests = await LeaveRequest.find();
+    const leavesJson = leaveRequests.map(toLeaveJSON);
+
+    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today);
+    const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
+    const absent = todayAttendance.filter((a) => a.status === 'absent').length;
+    const late = todayAttendance.filter((a) => a.status === 'late').length;
+    const onLeaveToday = activeEmployees.filter((e) =>
+      isEmployeeOnLeave(e.id, leavesJson, today)
+    ).length;
 
     res.json({
+      todayDate: today,
+      todayLabel: todayLabel,
       companies,
       hrUsers,
       employees,
+      todayAttendance,
+      weeklyAttendanceData: getWeeklyAttendanceData(
+        attJson,
+        activeEmployees.map((e) => e.id),
+        targetDateObj
+      ),
+      deptData: getDeptAttendanceData(activeEmployees, todayAttendance),
       stats: {
         totalCompanies: companies.length,
         activeCompanies: companies.filter((c) => c.status === 'active').length,
@@ -39,7 +74,11 @@ export const getDashboard = async (req, res) => {
         totalHR: hrUsers.length,
         activeHR: hrUsers.filter((h) => h.status === 'active').length,
         pendingLeaveApprovals: pendingLeaves.length,
-        todayAttendanceRecords,
+        todayAttendanceRecords: todayAttendance.length,
+        presentToday: present,
+        absentToday: absent,
+        lateToday: late,
+        onLeaveToday,
       },
       pendingLeaves,
       leaveCounts: {

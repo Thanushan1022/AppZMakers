@@ -61,6 +61,7 @@ export function EmployeeAttendanceView({
   const [taskDesc, setTaskDesc] = useState('');
   const [taskTime, setTaskTime] = useState('');
   const [taskError, setTaskError] = useState('');
+  const [selectedTasks, setSelectedTasks] = useState(null);
 
   const wordCount = taskDesc.trim().split(/\s+/).filter(Boolean).length;
 
@@ -601,7 +602,7 @@ export function EmployeeAttendanceView({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                {['Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status'].map(h => (
+                {['Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map(h => (
                   <th key={h} className="text-left text-slate-400 font-medium pb-3 pr-4 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -638,6 +639,19 @@ export function EmployeeAttendanceView({
                     </td>
                     <td className="py-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${st.cls}`}>{st.label}</span>
+                    </td>
+                    <td className="py-3 text-slate-400">
+                      {rec.tasks && rec.tasks.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedTasks({ name: 'My tasks', date: rec.date || 'Today', tasks: rec.tasks })}
+                          className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center font-semibold"
+                          title="View Completed Tasks"
+                        >
+                          <ClipboardList className="w-4 h-4" />
+                          <span className="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-full ml-1 font-bold">{rec.tasks.length}</span>
+                        </button>
+                      ) : '—'}
                     </td>
                   </tr>
                 );
@@ -725,6 +739,59 @@ export function EmployeeAttendanceView({
                   className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-colors text-sm cursor-pointer"
                 >
                   Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Tasks Modal */}
+      {selectedTasks && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-border shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-indigo-600" />
+                  <div>
+                    <h3 className="text-slate-800 font-bold text-base">Completed Tasks</h3>
+                    <p className="text-slate-400 text-xs mt-0.5">{selectedTasks.name} · {selectedTasks.date}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTasks(null)}
+                  className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {selectedTasks.tasks && selectedTasks.tasks.length > 0 ? (
+                  selectedTasks.tasks.map((task, idx) => (
+                    <div key={task._id || idx} className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm space-y-1">
+                      <p className="text-slate-700 font-medium leading-relaxed">{task.description}</p>
+                      {task.timeContext && (
+                        <span className="text-[10px] text-indigo-500 font-bold bg-indigo-50 px-2 py-0.5 rounded-full w-fit block font-mono">
+                          🕒 Logged at {task.timeContext}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-400 text-sm py-4 text-center">No tasks logged for this day.</p>
+                )}
+              </div>
+
+              <div className="mt-5 pt-3 border-t border-border flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedTasks(null)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
+                >
+                  Close
                 </button>
               </div>
             </div>

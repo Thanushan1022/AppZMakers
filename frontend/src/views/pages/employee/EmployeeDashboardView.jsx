@@ -40,32 +40,34 @@ export function EmployeeDashboardView({
   totalLessHours,
   teaBreakEnabled,
   teaBreakLimitReached,
-  teaBreakGapRemainingSecs,
-  teaBreakDuration,
-}) {
-  const recentAttendance = filteredAttendance.slice(0, 5);
-
-  const formatGapTime = (secs) => {
-    const h = Math.floor(secs / 3600);
-    const m = Math.floor((secs % 3600) / 60);
-    const s = secs % 60;
-    if (h > 0) {
-      return `${h}h ${m}m ${s}s`;
-    }
-    return `${m}m ${s}s`;
-  };
-
-  const statusColor = {
-    present: 'text-emerald-600 bg-emerald-50',
-    late: 'text-amber-600 bg-amber-50',
-    absent: 'text-red-600 bg-red-50',
-    'half-day': 'text-sky-600 bg-sky-50',
-  };
-
-  return (
-    <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      {/* Exceeded Break Time Notification */}
-      {checkedIn && isBreakOver && (
+    teaBreakGapRemainingSecs,
+    teaBreakDuration,
+    todayTasks = [],
+    shiftNotices = [],
+  }) {
+    const recentAttendance = filteredAttendance.slice(0, 5);
+  
+    const formatGapTime = (secs) => {
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      if (h > 0) {
+        return `${h}h ${m}m ${s}s`;
+      }
+      return `${m}m ${s}s`;
+    };
+  
+    const statusColor = {
+      present: 'text-emerald-600 bg-emerald-50',
+      late: 'text-amber-600 bg-amber-55',
+      absent: 'text-red-600 bg-red-50',
+      'half-day': 'text-sky-600 bg-sky-50',
+    };
+  
+    return (
+      <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+        {/* Exceeded Break Time Notification */}
+      {checkedIn && isBreakOver && onBreak && (
         <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center gap-3 text-rose-700 text-sm font-medium animate-pulse">
           <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
           <div>
@@ -110,11 +112,10 @@ export function EmployeeDashboardView({
                 <button
                   onClick={handleBreak}
                   disabled={onTeaBreak}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors border ${
-                    onBreak 
-                      ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100' 
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors border ${onBreak
+                      ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
                       : 'bg-slate-50 text-slate-600 border-border hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <Coffee className="w-4 h-4" />
                   {onBreak ? 'End Meal Break' : 'Start Meal Break'}
@@ -154,9 +155,8 @@ export function EmployeeDashboardView({
             )}
             <button
               onClick={checkedIn ? handleCheckOut : handleCheckIn}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                checkedIn ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${checkedIn ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                }`}
             >
               {checkedIn ? <><LogOut className="w-4 h-4" />Check Out</> : <><LogIn className="w-4 h-4" />Check In</>}
             </button>
@@ -279,16 +279,15 @@ export function EmployeeDashboardView({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-slate-700 font-medium capitalize">{leave.type} Leave</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      leave.status === 'approved' ? 'bg-emerald-50 text-emerald-600' :
-                      leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
-                    }`}>{leave.status}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${leave.status === 'approved' ? 'bg-emerald-50 text-emerald-600' :
+                        leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                      }`}>{leave.status}</span>
                   </div>
                   <div className="text-slate-400 text-xs mt-1">{leave.startDate} → {leave.endDate} · {leave.days} day{leave.days !== 1 ? 's' : ''}</div>
                   <div className="text-slate-500 text-xs mt-0.5">{leave.reason}</div>
                 </div>
                 {leave.status === 'approved' ? <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" /> :
-                 leave.status === 'rejected' ? <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" /> : null}
+                  leave.status === 'rejected' ? <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" /> : null}
               </div>
             ))}
           </div>
@@ -314,7 +313,7 @@ export function EmployeeDashboardView({
               <p className="text-slate-600 text-sm mb-6">
                 Would you like to take a break (Meal / Tea Break) before leaving, or would you like to proceed with checking out?
               </p>
-              
+
               <div className="space-y-3">
                 {/* Take Meal Break button */}
                 {checkedIn && !onBreak && (

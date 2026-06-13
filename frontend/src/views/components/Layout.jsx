@@ -12,6 +12,7 @@ const navByRole = {
     { id: 'attendance', label: 'Attendance', icon: Clock },
     { id: 'leave', label: 'Leave Requests', icon: CalendarDays },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'client-notifications', label: 'Client Notification', icon: Bell },
   ],
   hr: [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,6 +21,7 @@ const navByRole = {
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'calendar', label: 'Company Calendar', icon: CalendarDays },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'client-notifications', label: 'Client Notification', icon: Bell },
   ],
   company: [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -73,9 +75,12 @@ const rolePrefixes = {
   superadmin: 'admin',
 };
 
+const BACKEND_URL = 'http://localhost:5001/api';
+
 export function Layout({ role, onLogout, auth, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -84,6 +89,44 @@ export function Layout({ role, onLogout, auth, children }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!auth) return;
+    const fetchUnreadCount = async () => {
+      try {
+        let url = '';
+        if (role === 'employee') {
+          url = `${BACKEND_URL}/employees/${auth.userId}/shift-notices`;
+        } else if (role === 'hr') {
+          url = `${BACKEND_URL}/hr/shift-notices`;
+        } else {
+          return;
+        }
+
+        const res = await fetch(url);
+        if (res.ok) {
+          const notices = await res.json();
+          const lastOpened = localStorage.getItem(`lastOpenedNotices_${auth.userId}`) || '1970-01-01T00:00:00.000Z';
+          const unread = notices.filter(n => new Date(n.createdAt) > new Date(lastOpened)).length;
+          setUnreadCount(unread);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 10000); // Poll every 10 seconds for real-time responsiveness
+    return () => clearInterval(interval);
+  }, [role, auth, location.pathname]);
+
+  // Mark as read when the client-notifications tab is opened
+  useEffect(() => {
+    if (location.pathname.endsWith('/client-notifications') && auth?.userId) {
+      localStorage.setItem(`lastOpenedNotices_${auth.userId}`, new Date().toISOString());
+      setUnreadCount(0);
+    }
+  }, [location.pathname, auth]);
 
   const navItems = navByRole[role] || [];
   const badgeColor = roleColors[role] || 'bg-slate-500';
@@ -150,6 +193,11 @@ export function Layout({ role, onLogout, auth, children }) {
             >
               <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
               <span className="flex-1 text-left">{item.label}</span>
+              {item.id === 'client-notifications' && unreadCount > 0 && (
+                <span className="flex items-center justify-center bg-rose-500 text-white text-[10px] font-bold h-5 min-w-5 rounded-full px-1.5 shadow-sm animate-pulse mr-1">
+                  {unreadCount}
+                </span>
+              )}
               {isActive && <ChevronRight className="w-3 h-3 text-indigo-400" />}
             </button>
           );

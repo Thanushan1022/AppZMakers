@@ -5,6 +5,7 @@ import { useEmployeeController } from './controllers/useEmployeeController';
 import { useHRController } from './controllers/useHRController';
 import { useCompanyController } from './controllers/useCompanyController';
 import { useAdminController } from './controllers/useAdminController';
+import { AlertCircle, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 
 // Import Layout & Login
 import { Layout } from './views/components/Layout';
@@ -16,6 +17,7 @@ import { EmployeeDashboardView } from './views/pages/employee/EmployeeDashboardV
 import { EmployeeAttendanceView } from './views/pages/employee/EmployeeAttendanceView';
 import { EmployeeLeaveView } from './views/pages/employee/EmployeeLeaveView';
 import { EmployeeProfileView } from './views/pages/employee/EmployeeProfileView';
+import { EmployeeClientNotificationsView } from './views/pages/employee/EmployeeClientNotificationsView';
 
 // HR
 import { HRDashboardView } from './views/pages/hr/HRDashboardView';
@@ -23,6 +25,7 @@ import { HRLeaveApprovalsView } from './views/pages/hr/HRLeaveApprovalsView';
 import { HREmployeesView } from './views/pages/hr/HREmployeesView';
 import { HRReportsView } from './views/pages/hr/HRReportsView';
 import { HRProfileView } from './views/pages/hr/HRProfileView';
+import { HRClientNotificationsView } from './views/pages/hr/HRClientNotificationsView';
 
 // Company
 import { CompanyDashboardView } from './views/pages/company/CompanyDashboardView';
@@ -46,10 +49,143 @@ export default function App() {
   );
 }
 
+function TaskWarningModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-sm w-full overflow-hidden p-6 animate-in fade-in zoom-in-95 duration-200" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+        <div className="flex flex-col items-center text-center">
+          <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4 border border-amber-100 animate-pulse">
+            <AlertCircle className="w-6 h-6 text-amber-500" />
+          </div>
+          <h3 className="text-slate-800 text-lg font-bold mb-2">Task Log Required</h3>
+          <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+            Please log at least one completed task in your <strong>Today's Work Log</strong> before checking out.
+          </p>
+          <div className="w-full">
+            <button
+              onClick={onClose}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors cursor-pointer shadow-md shadow-indigo-600/15"
+            >
+              Okay
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+let globalShowToast = null;
+
+function ToastContainer({ toasts, onClose }) {
+  return (
+    <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+      {toasts.map((toast) => {
+        let Icon = Info;
+        let iconColor = 'text-blue-500 bg-blue-50 border-blue-100';
+        let borderAccent = 'border-l-blue-500';
+        let title = 'Notification';
+
+        if (toast.type === 'success') {
+          Icon = CheckCircle2;
+          iconColor = 'text-emerald-500 bg-emerald-50 border-emerald-100';
+          borderAccent = 'border-l-emerald-500';
+          title = 'Success';
+        } else if (toast.type === 'error') {
+          Icon = AlertCircle;
+          iconColor = 'text-rose-500 bg-rose-50 border-rose-100';
+          borderAccent = 'border-l-rose-500';
+          title = 'Error';
+        } else if (toast.type === 'warning') {
+          Icon = AlertTriangle;
+          iconColor = 'text-amber-500 bg-amber-50 border-amber-100';
+          borderAccent = 'border-l-amber-500';
+          title = 'Warning';
+        }
+
+        return (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto w-full bg-white border border-slate-100 border-l-4 ${borderAccent} rounded-2xl shadow-xl shadow-slate-200/50 p-4 flex gap-3 toast-enter`}
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
+            <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+              <Icon className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0 pt-0.5">
+              <h4 className="text-slate-800 text-sm font-bold leading-snug">{title}</h4>
+              <p className="text-slate-500 text-xs mt-0.5 leading-relaxed break-words">{toast.message}</p>
+            </div>
+            <button
+              onClick={() => onClose(toast.id)}
+              className="text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-50 rounded-lg flex-shrink-0 self-start"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function AppRoutes() {
   const authController = useAuthController();
   const { auth, handleLogout } = authController;
   const navigate = useNavigate();
+
+  // Lifted employee controller to ensure shared state for checkout validation
+  const employeeController = useEmployeeController(auth?.role === 'employee' ? auth.userId : null);
+
+  const [toasts, setToasts] = React.useState([]);
+
+  React.useEffect(() => {
+    globalShowToast = (message, type = 'info') => {
+      const id = Math.random().toString(36).substring(2, 9);
+      setToasts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    };
+
+    window.alert = (message) => {
+      let type = 'info';
+      const msg = String(message).toLowerCase();
+      if (
+        msg.includes('success') ||
+        msg.includes('successfully') ||
+        msg.includes('active') ||
+        msg.includes('created') ||
+        msg.includes('updated') ||
+        msg.includes('imported') ||
+        msg.includes('sent')
+      ) {
+        type = 'success';
+      } else if (
+        msg.includes('failed') ||
+        msg.includes('error') ||
+        msg.includes('invalid') ||
+        msg.includes('cannot') ||
+        msg.includes('unable') ||
+        msg.includes('not defined')
+      ) {
+        type = 'error';
+      } else if (
+        msg.includes('warning') ||
+        msg.includes('warn') ||
+        msg.includes('notified') ||
+        msg.includes('adjust') ||
+        msg.includes('enter a reason')
+      ) {
+        type = 'warning';
+      }
+      globalShowToast(message, type);
+    };
+
+    return () => {
+      // Clean up if needed
+    };
+  }, []);
 
   if (!auth) {
     return (
@@ -80,7 +216,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to={`/${pathPrefix}/dashboard`} replace />} />
         {auth.role === 'employee' && (
-          <Route path="/employee/*" element={<EmployeeRoutes userId={auth.userId} />} />
+          <Route path="/employee/*" element={<EmployeeRoutes controller={employeeController} />} />
         )}
         {auth.role === 'hr' && (
           <Route path="/hr/*" element={<HRRoutes hrId={auth.userId} />} />
@@ -93,18 +229,31 @@ function AppRoutes() {
         )}
         <Route path="*" element={<Navigate to={`/${pathPrefix}/dashboard`} replace />} />
       </Routes>
+
+      {/* Modern, non-default warning popup when employee tries to checkout/logout without logging tasks */}
+      {auth.role === 'employee' && employeeController.showTaskWarning && (
+        <TaskWarningModal
+          onClose={() => employeeController.setShowTaskWarning(false)}
+        />
+      )}
+
+      {/* Modern Toast Notification Overlay */}
+      <ToastContainer
+        toasts={toasts}
+        onClose={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
+      />
     </Layout>
   );
 }
 
-function EmployeeRoutes({ userId }) {
-  const controller = useEmployeeController(userId);
+function EmployeeRoutes({ controller }) {
   return (
     <Routes>
       <Route path="dashboard" element={<EmployeeDashboardView {...controller} />} />
       <Route path="attendance" element={<EmployeeAttendanceView {...controller} />} />
       <Route path="leave" element={<EmployeeLeaveView {...controller} />} />
       <Route path="profile" element={<EmployeeProfileView {...controller} />} />
+      <Route path="client-notifications" element={<EmployeeClientNotificationsView {...controller} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );
@@ -120,6 +269,7 @@ function HRRoutes({ hrId }) {
       <Route path="reports" element={<HRReportsView {...controller} />} />
       <Route path="calendar" element={<CompanyCalendarView role="hr" />} />
       <Route path="profile" element={<HRProfileView {...controller} />} />
+      <Route path="client-notifications" element={<HRClientNotificationsView {...controller} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );
