@@ -19,8 +19,22 @@ const PORT = process.env.PORT || 5001;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ✅ CORS (ALLOW YOUR VERCEL FRONTEND)
+const allowedOrigins = [
+  "https://app-z-makers.vercel.app",
+  "https://app-z-makers-8peo.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: "https://app-z-makers-8peo.vercel.app",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
