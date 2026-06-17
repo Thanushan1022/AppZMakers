@@ -19,7 +19,12 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ✅ CORS (ALLOW YOUR VERCEL FRONTEND)
 app.use(cors({
-  origin: "https://app-z-makers-8peo.vercel.app",
+  origin: [
+    "https://app-z-makers.vercel.app", 
+    "https://app-z-makers-8peo.vercel.app", 
+    "http://localhost:5173", 
+    "http://localhost:3000"
+  ],
   credentials: true
 }));
 
