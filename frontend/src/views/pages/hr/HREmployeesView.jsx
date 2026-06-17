@@ -46,6 +46,18 @@ export function HREmployeesView({
     breakMinutes: 0,
   });
 
+  const FormatMultilineName = ({ name }) => {
+    if (!name) return null;
+    const parts = name.trim().split(/\s+/);
+    return (
+      <div className="flex flex-col">
+        {parts.map((p, i) => (
+          <span key={i} className="leading-tight capitalize">{p}</span>
+        ))}
+      </div>
+    );
+  };
+
   const getTodayDateString = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -106,7 +118,7 @@ export function HREmployeesView({
             <div className="p-4 border-b border-border">
               <span className="text-slate-500 text-sm">{filteredEmployees.length} employee{filteredEmployees.length !== 1 ? 's' : ''} found</span>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border overflow-y-auto max-h-[600px] custom-scrollbar">
               {filteredEmployees.map(emp => {
                 const stats = getEmployeeStats(emp.id);
                 const isSelected = selectedEmployeeId === emp.id;
@@ -116,12 +128,16 @@ export function HREmployeesView({
                     onClick={() => setSelectedEmployeeId(isSelected ? null : emp.id)}
                     className={`flex items-center gap-4 p-4 cursor-pointer transition-colors ${isSelected ? 'bg-indigo-50' : 'hover:bg-slate-50'}`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 ${emp.status === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
-                      {emp.avatar}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold overflow-hidden flex-shrink-0 ${emp.status === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                      {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                        <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+                      ) : (
+                        emp.avatar
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-700 font-medium">{emp.name}</span>
+                        <div className="text-slate-700 font-medium whitespace-nowrap"><FormatMultilineName name={emp.name} /></div>
                         <span className={`px-1.5 py-0.5 rounded-full text-xs ${emp.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{emp.status}</span>
                       </div>
                       <div className="text-slate-400 text-xs mt-0.5">{emp.position} · {emp.department}</div>
@@ -158,9 +174,15 @@ export function HREmployeesView({
               {/* Profile card */}
               <div className="bg-white rounded-2xl border border-border p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold">{selectedEmployee.avatar}</div>
+                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold overflow-hidden">
+                    {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
+                      <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                    ) : (
+                      selectedEmployee.avatar
+                    )}
+                  </div>
                   <div>
-                    <div className="font-semibold text-slate-800">{selectedEmployee.name}</div>
+                    <div className="font-semibold text-slate-800"><FormatMultilineName name={selectedEmployee.name} /></div>
                     <div className="text-slate-400 text-xs">{selectedEmployee.position}</div>
                   </div>
                 </div>
@@ -455,7 +477,7 @@ export function HREmployeesView({
 
       {/* Add Employee Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 my-8">
             <h3 className="text-slate-800 font-semibold mb-5">Add New Employee</h3>
             <form onSubmit={handleAddEmployee} className="space-y-4">
@@ -467,14 +489,35 @@ export function HREmployeesView({
                   { key: 'department', label: 'Department', placeholder: 'Engineering' },
                   { key: 'joinDate', label: 'Join Date', placeholder: '' },
                 ].map(f => (
-                  <div key={f.key} className={f.key === 'name' || f.key === 'email' ? 'col-span-2' : ''}>
+                  <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="block text-slate-600 text-sm mb-1.5">{f.label}</label>
                     <input
-                      type={f.key === 'joinDate' ? 'date' : 'text'}
+                      type={f.key === 'joinDate' ? 'date' : f.key === 'email' ? 'email' : 'text'}
                       value={empForm[f.key] || ''}
                       onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
                       placeholder={f.placeholder}
-                      required={f.key !== 'joinDate'}
+                      required
+                      max={f.key === 'joinDate' ? new Date().toISOString().split('T')[0] : undefined}
+                      minLength={f.key !== 'joinDate' && f.key !== 'email' ? 2 : undefined}
+                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'email' ? 20 : undefined}
+                      pattern={
+                        f.key === 'name'
+                          ? "^[a-zA-Z\\s.\\-]+$"
+                          : f.key === 'position' || f.key === 'department'
+                          ? "^[a-zA-Z\\s.\\-()&]+$"
+                          : f.key === 'email'
+                          ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                          : undefined
+                      }
+                      title={
+                        f.key === 'name'
+                          ? "Only letters, spaces, dots, and hyphens are allowed."
+                          : f.key === 'position' || f.key === 'department'
+                          ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                          : f.key === 'email'
+                          ? "Please enter a valid email address."
+                          : undefined
+                      }
                       className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                     />
                   </div>
@@ -487,6 +530,10 @@ export function HREmployeesView({
                     value={empForm.address || ''}
                     onChange={e => setEmpForm(p => ({ ...p, address: e.target.value }))}
                     placeholder="123 Main St, Colombo"
+                    required
+                    minLength={5}
+                    maxLength={50}
+                    pattern="^(?!\s*$).+"
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -494,7 +541,8 @@ export function HREmployeesView({
                 <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Working Location (Country)</label>
                   <select
-                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(empForm.country) ? (empForm.country || 'Sri Lanka') : 'other'}
+                    required
+                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) ? (empForm.country || '') : 'other'}
                     onChange={e => {
                       const val = e.target.value;
                       if (val === 'other') {
@@ -505,6 +553,7 @@ export function HREmployeesView({
                     }}
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   >
+                    <option value="" disabled>Choose Location...</option>
                     <option value="Sri Lanka">Sri Lanka</option>
                     <option value="USA">USA</option>
                     <option value="UK">UK</option>
@@ -512,7 +561,7 @@ export function HREmployeesView({
                     <option value="Australia">Australia</option>
                     <option value="other">Other (Type Custom)...</option>
                   </select>
-                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(empForm.country) && (
+                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) && (
                     <input
                       type="text"
                       placeholder="Type custom country name..."

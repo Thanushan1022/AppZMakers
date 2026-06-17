@@ -1,6 +1,8 @@
+// Authentication Controller
 import User from '../models/User.js';
 import Employee from '../models/Employee.js';
 import HRUser from '../models/HRUser.js';
+import crypto from 'crypto';
 import Company from '../models/Company.js';
 import LeaveBalance from '../models/LeaveBalance.js';
 import bcrypt from 'bcryptjs';
@@ -27,12 +29,15 @@ const buildAuthResponse = async (user) => {
     name: user.name,
     role,
     token: signToken(user),
+    avatar: user.avatar || '',
   };
 
   if (role === 'company' && profileId) {
     payload.userId = profileId;
   } else if (role !== 'superadmin' && profileId) {
     payload.userId = profileId;
+  } else if (role === 'superadmin') {
+    payload.userId = user._id.toString();
   }
 
   return payload;
@@ -227,6 +232,122 @@ export const login = async (req, res) => {
     }
 
     res.json(await buildAuthResponse(user));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    // To prevent account enumeration attacks, always say reset link sent
+    if (!user) {
+      return res.json({
+        message: 'If an account exists with this email, a password reset link has been sent.',
+      });
+    }
+
+    // Generate secure random token
+    const token = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 mins
+    await user.save();
+
+    // Send email via EmailJS REST API
+    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const emailjsData = {
+      service_id: process.env.EMAILJS_SERVICE_ID || 'service_6vky48h',
+      template_id: process.env.EMAILJS_FORGOT_TEMPLATE_ID || 'template_phjzjeh',
+      user_id: process.env.EMAILJS_PUBLIC_KEY || 'D_XrZ-PgCv74QQSkm',
+      accessToken: process.env.EMAILJS_PRIVATE_KEY || 'Edi5W8xjfc_J4Q4CDgHJ0',
+      template_params: {
+        to_name: user.name,
+        to_email: user.email.toLowerCase(),
+        user_email: user.email.toLowerCase(),
+        email: user.email.toLowerCase(),
+        reset_link: resetLink,
+        link: resetLink,
+        resetLink: resetLink,
+        reset_url: resetLink,
+        url: resetLink,
+        message: `Please use the following link to reset your password: ${resetLink}`,
+      },
+    };
+
+    try {
+      const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailjsData),
+      });
+
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        console.error('EmailJS failed to send forgot password email:', errorText);
+      }
+    } catch (emailErr) {
+      console.error('Error occurred while sending forgot password email via EmailJS:', emailErr.message);
+    }
+
+    res.json({
+      message: 'If an account exists with this email, a password reset link has been sent.',
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const verifyResetToken = async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+    }
+
+    res.json({ valid: true, email: user.email });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

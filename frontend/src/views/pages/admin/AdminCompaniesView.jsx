@@ -5,6 +5,18 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
+  const FormatMultilineName = ({ name }) => {
+    if (!name) return null;
+    const parts = name.trim().split(/\s+/);
+    return (
+      <div className="flex flex-col">
+        {parts.map((p, i) => (
+          <span key={i} className="leading-tight capitalize">{p}</span>
+        ))}
+      </div>
+    );
+  };
+
   // If no company is selected, select the first one by default if list is not empty
   const activeCompanyId = selectedCompanyId || (companies[0]?.id || null);
   const selectedCompany = companies.find(c => c.id === activeCompanyId);
@@ -26,46 +38,46 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
         <div className="md:col-span-1 space-y-3">
           <div className="bg-white rounded-2xl border border-border p-4">
             <h3 className="text-slate-800 font-semibold text-sm mb-3">Client Companies</h3>
-            <div className="space-y-2">
-              {companies.map(co => {
-                const isSelected = co.id === activeCompanyId;
-                const empCount = employees.filter(e => e.companyId === co.id).length;
-                return (
-                  <div
-                    key={co.id}
-                    onClick={() => {
-                      setSelectedCompanyId(co.id);
-                      setSelectedEmployee(null);
-                    }}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                      isSelected
-                        ? 'border-indigo-200 bg-indigo-50/50 text-indigo-900 shadow-sm'
-                        : 'border-border hover:bg-slate-50/50 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xs ${
-                        isSelected ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {co.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            <div className="max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+              <div className="space-y-2">
+                {companies.map(co => {
+                  const isSelected = co.id === activeCompanyId;
+                  const empCount = employees.filter(e => e.companyId === co.id).length;
+                  return (
+                    <div
+                      key={co.id}
+                      onClick={() => {
+                        setSelectedCompanyId(co.id);
+                        setSelectedEmployee(null);
+                      }}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isSelected
+                          ? 'border-indigo-200 bg-indigo-50/50 text-indigo-900 shadow-sm'
+                          : 'border-border hover:bg-slate-50/50 text-slate-700'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xs ${isSelected ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                          {co.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm truncate">{co.name}</div>
+                          <div className="text-[11px] text-slate-400 truncate">{co.industry}</div>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-medium text-sm truncate">{co.name}</div>
-                        <div className="text-[11px] text-slate-400 truncate">{co.industry}</div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 font-medium">
+                          {empCount}
+                        </span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 font-medium">
-                        {empCount}
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    </div>
-                  </div>
-                );
-              })}
-              {companies.length === 0 && (
-                <div className="py-8 text-center text-slate-400 text-sm">No client companies found</div>
-              )}
+                  );
+                })}
+                {companies.length === 0 && (
+                  <div className="py-8 text-center text-slate-400 text-sm">No client companies found</div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -118,29 +130,35 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                   <Users className="w-4 h-4 text-indigo-500" />
                   Assigned Employees ({companyEmployees.length})
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {companyEmployees.map(emp => (
-                    <div
-                      key={emp.id}
-                      onClick={() => setSelectedEmployee(emp)}
-                      className="p-4 rounded-xl border border-border hover:border-indigo-200 hover:bg-indigo-50/20 cursor-pointer transition-all flex items-center gap-3"
-                    >
-                      <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-sm">
-                        {emp.avatar}
+                <div className="max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {companyEmployees.map(emp => (
+                      <div
+                        key={emp.id}
+                        onClick={() => setSelectedEmployee(emp)}
+                        className="p-4 rounded-xl border border-border hover:border-indigo-200 hover:bg-indigo-50/20 cursor-pointer transition-all flex items-center gap-3"
+                      >
+                        <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0">
+                          {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                            <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+                          ) : (
+                            emp.avatar
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-slate-800 text-sm truncate"><FormatMultilineName name={emp.name} /></div>
+                          <div className="text-slate-400 text-xs truncate">{emp.position}</div>
+                          <div className="text-indigo-600 text-[11px] font-medium mt-0.5">{emp.department}</div>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-800 text-sm truncate">{emp.name}</div>
-                        <div className="text-slate-400 text-xs truncate">{emp.position}</div>
-                        <div className="text-indigo-600 text-[11px] font-medium mt-0.5">{emp.department}</div>
+                    ))}
+                    {companyEmployees.length === 0 && (
+                      <div className="sm:col-span-2 py-12 text-center text-slate-400">
+                        <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">No employees assigned to this client yet</p>
                       </div>
-                    </div>
-                  ))}
-                  {companyEmployees.length === 0 && (
-                    <div className="sm:col-span-2 py-12 text-center text-slate-400">
-                      <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                      <p className="text-sm">No employees assigned to this client yet</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </>
@@ -164,10 +182,14 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
               &times;
             </button>
             <div className="flex flex-col items-center text-center pb-4 border-b border-border">
-              <div className="w-16 h-16 bg-indigo-100 text-indigo-700 rounded-2xl flex items-center justify-center font-bold text-xl mb-3 shadow-sm">
-                {selectedEmployee.avatar}
+              <div className="w-16 h-16 bg-indigo-100 text-indigo-700 rounded-2xl flex items-center justify-center font-bold text-xl mb-3 shadow-sm overflow-hidden flex-shrink-0">
+                {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
+                  <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                ) : (
+                  selectedEmployee.avatar
+                )}
               </div>
-              <h3 className="text-slate-800 font-bold text-lg">{selectedEmployee.name}</h3>
+              <h3 className="text-slate-800 font-bold text-lg"><FormatMultilineName name={selectedEmployee.name} /></h3>
               <p className="text-slate-400 text-xs mt-0.5">{selectedEmployee.position}</p>
               <span className={`mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${selectedEmployee.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
                 {selectedEmployee.status}

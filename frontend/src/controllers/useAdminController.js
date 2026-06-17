@@ -1,14 +1,60 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app /api';
 
-export function useAdminController() {
+export function useAdminController(adminId, updateAuth) {
   const [employees, setEmployees] = useState([]);
   const [hrUsers, setHRUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [leavesList, setLeavesList] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({});
   const [pendingLeaves, setPendingLeaves] = useState([]);
+  const [adminProfile, setAdminProfile] = useState(null);
+
+  const fetchAdminProfile = async () => {
+    if (!adminId) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/${adminId}/profile`);
+      if (res.ok) {
+        const data = await res.json();
+        setAdminProfile(data.admin);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateAdminProfile = async (profileData) => {
+    if (!adminId) return { success: false, error: 'Admin ID not provided' };
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/${adminId}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAdminProfile(data.admin);
+        if (profileData.name || profileData.avatar !== undefined) {
+          if (updateAuth) {
+            updateAuth({
+              name: data.admin.name,
+              avatar: data.admin.avatar || '',
+            });
+          }
+        }
+        return { success: true, message: data.message || 'Profile updated successfully' };
+      } else {
+        return { success: false, error: data.error || 'Failed to update profile' };
+      }
+    } catch (err) {
+      return { success: false, error: err.message || 'Server error updating profile' };
+    }
+  };
+
+  useEffect(() => {
+    fetchAdminProfile();
+  }, [adminId]);
 
   const getLocalDateString = () => {
     const d = new Date();
@@ -42,6 +88,7 @@ export function useAdminController() {
   });
   const [leaveTypeData, setLeaveTypeData] = useState([]);
   const [monthlyTrend, setMonthlyTrend] = useState([]);
+  const [reportsAttendanceData, setReportsAttendanceData] = useState([]);
   const [todayAttendance, setTodayAttendance] = useState([]);
   const [weeklyAttendanceData, setWeeklyAttendanceData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getLocalDateString());
@@ -65,13 +112,13 @@ export function useAdminController() {
     company: 'General',
     joinDate: '',
     address: '',
-    country: 'Sri Lanka',
+    country: '',
   });
 
   const [hrForm, setHrForm] = useState({
     name: '',
     email: '',
-    department: 'HR',
+    department: 'Human Resources',
     joinDate: '',
   });
 
@@ -83,7 +130,7 @@ export function useAdminController() {
     phone: '',
     joinedDate: '',
     address: '',
-    country: 'Sri Lanka',
+    country: '',
   });
 
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -142,7 +189,7 @@ export function useAdminController() {
     const monday = new Date(d.getFullYear(), d.getMonth(), diffToMon);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-    
+
     const format = (date) => {
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -192,6 +239,7 @@ export function useAdminController() {
         setReportsSummary(reportsData.summary || {});
         setLeaveTypeData(reportsData.leaveTypeData || []);
         setMonthlyTrend(reportsData.monthlyTrend || []);
+        setReportsAttendanceData(reportsData.attendanceData || []);
         setTodayAttendance(reportsData.todayAttendance || []);
         setWeeklyAttendanceData(reportsData.weeklyAttendanceData || []);
       }
@@ -368,12 +416,26 @@ export function useAdminController() {
 
   const handleAddEmployee = async (e) => {
     if (e) e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(empForm.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    if (empForm.joinDate && empForm.joinDate > today) {
+      alert('Join date cannot be a future date.');
+      return;
+    }
+    if (!empForm.country || empForm.country.trim() === '') {
+      alert('Please select or enter a working location (country).');
+      return;
+    }
     try {
       const isEdit = !!editingItem;
       const url = isEdit ? `${BACKEND_URL}/admin/employees/${editingItem.id}` : `${BACKEND_URL}/hr/employees`;
       const method = isEdit ? 'PUT' : 'POST';
       const bodyPayload = {
-        name: empForm.name,
+        name: empForm.name.trim(),
         email: empForm.email,
         position: empForm.position,
         department: empForm.department,
@@ -394,7 +456,7 @@ export function useAdminController() {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || (isEdit ? 'Employee updated successfully.' : 'Employee created successfully.'));
-        setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', address: '', country: 'Sri Lanka' });
+        setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', address: '', country: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
@@ -410,6 +472,16 @@ export function useAdminController() {
 
   const handleAddHR = async (e) => {
     if (e) e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(hrForm.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    if (hrForm.joinDate && hrForm.joinDate > today) {
+      alert('Join date cannot be a future date.');
+      return;
+    }
     try {
       const isEdit = !!editingItem;
       const url = isEdit ? `${BACKEND_URL}/admin/hr/${editingItem.id}` : `${BACKEND_URL}/admin/hr`;
@@ -420,7 +492,7 @@ export function useAdminController() {
         body: JSON.stringify({
           name: hrForm.name,
           email: hrForm.email,
-          department: hrForm.department || 'HR',
+          department: hrForm.department || 'Human Resources',
           joinDate: hrForm.joinDate || new Date().toISOString().split('T')[0],
         }),
       });
@@ -428,7 +500,7 @@ export function useAdminController() {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || (isEdit ? 'HR Manager updated successfully.' : 'HR Manager created successfully.'));
-        setHrForm({ name: '', email: '', department: 'HR' });
+        setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
@@ -444,6 +516,11 @@ export function useAdminController() {
 
   const handleAddCompany = async (e) => {
     if (e) e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(coForm.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
     try {
       const isEdit = !!editingItem;
       const url = isEdit ? `${BACKEND_URL}/admin/companies/${editingItem.id}` : `${BACKEND_URL}/admin/companies`;
@@ -466,7 +543,7 @@ export function useAdminController() {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || (isEdit ? 'Client updated successfully.' : 'Client created successfully.'));
-        setCoForm({ name: '', industry: '', contact: '', email: '', phone: '' });
+        setCoForm({ name: '', industry: '', contact: '', email: '', phone: '', joinedDate: '', address: '', country: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
@@ -491,13 +568,13 @@ export function useAdminController() {
         company: item.company || 'General',
         joinDate: item.joinDate ? item.joinDate.split('T')[0] : '',
         address: item.address || '',
-        country: item.country || 'Sri Lanka',
+        country: item.country || '',
       });
     } else if (type === 'hr') {
       setHrForm({
         name: item.name || '',
         email: item.email || '',
-        department: item.department || 'HR',
+        department: item.department || 'Human Resources',
         joinDate: item.joinDate ? item.joinDate.split('T')[0] : '',
       });
     } else if (type === 'company') {
@@ -509,7 +586,7 @@ export function useAdminController() {
         phone: item.phone || '',
         joinedDate: item.joinedDate ? item.joinedDate.split('T')[0] : '',
         address: item.address || '',
-        country: item.country || 'Sri Lanka',
+        country: item.country || '',
       });
     }
     setShowModal(true);
@@ -517,9 +594,9 @@ export function useAdminController() {
 
   const handleAddClick = () => {
     setEditingItem(null);
-    setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', address: '', country: 'Sri Lanka' });
-    setHrForm({ name: '', email: '', department: 'HR', joinDate: '' });
-    setCoForm({ name: '', industry: '', contact: '', email: '', phone: '', joinedDate: '', address: '', country: 'Sri Lanka' });
+    setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', address: '', country: '' });
+    setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '' });
+    setCoForm({ name: '', industry: '', contact: '', email: '', phone: '', joinedDate: '', address: '', country: '' });
     setShowModal(true);
   };
 
@@ -593,6 +670,42 @@ export function useAdminController() {
     }
   };
 
+  const handleToggleEmployeeTeaBreak = async (empId, currentState) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/employees/${empId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teaBreakAllowed: !currentState })
+      });
+      if (res.ok) {
+        setEmployees(prev => prev.map(emp => emp.id === empId ? { ...emp, teaBreakAllowed: !currentState } : emp));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update employee setting');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleCompanyTeaBreak = async (compId, currentState) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/companies/${compId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teaBreakAllowed: !currentState })
+      });
+      if (res.ok) {
+        setCompanies(prev => prev.map(co => co.id === compId ? { ...co, teaBreakAllowed: !currentState } : co));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update company setting');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const leaveCounts = {
     pending: leavesList.filter((l) => l.status === 'pending').length,
     approved: leavesList.filter((l) => l.status === 'approved').length,
@@ -600,6 +713,8 @@ export function useAdminController() {
   };
 
   return {
+    adminProfile,
+    handleUpdateProfile: handleUpdateAdminProfile,
     employees,
     hrUsers,
     companies,
@@ -640,7 +755,9 @@ export function useAdminController() {
     handleAddCompany,
     handleUpdateSetting,
     handleAssignClient,
-    
+    handleToggleEmployeeTeaBreak,
+    handleToggleCompanyTeaBreak,
+
     hrForm,
     setHrForm,
     coForm,
@@ -677,6 +794,7 @@ export function useAdminController() {
     reportsSummary,
     leaveTypeData,
     monthlyTrend,
+    reportsAttendanceData,
     todayAttendance,
     weeklyAttendanceData,
     getEmployeeStats,

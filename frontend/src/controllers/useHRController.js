@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
 
-export function useHRController(hrId) {
+export function useHRController(hrId, updateAuth) {
   const getLocalDateString = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -41,6 +41,7 @@ export function useHRController(hrId) {
   });
   const [leaveTypeData, setLeaveTypeData] = useState([]);
   const [monthlyTrend, setMonthlyTrend] = useState([]);
+  const [reportsAttendanceData, setReportsAttendanceData] = useState([]);
 
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('All');
@@ -57,7 +58,7 @@ export function useHRController(hrId) {
     department: '',
     joinDate: '',
     address: '',
-    country: 'Sri Lanka',
+    country: '',
   });
 
   const [leaveTabFilter, setLeaveTabFilter] = useState('pending');
@@ -176,6 +177,7 @@ export function useHRController(hrId) {
         setReportsSummary(reportsData.summary || {});
         setLeaveTypeData(reportsData.leaveTypeData || []);
         setMonthlyTrend(reportsData.monthlyTrend || []);
+        setReportsAttendanceData(reportsData.attendanceData || []);
       }
     } catch (err) {
       console.error(err);
@@ -229,6 +231,14 @@ export function useHRController(hrId) {
       const data = await res.json();
       if (res.ok) {
         setHrProfile(data.hr);
+        if (updateData.avatar !== undefined || updateData.name) {
+          if (updateAuth) {
+            updateAuth({
+              avatar: data.hr.avatar || '',
+              name: data.hr.name,
+            });
+          }
+        }
         return { success: true, message: data.message };
       } else {
         return { success: false, error: data.error };
@@ -364,6 +374,9 @@ export function useHRController(hrId) {
         setHrNote('');
         setLeaveAction(null);
         fetchData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to review leave request');
       }
     } catch (err) {
       console.error(err);
@@ -435,12 +448,26 @@ export function useHRController(hrId) {
 
   const handleAddEmployee = async (e) => {
     if (e) e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(empForm.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    if (empForm.joinDate && empForm.joinDate > today) {
+      alert('Join date cannot be a future date.');
+      return;
+    }
+    if (!empForm.country || empForm.country.trim() === '') {
+      alert('Please select or enter a working location (country).');
+      return;
+    }
     try {
       const res = await fetch(`${BACKEND_URL}/hr/employees`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: empForm.name,
+          name: empForm.name.trim(),
           email: empForm.email,
           position: empForm.position,
           department: empForm.department,
@@ -455,7 +482,7 @@ export function useHRController(hrId) {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || 'Employee created successfully.');
-        setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', address: '', country: 'Sri Lanka' });
+        setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', address: '', country: '' });
         setShowModal(false);
         fetchData();
       } else {
@@ -482,6 +509,7 @@ export function useHRController(hrId) {
     reportsSummary,
     leaveTypeData,
     monthlyTrend,
+    reportsAttendanceData,
 
     search,
     setSearch,

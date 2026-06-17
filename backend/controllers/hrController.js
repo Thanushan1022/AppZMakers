@@ -49,7 +49,7 @@ export const reviewLeave = async (req, res) => {
     await leave.save();
 
     if (status === 'approved') {
-      const emp = await Employee.findOne({ $or: [{ legacyId: leave.employeeId }, { _id: leave.employeeId }] });
+      const emp = await findEmployee(leave.employeeId);
       if (emp) {
         await syncLeaveBalance(leave.employeeId, emp.joinDate);
       }
@@ -95,6 +95,48 @@ export const getEmployeeDetail = async (req, res) => {
 export const createEmployee = async (req, res) => {
   try {
     const { name, email, position, department, companyId, phone, address, country, joinDate } = req.body;
+
+    if (!name || name.trim().length < 2 || name.trim().length > 30) {
+      return res.status(400).json({ error: 'Name must be between 2 and 30 characters long.' });
+    }
+    if (!/^[a-zA-Z\s.\-]+$/.test(name)) {
+      return res.status(400).json({ error: 'Name contains invalid characters.' });
+    }
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+
+    if (!position || position.trim().length < 2 || position.trim().length > 20) {
+      return res.status(400).json({ error: 'Position must be between 2 and 20 characters long.' });
+    }
+    if (!/^[a-zA-Z\s.\-()&]+$/.test(position)) {
+      return res.status(400).json({ error: 'Position contains invalid characters.' });
+    }
+
+    if (!department || department.trim().length < 2 || department.trim().length > 20) {
+      return res.status(400).json({ error: 'Department must be between 2 and 20 characters long.' });
+    }
+    if (!/^[a-zA-Z\s.\-()&]+$/.test(department)) {
+      return res.status(400).json({ error: 'Department contains invalid characters.' });
+    }
+
+    if (!address || address.trim().length < 5 || address.trim().length > 50) {
+      return res.status(400).json({ error: 'Address must be between 5 and 50 characters long.' });
+    }
+
+    if (!country || country.trim() === '') {
+      return res.status(400).json({ error: 'Working location (country) is required.' });
+    }
+
+    if (!joinDate) {
+      return res.status(400).json({ error: 'Join date is required.' });
+    }
+    const today = new Date().toISOString().split('T')[0];
+    if (joinDate > today) {
+      return res.status(400).json({ error: 'Join date cannot be a future date.' });
+    }
+
     const settings = await getSettings();
 
     let comp = null;
@@ -109,7 +151,7 @@ export const createEmployee = async (req, res) => {
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return res.status(400).json({ error: 'A user with this email already exists' });
+      return res.status(400).json({ error: 'This email address is already registered.' });
     }
 
     const legacyId = await getNextEmployeeLegacyId();
@@ -148,12 +190,13 @@ export const createEmployee = async (req, res) => {
         .slice(0, 2),
       phone: phone || null,
       address: address || null,
-      country: country || 'Sri Lanka',
+      country: country,
       status: 'active',
-      joinDate: joinDate || new Date().toISOString().split('T')[0],
+      joinDate: joinDate,
       userId: newUser._id,
     });
 
+    await LeaveBalance.deleteOne({ employeeId: legacyId });
     await LeaveBalance.create({
       employeeId: legacyId,
       annual: { total: settings.leaveAllocations?.annual || 15, used: 0 },
@@ -340,6 +383,7 @@ export const getReports = async (req, res) => {
           .filter((l) => l.status === 'approved')
           .reduce((s, l) => s + l.days, 0),
       },
+      attendanceData: attJson,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -363,7 +407,7 @@ export const updateProfile = async (req, res) => {
     const hr = await findHRUser(req.params.id);
     if (!hr) return res.status(404).json({ error: 'HR User not found' });
 
-    const { name, email, department, password } = req.body;
+    const { name, email, department, password, avatar } = req.body;
 
     if (password && password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
@@ -372,6 +416,7 @@ export const updateProfile = async (req, res) => {
     if (name !== undefined) hr.name = name;
     if (email !== undefined) hr.email = email;
     if (department !== undefined) hr.department = department;
+    if (avatar !== undefined) hr.avatar = avatar;
 
     await hr.save();
 
@@ -382,6 +427,9 @@ export const updateProfile = async (req, res) => {
       if (email !== undefined) user.email = email.toLowerCase();
       if (password) {
         user.password = await bcrypt.hash(password, 10);
+      }
+      if (avatar !== undefined) {
+        user.avatar = avatar;
       }
       await user.save();
     }

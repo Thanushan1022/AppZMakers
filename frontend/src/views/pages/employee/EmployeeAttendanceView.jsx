@@ -9,8 +9,9 @@ const statusStyles = {
   'half-day': { label: 'Half Day', cls: 'bg-sky-50 text-sky-700' },
 };
 
-export function EmployeeAttendanceView({
+export function EmployeeAttendanceView({ mySalary,
   checkedIn,
+  hasAttendedToday,
   onBreak,
   onTeaBreak,
   sessionSecs,
@@ -31,6 +32,7 @@ export function EmployeeAttendanceView({
   handleTeaBreak,
   todayTasks = [],
   handleAddTask,
+  handleEditTask,
   // New props
   settings,
   targetWorkSecs,
@@ -39,6 +41,10 @@ export function EmployeeAttendanceView({
   remainingBreakSecs,
   isBreakOver,
   teaBreakEnabled,
+  teaBreakAllowed,
+  mealBreakCount,
+  mealBreakMax,
+  mealBreakLimitReached,
   teaBreakLimitReached,
   teaBreakGapRemainingSecs,
   teaBreakDuration,
@@ -63,7 +69,40 @@ export function EmployeeAttendanceView({
   const [taskError, setTaskError] = useState('');
   const [selectedTasks, setSelectedTasks] = useState(null);
 
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editTaskDesc, setEditTaskDesc] = useState('');
+  const [editTaskTime, setEditTaskTime] = useState('');
+  const [editTaskError, setEditTaskError] = useState('');
+
   const wordCount = taskDesc.trim().split(/\s+/).filter(Boolean).length;
+  const editWordCount = editTaskDesc.trim().split(/\s+/).filter(Boolean).length;
+
+  const startEditTask = (task) => {
+    setEditingTaskId(task._id || task.id);
+    setEditTaskDesc(task.description || '');
+    setEditTaskTime(task.timeContext || '');
+    setEditTaskError('');
+  };
+
+  const submitEditTask = async () => {
+    setEditTaskError('');
+    if (!editTaskDesc.trim()) {
+      setEditTaskError('Task description is required.');
+      return;
+    }
+    if (editWordCount > 50) {
+      setEditTaskError('Task description must not exceed 50 words.');
+      return;
+    }
+    const res = await handleEditTask(editingTaskId, editTaskDesc.trim(), editTaskTime.trim());
+    if (res.success) {
+      setEditingTaskId(null);
+      setEditTaskDesc('');
+      setEditTaskTime('');
+    } else {
+      setEditTaskError(res.error || 'Failed to save task.');
+    }
+  };
 
   const handleTaskSubmit = async (e) => {
     e.preventDefault();
@@ -247,17 +286,19 @@ export function EmployeeAttendanceView({
               <>
                 <button
                   onClick={handleBreak}
-                  disabled={onTeaBreak}
+                  disabled={onTeaBreak || (!onBreak && mealBreakLimitReached)}
                   className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium transition-colors border ${
                     onBreak
                       ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                      : 'bg-slate-50 text-slate-700 border-border hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                      : mealBreakLimitReached
+                      ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                      : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
                   }`}
                 >
-                  <Coffee className="w-5 h-5" />
-                  {onBreak ? 'End Meal Break' : 'Start Meal Break'}
+                  <Coffee className={`w-5 h-5 ${onBreak ? 'text-amber-500' : mealBreakLimitReached ? 'text-slate-400' : 'text-blue-500'}`} />
+                  {onBreak ? `End Meal Break (${mealBreakCount}-${mealBreakMax})` : mealBreakLimitReached ? `Meal Break Limit Reached (${mealBreakCount}-${mealBreakMax})` : `Start Meal Break (${mealBreakCount}-${mealBreakMax})`}
                 </button>
-                {teaBreakEnabled && (
+                {teaBreakEnabled && teaBreakAllowed && (
                   <>
                     {onTeaBreak ? (
                       <button
@@ -299,11 +340,11 @@ export function EmployeeAttendanceView({
           </div>
 
           {checkedIn && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 pt-4 border-t border-border">
+            <div className={`grid grid-cols-2 ${teaBreakEnabled && teaBreakAllowed ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4 mt-4 pt-4 border-t border-border`}>
               {[
                 { label: 'Work Time', value: formatDuration(netWork), color: 'text-emerald-600' },
                 { label: 'Meal Break', value: formatDuration(breakSecs), color: 'text-amber-500' },
-                { label: 'Tea Break', value: formatDuration(teaBreakSecs), color: 'text-emerald-500' },
+                ...(teaBreakEnabled && teaBreakAllowed ? [{ label: 'Tea Break', value: formatDuration(teaBreakSecs), color: 'text-emerald-500' }] : []),
                 { label: 'Remaining', value: formatDuration(Math.max(0, currentTarget - netWork)), color: 'text-indigo-600' },
               ].map(s => (
                 <div key={s.label} className="text-center">
@@ -357,7 +398,7 @@ export function EmployeeAttendanceView({
 
         {isTaskBoxExpanded && (
           <div className="p-6 space-y-5">
-            {checkedIn ? (
+            {hasAttendedToday ? (
               <form onSubmit={handleTaskSubmit} className="bg-white rounded-xl border border-indigo-100 p-5 space-y-4 shadow-md shadow-indigo-100/10">
                 <div className="text-xs font-bold text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full" />
@@ -405,7 +446,7 @@ export function EmployeeAttendanceView({
             ) : (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm font-semibold flex items-center gap-2.5 shadow-sm">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                <span>You can only log tasks during active working hours. Please Check-In first.</span>
+                <span>You can only log tasks on days you have attended. Please Check-In first.</span>
               </div>
             )}
 
@@ -417,13 +458,62 @@ export function EmployeeAttendanceView({
               {todayTasks.length > 0 ? (
                 <div className="space-y-2.5">
                   {todayTasks.map((task, idx) => (
-                    <div key={task._id || idx} className="p-4 bg-white border-l-4 border-l-indigo-500 border border-indigo-100/50 rounded-xl text-sm flex items-start justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="space-y-1">
-                        <p className="text-slate-700 font-semibold leading-relaxed">{task.description}</p>
-                        <span className="text-[10px] text-indigo-500 font-bold bg-indigo-50/50 px-2 py-0.5 rounded-full w-fit block font-mono">
-                          🕒 Logged at {task.timeContext || new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
+                    <div key={task._id || idx} className="p-4 bg-white border-l-4 border-l-indigo-500 border border-indigo-100/50 rounded-xl text-sm shadow-sm hover:shadow-md transition-shadow">
+                      {editingTaskId === (task._id || task.id) ? (
+                        <div className="space-y-3">
+                          <textarea
+                            value={editTaskDesc}
+                            onChange={(e) => {
+                              setEditTaskDesc(e.target.value);
+                              if (editTaskError) setEditTaskError('');
+                            }}
+                            rows={2}
+                            className="w-full text-sm border border-slate-200 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 bg-slate-50/50 text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 font-medium placeholder:text-slate-350 transition-all"
+                          />
+                          <div className="flex justify-between items-center text-xs">
+                            <span className={editWordCount > 50 ? 'text-rose-500 font-bold' : 'text-slate-400 font-medium'}>
+                              {editWordCount} / 50 words
+                            </span>
+                            {editTaskError && <span className="text-rose-500 font-semibold">{editTaskError}</span>}
+                          </div>
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <input
+                              type="text"
+                              value={editTaskTime}
+                              onChange={(e) => setEditTaskTime(e.target.value)}
+                              placeholder="Time/Duration context"
+                              className="flex-1 text-sm border border-slate-200 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 bg-slate-50/50 text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 font-medium placeholder:text-slate-350 transition-all"
+                            />
+                            <button
+                              onClick={() => setEditingTaskId(null)}
+                              className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={submitEditTask}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors cursor-pointer"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-1">
+                            <p className="text-slate-700 font-semibold leading-relaxed">{task.description}</p>
+                            <span className="text-[10px] text-indigo-500 font-bold bg-indigo-50/50 px-2 py-0.5 rounded-full w-fit block font-mono">
+                              🕒 Logged at {task.timeContext || new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => startEditTask(task)}
+                            className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -602,7 +692,7 @@ export function EmployeeAttendanceView({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                {['Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map(h => (
+                {['Check In', 'Check Out', 'Meal Break', ...(teaBreakEnabled && teaBreakAllowed ? ['Tea Break'] : []), 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map(h => (
                   <th key={h} className="text-left text-slate-400 font-medium pb-3 pr-4 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -629,7 +719,9 @@ export function EmployeeAttendanceView({
                       )}
                     </td>
                     <td className="py-3 pr-4 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatBreakMinutes(rec.breakMinutes)}</td>
-                    <td className="py-3 pr-4 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{getTeaBreakDetails(rec.breaks)}</td>
+                    {teaBreakEnabled && teaBreakAllowed && (
+                      <td className="py-3 pr-4 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{getTeaBreakDetails(rec.breaks)}</td>
+                    )}
                     <td className="py-3 pr-4 text-slate-700 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatDecimalHours(rec.totalHours)}</td>
                     <td className="py-3 pr-4 whitespace-nowrap text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                       {rec.extraHours > 0 ? `+${formatDecimalHours(rec.extraHours)}` : <span className="text-slate-300">—</span>}
@@ -697,7 +789,7 @@ export function EmployeeAttendanceView({
               
               <div className="space-y-3">
                 {/* Take Meal Break button */}
-                {checkedIn && !onBreak && (
+                {checkedIn && !onBreak && !mealBreakLimitReached && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);
@@ -711,7 +803,7 @@ export function EmployeeAttendanceView({
                 )}
 
                 {/* Take Tea Break button */}
-                {checkedIn && teaBreakEnabled && !teaBreakLimitReached && teaBreakGapRemainingSecs <= 0 && !onTeaBreak && (
+                {checkedIn && teaBreakEnabled && teaBreakAllowed && !teaBreakLimitReached && teaBreakGapRemainingSecs <= 0 && !onTeaBreak && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);

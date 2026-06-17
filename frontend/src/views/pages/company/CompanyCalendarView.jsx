@@ -82,6 +82,23 @@ const getEventStyle = (event) => {
   return { code: '', color: EVENT_TYPE_COLORS[event.type] || 'bg-slate-50 text-slate-700 border-slate-200' };
 };
 
+const limitWords = (text, limit) => {
+  const words = text.split(/(\s+)/);
+  let wordCount = 0;
+  const result = [];
+  
+  for (let token of words) {
+    if (token.trim() !== '') {
+      wordCount++;
+    }
+    if (wordCount > limit) {
+      break;
+    }
+    result.push(token);
+  }
+  return result.join('');
+};
+
 export function CompanyCalendarView({ role, employeeId, companyId }) {
   const {
     events,
@@ -100,16 +117,21 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [editingEventId, setEditingEventId] = useState(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState(null);
+  const [validationError, setValidationError] = useState('');
 
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
     start: '',
     end: '',
-    type: 'team-event',
+    type: '',
     targetLocation: 'all',
     targetValue: '',
   });
+
+  const titleWordsCount = eventForm.title.trim().split(/\s+/).filter(Boolean).length;
+  const descWordsCount = eventForm.description.trim().split(/\s+/).filter(Boolean).length;
+  const todayStr = new Date().toISOString().split('T')[0];
 
   const [importCountry, setImportCountry] = useState('Sri Lanka');
 
@@ -153,6 +175,11 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   };
 
   const canManageEvents = role === 'hr' || role === 'superadmin';
+  const canEditOrDelete = role === 'superadmin';
+
+  const isEventHoliday = (event) => {
+    return event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival' || !!event.googleEventId;
+  };
 
   const openAddEvent = (day) => {
     if (!canManageEvents) return;
@@ -162,18 +189,18 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       description: '',
       start: dateStr,
       end: dateStr,
-      type: 'team-event',
+      type: '',
       targetLocation: 'all',
       targetValue: '',
     });
     setEditingEventId(null);
+    setValidationError('');
     setShowEventModal(true);
   };
 
   const openEditEvent = (event, e) => {
     e.stopPropagation();
-    const isHoliday = event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival' || !!event.googleEventId;
-    if (!canManageEvents || isHoliday) {
+    if (!canEditOrDelete || isEventHoliday(event)) {
       setSelectedEvent(event);
       return;
     }
@@ -187,17 +214,98 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       targetValue: event.targetValue || '',
     });
     setEditingEventId(event._id || event.id);
+    setValidationError('');
     setShowEventModal(true);
   };
 
   const handleSubmitEvent = async (e) => {
     e.preventDefault();
+    setValidationError('');
+
+    const titleText = eventForm.title.trim();
+    if (!titleText) {
+      setValidationError('Title is required.');
+      return;
+    }
+
+    // Words only validation (alphabetic, spaces, & common punctuation)
+    if (!/^[a-zA-Z\s&'-]+$/.test(titleText)) {
+      setValidationError('Title must contain words only (letters, spaces and simple punctuation like &, \', -).');
+      return;
+    }
+
+    // Title character limit 100
+    if (titleText.length > 100) {
+      setValidationError('Title cannot exceed 100 characters.');
+      return;
+    }
+
+    // Title word limit 20
+    const titleWords = titleText.split(/\s+/).filter(Boolean).length;
+    if (titleWords > 20) {
+      setValidationError('Title word limit is 20 words.');
+      return;
+    }
+
+    // Check if any word in Title is too long (to prevent pasting long strings as one word)
+    const hasLongWord = titleText.split(/\s+/).some(word => word.length > 20);
+    if (hasLongWord) {
+      setValidationError('Individual words in the title cannot exceed 20 characters.');
+      return;
+    }
+
+    // Description character limit 300
+    const descText = eventForm.description.trim();
+    if (descText.length > 300) {
+      setValidationError('Description cannot exceed 300 characters.');
+      return;
+    }
+
+    // Description word limit 50
+    const descWords = descText.split(/\s+/).filter(Boolean).length;
+    if (descWords > 50) {
+      setValidationError('Description word limit is 50 words.');
+      return;
+    }
+
+    // Check if any word in Description is too long
+    const hasLongDescWord = descText.split(/\s+/).some(word => word.length > 25);
+    if (hasLongDescWord) {
+      setValidationError('Individual words in the description cannot exceed 25 characters.');
+      return;
+    }
+
+    // Date validation: can't select passed date
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!editingEventId && eventForm.start < todayStr) {
+      setValidationError('Start date cannot be in the past.');
+      return;
+    }
+    if (!editingEventId && eventForm.end < todayStr) {
+      setValidationError('End date cannot be in the past.');
+      return;
+    }
+
+    // Event type validation: must select one
+    if (!eventForm.type) {
+      setValidationError('Please select an event type.');
+      return;
+    }
+
     if (editingEventId) {
       const res = await handleUpdateEvent(editingEventId, eventForm);
-      if (res.success) setShowEventModal(false);
+      if (res.success) {
+        setShowEventModal(false);
+      } else {
+        setValidationError(res.error || 'Failed to update event.');
+      }
     } else {
       const res = await handleCreateEvent(eventForm);
-      if (res.success) setShowEventModal(false);
+      if (res.success) {
+        setShowEventModal(false);
+      } else {
+        setValidationError(res.error || 'Failed to create event.');
+      }
     }
   };
 
@@ -206,6 +314,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
     if (window.confirm('Are you sure you want to delete this event?')) {
       await handleDeleteEvent(eventId);
       setShowEventModal(false);
+      setSelectedEvent(null);
     }
   };
 
@@ -224,13 +333,15 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         </div>
         {canManageEvents && (
           <div className="flex gap-2">
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer border border-border shadow-sm"
-            >
-              <Globe className="w-4 h-4 text-indigo-500" />
-              Import Holidays
-            </button>
+            {role === 'superadmin' && (
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer border border-border shadow-sm"
+              >
+                <Globe className="w-4 h-4 text-indigo-500" />
+                Import Holidays
+              </button>
+            )}
             <button
               onClick={() => {
                 const todayStr = new Date().toISOString().split('T')[0];
@@ -239,7 +350,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                   description: '',
                   start: todayStr,
                   end: todayStr,
-                  type: 'team-event',
+                  type: '',
                   targetLocation: 'all',
                   targetValue: '',
                 });
@@ -379,7 +490,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
               <h3 className="text-slate-800 font-semibold">
                 {editingEventId ? 'Edit Calendar Event' : 'Add New Event'}
               </h3>
-              {editingEventId && (
+              {editingEventId && canEditOrDelete && (
                 <button
                   onClick={(e) => handleDelete(editingEventId, e)}
                   className="p-2 hover:bg-rose-50 text-rose-500 rounded-xl transition-colors cursor-pointer"
@@ -390,27 +501,54 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
             </div>
 
             <form onSubmit={handleSubmitEvent} className="space-y-4">
+              {validationError && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs font-semibold">
+                  {validationError}
+                </div>
+              )}
               <div>
                 <label className="block text-slate-600 text-xs font-semibold mb-1.5">Title</label>
                 <input
                   type="text"
                   value={eventForm.title}
-                  onChange={(e) => setEventForm((p) => ({ ...p, title: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const wordsCount = val.trim().split(/\s+/).filter(Boolean).length;
+                    if (wordsCount <= 20) {
+                      setEventForm((p) => ({ ...p, title: val }));
+                    }
+                  }}
                   required
                   placeholder="e.g. Sinhala & Tamil New Year"
                   className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                 />
+                <div className="flex justify-between items-center mt-1 px-1">
+                  <span className={`text-[10px] ${titleWordsCount > 20 ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
+                    {titleWordsCount}/20 words
+                  </span>
+                </div>
               </div>
 
               <div>
                 <label className="block text-slate-600 text-xs font-semibold mb-1.5">Description</label>
                 <textarea
                   value={eventForm.description}
-                  onChange={(e) => setEventForm((p) => ({ ...p, description: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const wordsCount = val.trim().split(/\s+/).filter(Boolean).length;
+                    if (wordsCount <= 50) {
+                      setEventForm((p) => ({ ...p, description: val }));
+                    }
+                  }}
                   placeholder="Details about the event"
                   rows={2}
                   className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 resize-none"
                 />
+                <div className="flex justify-between items-center mt-1 px-1">
+                  <span className={`text-[10px] ${descWordsCount > 50 ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
+                    {descWordsCount}/50 words
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -419,6 +557,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                   <input
                     type="date"
                     value={eventForm.start}
+                    min={!editingEventId ? todayStr : undefined}
                     onChange={(e) => setEventForm((p) => ({ ...p, start: e.target.value }))}
                     required
                     className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none bg-slate-50"
@@ -429,6 +568,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                   <input
                     type="date"
                     value={eventForm.end}
+                    min={eventForm.start || (!editingEventId ? todayStr : undefined)}
                     onChange={(e) => setEventForm((p) => ({ ...p, end: e.target.value }))}
                     required
                     className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none bg-slate-50"
@@ -442,8 +582,9 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                   <select
                     value={eventForm.type}
                     onChange={(e) => setEventForm((p) => ({ ...p, type: e.target.value }))}
-                    className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none bg-slate-50"
+                    className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-605 focus:outline-none bg-slate-50"
                   >
+                    <option value="">Select Event Type</option>
                     <option value="holiday">Public Holiday</option>
                     <option value="bank-holiday">Bank Holiday</option>
                     <option value="festival">Festival Day</option>
@@ -457,33 +598,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-600 text-xs font-semibold mb-1.5">Target Location</label>
-                  <select
-                    value={eventForm.targetLocation}
-                    onChange={(e) => setEventForm((p) => ({ ...p, targetLocation: e.target.value, targetValue: '' }))}
-                    className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none bg-slate-50"
-                  >
-                    <option value="all">All Locations</option>
-                    <option value="country">Country</option>
-                    <option value="branch">Branch/Office</option>
-                  </select>
-                </div>
-                {eventForm.targetLocation !== 'all' && (
-                  <div>
-                    <label className="block text-slate-600 text-xs font-semibold mb-1.5">Location Name</label>
-                    <input
-                      type="text"
-                      value={eventForm.targetValue}
-                      onChange={(e) => setEventForm((p) => ({ ...p, targetValue: e.target.value }))}
-                      required
-                      placeholder={eventForm.targetLocation === 'country' ? 'e.g. Sri Lanka' : 'e.g. Colombo'}
-                      className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none bg-slate-50"
-                    />
-                  </div>
-                )}
-              </div>
+              {/* Target Location Removed */}
 
               <div className="flex gap-3 pt-2">
                 <button
@@ -545,16 +660,22 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 <span>Date: {selectedEvent.start} {selectedEvent.end !== selectedEvent.start && `to ${selectedEvent.end}`}</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-400" />
-                <span>Target: {selectedEvent.targetLocation === 'all' ? 'All locations' : `${selectedEvent.targetLocation === 'country' ? 'Country' : 'Branch'}: ${selectedEvent.targetValue}`}</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-slate-400" />
                 <span className="capitalize">Type: {selectedEvent.type.replace('-', ' ')}</span>
               </div>
             </div>
 
             <div className="flex gap-3 pt-5">
+              {canEditOrDelete && !isEventHoliday(selectedEvent) && (
+                <button
+                  type="button"
+                  onClick={(e) => handleDelete(selectedEvent._id || selectedEvent.id, e)}
+                  className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-rose-200"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Event
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedEvent(null)}

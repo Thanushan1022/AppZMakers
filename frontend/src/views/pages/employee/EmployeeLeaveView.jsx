@@ -1,10 +1,11 @@
-import { Plus, CheckCircle2, XCircle, Clock, Calendar, FileText } from 'lucide-react';
+import { Plus, CheckCircle2, XCircle, Clock, Calendar, FileText, Trash2 } from 'lucide-react';
 
 const leaveTypes = ['annual', 'casual', 'medical'];
 const typeColors = {
   annual: 'bg-indigo-50 text-indigo-700 border-indigo-100',
   casual: 'bg-sky-50 text-sky-700 border-sky-100',
   medical: 'bg-rose-50 text-rose-700 border-rose-100',
+  'client-assigned': 'bg-amber-50 text-amber-700 border-amber-100',
 };
 
 export function EmployeeLeaveView({
@@ -17,6 +18,7 @@ export function EmployeeLeaveView({
   setLeaveForm,
   filteredLeaves,
   handleLeaveSubmit,
+  handleDeleteLeave,
 }) {
   const balanceItems = [
     { key: 'annual', label: 'Annual Leave', data: balance.annual, color: 'bg-indigo-500', ring: 'border-indigo-200' },
@@ -110,6 +112,7 @@ export function EmployeeLeaveView({
                     startDate: e.target.value,
                     endDate: prev.halfDay ? e.target.value : prev.endDate
                   }))}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                   className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                 />
@@ -129,10 +132,21 @@ export function EmployeeLeaveView({
               )}
             </div>
             <div>
-              <label className="block text-slate-600 text-sm mb-1.5">Reason</label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-slate-600 text-sm">Reason</label>
+                <span className={`text-xs ${leaveForm.reason.trim().split(/\\s+/).filter(Boolean).length >= 100 ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
+                  {leaveForm.reason.trim().split(/\\s+/).filter(Boolean).length} / 100 words
+                </span>
+              </div>
               <textarea
                 value={leaveForm.reason}
-                onChange={e => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                onChange={e => {
+                  const text = e.target.value;
+                  const words = text.trim().split(/\\s+/).filter(Boolean);
+                  if (words.length <= 100 || text.length < leaveForm.reason.length) {
+                    setLeaveForm({ ...leaveForm, reason: text });
+                  }
+                }}
                 required
                 rows={3}
                 placeholder="Please provide a reason for your leave request..."
@@ -180,11 +194,12 @@ export function EmployeeLeaveView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${typeColors[leave.type]}`}>{leave.type} Leave</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        leave.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
-                        leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
-                      }`}>{leave.status}</span>
+                      <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${typeColors[leave.type] || 'bg-slate-50 text-slate-600'}`}>
+                        {leave.type === 'client-assigned' ? 'Client' : leave.type} Leave
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${leave.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
+                          leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                        }`}>{leave.status}</span>
                       <span className="text-slate-400 text-xs">{leave.days} day{leave.days !== 1 ? 's' : ''}</span>
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-sm text-slate-600">
@@ -204,10 +219,19 @@ export function EmployeeLeaveView({
                       </div>
                     )}
                   </div>
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex items-center gap-3">
                     {leave.status === 'approved' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
                     {leave.status === 'rejected' && <XCircle className="w-5 h-5 text-red-400" />}
                     {leave.status === 'pending' && <Clock className="w-5 h-5 text-amber-400" />}
+                    {leave.status !== 'pending' && handleDeleteLeave && (
+                      <button 
+                        onClick={() => handleDeleteLeave(leave._id || leave.id)} 
+                        className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50"
+                        title="Remove leave history"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="mt-2 pt-2 border-t border-border text-xs text-slate-400">

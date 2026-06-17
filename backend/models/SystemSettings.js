@@ -12,6 +12,7 @@ const systemSettingsSchema = new mongoose.Schema(
     leaveAllocations: {
       medical: { type: Number, default: 10 },
     },
+    mealBreaksMax: { type: Number, default: 5 },
     teaBreakEnabled: { type: Boolean, default: true },
     teaBreaksMax: { type: Number, default: 2 },
     teaBreakDuration: { type: Number, default: 15 },

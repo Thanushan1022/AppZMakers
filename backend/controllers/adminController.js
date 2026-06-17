@@ -6,15 +6,15 @@ import LeaveBalance from '../models/LeaveBalance.js';
 import Attendance from '../models/Attendance.js';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
-import { 
-  getTodayString, 
-  getTodayAttendanceForEmployees, 
-  getWeeklyAttendanceData, 
-  getDeptAttendanceData, 
-  isEmployeeOnLeave, 
-  formatDisplayDate 
+import {
+  getTodayString,
+  getTodayAttendanceForEmployees,
+  getWeeklyAttendanceData,
+  getDeptAttendanceData,
+  isEmployeeOnLeave,
+  formatDisplayDate
 } from '../utils/helpers.js';
-import { findEmployee, findHRUser, findCompany, findLeave } from '../utils/entityLookup.js';
+import { findEmployee, findHRUser, findCompany, findLeave, getNextHRLegacyId, getNextCompanyLegacyId } from '../utils/entityLookup.js';
 import { toCompanyJSON, toHRJSON, toEmployeeJSON, toLeaveJSON, toAttendanceJSON } from '../utils/formatters.js';
 import {
   getSettings as fetchSystemSettings,
@@ -39,7 +39,7 @@ export const getDashboard = async (req, res) => {
     const employees = (await Employee.find()).map(toEmployeeJSON);
     const pendingLeaves = (await LeaveRequest.find({ status: 'pending' })).map(toLeaveJSON);
     const activeEmployees = employees.filter((e) => e.status === 'active');
-    
+
     const attendanceRecords = await Attendance.find();
     const attJson = attendanceRecords.map(toAttendanceJSON);
     const leaveRequests = await LeaveRequest.find();
@@ -116,7 +116,7 @@ export const reviewLeave = async (req, res) => {
     await leave.save();
 
     if (status === 'approved') {
-      const emp = await Employee.findOne({ $or: [{ legacyId: leave.employeeId }, { _id: leave.employeeId }] });
+      const emp = await findEmployee(leave.employeeId);
       if (emp) {
         await syncLeaveBalance(leave.employeeId, emp.joinDate);
       }
@@ -132,13 +132,17 @@ export const createHR = async (req, res) => {
   try {
     const { name, email, department, joinDate } = req.body;
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(400).json({ error: 'A user with this email already exists' });
+    const today = new Date().toISOString().split('T')[0];
+    if (joinDate && joinDate > today) {
+      return res.status(400).json({ error: 'Join date cannot be a future date.' });
     }
 
-    const count = await HRUser.countDocuments();
-    const legacyId = `hr${String(count + 1).padStart(3, '0')}`;
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ error: 'This email address is already registered.' });
+    }
+
+    const legacyId = await getNextHRLegacyId();
 
     // 1. Generate 10-digit password
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
@@ -162,7 +166,7 @@ export const createHR = async (req, res) => {
       legacyId,
       name,
       email: email.toLowerCase(),
-      department: department || 'HR',
+      department: department || 'Human Resources',
       status: 'active',
       joinDate: joinDate || new Date().toISOString().split('T')[0],
       userId: newUser._id,
@@ -226,13 +230,22 @@ export const createCompany = async (req, res) => {
   try {
     const { name, industry, contact, email, phone, joinedDate, joinDate, address, country } = req.body;
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(400).json({ error: 'A user with this email already exists' });
+    if (!name || name.trim().length < 2 || name.trim().length > 30) {
+      return res.status(400).json({ error: 'Company name must be between 2 and 30 characters long.' });
+    }
+    if (!industry || industry.trim().length < 2 || industry.trim().length > 30) {
+      return res.status(400).json({ error: 'Industry sector must be between 2 and 30 characters long.' });
+    }
+    if (!contact || contact.trim().length < 2 || contact.trim().length > 30) {
+      return res.status(400).json({ error: 'Contact person must be between 2 and 30 characters long.' });
     }
 
-    const count = await Company.countDocuments();
-    const legacyId = `co${String(count + 1).padStart(3, '0')}`;
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ error: 'This email address is already registered.' });
+    }
+
+    const legacyId = await getNextCompanyLegacyId();
 
     // 1. Generate 10-digit password
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
@@ -429,29 +442,81 @@ export const updateEmployee = async (req, res) => {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
-    const { name, email, position, department, joinDate, address, country } = req.body;
+    const { name, email, position, department, joinDate, address, country, teaBreakAllowed } = req.body;
 
     if (name !== undefined) {
+      if (name.trim().length < 2 || name.trim().length > 30) {
+        return res.status(400).json({ error: 'Name must be between 2 and 30 characters long.' });
+      }
+      if (!/^[a-zA-Z\s.\-]+$/.test(name)) {
+        return res.status(400).json({ error: 'Name contains invalid characters.' });
+      }
       emp.name = name;
       if (emp.userId) {
         await User.updateOne({ _id: emp.userId }, { name });
       }
     }
     if (email !== undefined) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Please enter a valid email address.' });
+      }
       const emailLower = email.toLowerCase();
-      const existingUser = await User.findOne({ email: emailLower, _id: { $ne: emp.userId } });
-      if (existingUser) return res.status(400).json({ error: 'Email already in use' });
+      const existingUser = await User.findOne({ email: emailLower });
+      if (existingUser) {
+        const isSelf = (emp.userId && String(existingUser._id) === String(emp.userId)) ||
+                       (existingUser.profileId && existingUser.profileId === emp.legacyId) ||
+                       (existingUser.email.toLowerCase() === emp.email.toLowerCase());
+        if (!isSelf) {
+          return res.status(400).json({ error: 'This email address is already registered.' });
+        }
+      }
 
       emp.email = emailLower;
       if (emp.userId) {
         await User.updateOne({ _id: emp.userId }, { email: emailLower });
       }
     }
-    if (position !== undefined) emp.position = position;
-    if (department !== undefined) emp.department = department;
-    if (joinDate !== undefined) emp.joinDate = joinDate;
-    if (address !== undefined) emp.address = address;
-    if (country !== undefined) emp.country = country;
+    if (position !== undefined) {
+      if (position.trim().length < 2 || position.trim().length > 20) {
+        return res.status(400).json({ error: 'Position must be between 2 and 20 characters long.' });
+      }
+      if (!/^[a-zA-Z\s.\-()&]+$/.test(position)) {
+        return res.status(400).json({ error: 'Position contains invalid characters.' });
+      }
+      emp.position = position;
+    }
+    if (department !== undefined) {
+      if (department.trim().length < 2 || department.trim().length > 20) {
+        return res.status(400).json({ error: 'Department must be between 2 and 20 characters long.' });
+      }
+      if (!/^[a-zA-Z\s.\-()&]+$/.test(department)) {
+        return res.status(400).json({ error: 'Department contains invalid characters.' });
+      }
+      emp.department = department;
+    }
+    if (address !== undefined) {
+      if (address.trim().length < 5 || address.trim().length > 50) {
+        return res.status(400).json({ error: 'Address must be between 5 and 50 characters long.' });
+      }
+      emp.address = address;
+    }
+    if (country !== undefined) {
+      if (country.trim() === '') {
+        return res.status(400).json({ error: 'Working location (country) is required.' });
+      }
+      emp.country = country;
+    }
+    if (joinDate !== undefined) {
+      if (!joinDate) {
+        return res.status(400).json({ error: 'Join date is required.' });
+      }
+      const today = new Date().toISOString().split('T')[0];
+      if (joinDate > today) {
+        return res.status(400).json({ error: 'Join date cannot be a future date.' });
+      }
+      emp.joinDate = joinDate;
+    }
+    if (teaBreakAllowed !== undefined) emp.teaBreakAllowed = teaBreakAllowed;
 
     await emp.save();
     res.json({ message: 'Employee updated successfully', employee: toEmployeeJSON(emp) });
@@ -467,6 +532,11 @@ export const updateHR = async (req, res) => {
 
     const { name, email, department, joinDate } = req.body;
 
+    const today = new Date().toISOString().split('T')[0];
+    if (joinDate && joinDate > today) {
+      return res.status(400).json({ error: 'Join date cannot be a future date.' });
+    }
+
     if (name !== undefined) {
       hr.name = name;
       if (hr.userId) {
@@ -475,8 +545,15 @@ export const updateHR = async (req, res) => {
     }
     if (email !== undefined) {
       const emailLower = email.toLowerCase();
-      const existingUser = await User.findOne({ email: emailLower, _id: { $ne: hr.userId } });
-      if (existingUser) return res.status(400).json({ error: 'Email already in use' });
+      const existingUser = await User.findOne({ email: emailLower });
+      if (existingUser) {
+        const isSelf = (hr.userId && String(existingUser._id) === String(hr.userId)) ||
+                       (existingUser.profileId && existingUser.profileId === hr.legacyId) ||
+                       (existingUser.email.toLowerCase() === hr.email.toLowerCase());
+        if (!isSelf) {
+          return res.status(400).json({ error: 'This email address is already registered.' });
+        }
+      }
 
       hr.email = emailLower;
       if (hr.userId) {
@@ -498,24 +575,47 @@ export const updateCompany = async (req, res) => {
     const comp = await findCompany(req.params.id);
     if (!comp) return res.status(404).json({ error: 'Company not found' });
 
-    const { name, industry, contact, email, phone, joinedDate, joinDate, address, country } = req.body;
+    const { name, industry, contact, email, phone, joinedDate, joinDate, address, country, teaBreakAllowed } = req.body;
 
-    if (name !== undefined) comp.name = name;
-    if (industry !== undefined) comp.industry = industry;
-    if (contact !== undefined) comp.contact = contact;
+    if (name !== undefined) {
+      if (name.trim().length < 2 || name.trim().length > 30) {
+        return res.status(400).json({ error: 'Company name must be between 2 and 30 characters long.' });
+      }
+      comp.name = name;
+    }
+    if (industry !== undefined) {
+      if (industry.trim().length < 2 || industry.trim().length > 30) {
+        return res.status(400).json({ error: 'Industry sector must be between 2 and 30 characters long.' });
+      }
+      comp.industry = industry;
+    }
+    if (contact !== undefined) {
+      if (contact.trim().length < 2 || contact.trim().length > 30) {
+        return res.status(400).json({ error: 'Contact person must be between 2 and 30 characters long.' });
+      }
+      comp.contact = contact;
+    }
     if (phone !== undefined) comp.phone = phone;
     if (joinedDate !== undefined) comp.joinedDate = joinedDate;
     else if (joinDate !== undefined) comp.joinedDate = joinDate;
     if (address !== undefined) comp.address = address;
     if (country !== undefined) comp.country = country;
+    if (teaBreakAllowed !== undefined) comp.teaBreakAllowed = teaBreakAllowed;
 
     if (email !== undefined) {
       const emailLower = email.toLowerCase();
       const linkedUser = await User.findOne({ email: comp.email.toLowerCase() });
-      if (linkedUser) {
-        const existingUser = await User.findOne({ email: emailLower, _id: { $ne: linkedUser._id } });
-        if (existingUser) return res.status(400).json({ error: 'Email already in use' });
+      const existingUser = await User.findOne({ email: emailLower });
+      if (existingUser) {
+        const isSelf = (linkedUser && String(existingUser._id) === String(linkedUser._id)) ||
+                       (existingUser.profileId && existingUser.profileId === comp.legacyId) ||
+                       (existingUser.email.toLowerCase() === comp.email.toLowerCase());
+        if (!isSelf) {
+          return res.status(400).json({ error: 'This email address is already registered.' });
+        }
+      }
 
+      if (linkedUser) {
         linkedUser.name = name || linkedUser.name;
         linkedUser.email = emailLower;
         await linkedUser.save();
@@ -525,6 +625,44 @@ export const updateCompany = async (req, res) => {
 
     await comp.save();
     res.json({ message: 'Company updated successfully', company: toCompanyJSON(comp) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Admin User not found' });
+    res.json({ admin: user.toSafeJSON() });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Admin User not found' });
+
+    const { name, email, password, avatar } = req.body;
+
+    if (password && password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email.toLowerCase();
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+    if (avatar !== undefined) user.avatar = avatar;
+
+    await user.save();
+    res.json({
+      message: 'Profile updated successfully',
+      admin: user.toSafeJSON(),
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

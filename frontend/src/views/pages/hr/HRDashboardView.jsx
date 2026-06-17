@@ -37,16 +37,13 @@ export function HRDashboardView({
   setSelectedDate,
   shiftNotices = [],
 }) {
-  const [selectedTasks, setSelectedTasks] = useState(null);
   const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
   const absent = todayAttendance.filter((a) => a.status === 'absent').length;
-  const late = todayAttendance.filter((a) => a.status === 'late').length;
   const pendingLeaves = leavesList.filter((l) => l.status === 'pending');
 
   const pieData = [
     { name: 'Present', value: present, color: '#10b981' },
     { name: 'Absent', value: absent, color: '#ef4444' },
-    { name: 'Late', value: late, color: '#f59e0b' },
   ];
 
   // Compute department distribution from active employees
@@ -61,7 +58,7 @@ export function HRDashboardView({
         if (upper === 'IT') normalized = 'IT';
         if (upper === 'QA') normalized = 'QA';
         if (upper === 'HR') normalized = 'HR';
-        
+
         deptCounts[normalized] = (deptCounts[normalized] || 0) + 1;
       }
     }
@@ -91,7 +88,7 @@ export function HRDashboardView({
         {[
           { label: 'Total Employees', value: employeesList.filter((e) => e.status === 'active').length, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', sub: `${employeesList.length} total incl. inactive` },
           { label: 'Present Today', value: present, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: `${employeesList.length > 0 ? Math.round((present / employeesList.length) * 100) : 0}% of workforce` },
-          { label: 'Absent Today', value: absent, icon: XCircle, color: 'text-red-500', bg: 'bg-red-50', sub: `${late} late arrivals` },
+          { label: 'Absent Today', value: absent, icon: XCircle, color: 'text-red-500', bg: 'bg-red-50', sub: 'Total absentees' },
           { label: 'Pending Approvals', value: leaveCounts.pending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Leave requests pending' },
         ].map((s) => {
           const Icon = s.icon;
@@ -120,7 +117,6 @@ export function HRDashboardView({
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
               <Bar dataKey="present" name="Present" fill="#10b981" radius={[4, 4, 0, 0]} />
               <Bar dataKey="absent" name="Absent" fill="#ef4444" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="late" name="Late" fill="#f59e0b" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -174,14 +170,14 @@ export function HRDashboardView({
           <h3 className="text-slate-800 font-semibold mb-2 self-start">Department Distribution</h3>
           {departmentData.length > 0 ? (
             <>
-              <ResponsiveContainer width="100%" height={160}>
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie
                     data={departmentData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
+                    innerRadius="60%"
+                    outerRadius="80%"
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -192,10 +188,10 @@ export function HRDashboardView({
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="w-full grid grid-cols-2 gap-2 mt-4">
+              <div className="w-full grid grid-cols-2 gap-2 mt-4 max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
                 {departmentData.map((d) => (
                   <div key={d.name} className="flex items-center gap-2 text-xs">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
                     <span className="text-slate-600 truncate">{d.name} ({d.value})</span>
                   </div>
                 ))}
@@ -206,173 +202,6 @@ export function HRDashboardView({
           )}
         </div>
       </div>
-
-      {/* Today attendance table */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-          <div>
-            <h3 className="text-slate-800 font-semibold">Today's Attendance status</h3>
-            <p className="text-slate-500 text-xs mt-0.5">Real-time attendance telemetry log</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500 text-xs font-medium">Filter by Date:</span>
-            <input
-              type="date"
-              value={selectedDate || ''}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-border rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-            />
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                {['Employee', 'Department', 'Check In', 'Check Out', 'Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map((h) => (
-                  <th key={h} className="text-left text-slate-400 font-medium pb-3 pr-4">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {employeesList
-                .filter((e) => e.status === 'active')
-                .sort((empA, empB) => {
-                  const recA = todayAttendance.find((a) => a.employeeId === empA.id);
-                  const recB = todayAttendance.find((a) => a.employeeId === empB.id);
-                  const isPresentA = recA && recA.status !== 'absent';
-                  const isPresentB = recB && recB.status !== 'absent';
-                  if (isPresentA && !isPresentB) return -1;
-                  if (!isPresentA && isPresentB) return 1;
-                  if (isPresentA && isPresentB) {
-                    const timeA = recA.checkIn || '99:99:99';
-                    const timeB = recB.checkIn || '99:99:99';
-                    return timeA.localeCompare(timeB);
-                  }
-                  return empA.name.localeCompare(empB.name);
-                })
-                .map((emp) => {
-                  const rec = todayAttendance.find((a) => a.employeeId === emp.id);
-                  const status = rec?.status || 'absent';
-                  const isAbsent = status === 'absent';
-                  const statusCls = {
-                    present: 'bg-emerald-50 text-emerald-700',
-                    late: 'bg-amber-50 text-amber-700',
-                    absent: 'bg-red-50 text-red-600',
-                    'half-day': 'bg-sky-50 text-sky-700',
-                  };
-                  return (
-                    <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold flex-shrink-0">{emp.avatar}</div>
-                          <div>
-                            <div className="text-slate-700 font-medium">{emp.name}</div>
-                            <div className="text-slate-400 text-xs">{emp.position}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4 text-slate-500">{emp.department}</td>
-                      <td className="py-3 pr-4 text-slate-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{isAbsent ? 'Null' : (rec?.checkIn || '—')}</td>
-                      <td className="py-3 pr-4 text-slate-400 font-medium whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                        {isAbsent ? 'Null' : (
-                          rec?.checkOut ? (
-                            <>
-                              {rec.checkOutDate && rec.checkOutDate !== rec.date && (
-                                <span className="text-[10px] text-slate-400 block font-sans mb-0.5">{rec.checkOutDate}</span>
-                              )}
-                              <span>{rec.checkOut}</span>
-                            </>
-                          ) : (rec?.checkIn ? (
-                            rec.onBreak ? (
-                              <span className="text-amber-500 text-xs font-semibold">Meal Break</span>
-                            ) : rec.onTeaBreak ? (
-                              <span className="text-amber-500 text-xs font-semibold">Tea Break</span>
-                            ) : (
-                              <span className="text-emerald-500 text-xs font-semibold">Active</span>
-                            )
-                          ) : '—')
-                        )}                    </td>
-                      <td className="py-3 pr-4 text-slate-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{isAbsent ? 'Null' : formatBreakMinutes(rec?.breakMinutes)}</td>
-                      <td className="py-3 pr-4 text-slate-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{isAbsent ? 'Null' : (rec?.teaBreakCount > 0 ? `${rec.teaBreakCount}-${rec.teaBreakMinutes}` : '—')}</td>
-                      <td className="py-3 pr-4 text-slate-400" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{isAbsent ? 'Null' : formatDecimalHours(rec?.totalHours)}</td>
-                      <td className="py-3 pr-4 text-emerald-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{isAbsent ? 'Null' : (rec?.extraHours ? `+${formatDecimalHours(rec.extraHours)}` : '—')}</td>
-                      <td className="py-3 pr-4 text-red-500" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{isAbsent ? 'Null' : formatDecimalHours(rec?.lessHours)}</td>
-                      <td className="py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${statusCls[status] || 'bg-slate-50 text-slate-600'}`}>{status}</span>
-                      </td>
-                      <td className="py-3 text-slate-400">
-                        {!isAbsent && rec?.tasks?.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => setSelectedTasks({ name: emp.name, date: rec.date || 'Today', tasks: rec.tasks })}
-                            className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center font-semibold"
-                            title="View Completed Tasks"
-                          >
-                            <ClipboardList className="w-4 h-4" />
-                            <span className="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-full ml-1 font-bold">{rec.tasks.length}</span>
-                          </button>
-                        ) : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* View Tasks Modal */}
-      {selectedTasks && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-border shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-indigo-600" />
-                  <div>
-                    <h3 className="text-slate-800 font-bold text-base">Tasks Completed</h3>
-                    <p className="text-slate-400 text-xs mt-0.5">{selectedTasks.name} · {selectedTasks.date}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTasks(null)}
-                  className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                {selectedTasks.tasks && selectedTasks.tasks.length > 0 ? (
-                  selectedTasks.tasks.map((task, idx) => (
-                    <div key={task._id || idx} className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm space-y-1">
-                      <p className="text-slate-700 font-medium leading-relaxed">{task.description}</p>
-                      {task.timeContext && (
-                        <span className="text-[10px] text-indigo-500 font-bold bg-indigo-50 px-2 py-0.5 rounded-full w-fit block font-mono">
-                          🕒 Logged at {task.timeContext}
-                        </span>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-slate-400 text-sm py-4 text-center">No tasks logged for this day.</p>
-                )}
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-border flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setSelectedTasks(null)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

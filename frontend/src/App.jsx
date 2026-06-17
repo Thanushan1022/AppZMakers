@@ -10,6 +10,7 @@ import { AlertCircle, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react'
 // Import Layout & Login
 import { Layout } from './views/components/Layout';
 import { Login } from './views/components/Login';
+import { ResetPassword } from './views/components/ResetPassword';
 
 // Import Views
 // Employee
@@ -33,6 +34,7 @@ import { CompanyEmployeesView } from './views/pages/company/CompanyEmployeesView
 import { CompanyProfileView } from './views/pages/company/CompanyProfileView';
 import { CompanyAttendanceView } from './views/pages/company/CompanyAttendanceView';
 import { CompanyCalendarView } from './views/pages/company/CompanyCalendarView';
+import { CompanyShiftNoticesView } from './views/pages/company/CompanyShiftNoticesView';
 
 // Admin
 import { AdminDashboardView } from './views/pages/admin/AdminDashboardView';
@@ -40,6 +42,8 @@ import { AdminUsersView } from './views/pages/admin/AdminUsersView';
 import { AdminReportsView } from './views/pages/admin/AdminReportsView';
 import { AdminCompaniesView } from './views/pages/admin/AdminCompaniesView';
 import { AdminSettingsView } from './views/pages/admin/AdminSettingsView';
+import { AdminProfileView } from './views/pages/admin/AdminProfileView';
+import { TodayAttendanceView } from './views/pages/admin/TodayAttendanceView';
 
 export default function App() {
   return (
@@ -131,11 +135,11 @@ function ToastContainer({ toasts, onClose }) {
 
 function AppRoutes() {
   const authController = useAuthController();
-  const { auth, handleLogout } = authController;
+  const { auth, handleLogout, updateAuth } = authController;
   const navigate = useNavigate();
 
   // Lifted employee controller to ensure shared state for checkout validation
-  const employeeController = useEmployeeController(auth?.role === 'employee' ? auth.userId : null);
+  const employeeController = useEmployeeController(auth?.role === 'employee' ? auth.userId : null, updateAuth);
 
   const [toasts, setToasts] = React.useState([]);
 
@@ -191,6 +195,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/login" element={<Login {...authController} />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -219,13 +224,13 @@ function AppRoutes() {
           <Route path="/employee/*" element={<EmployeeRoutes controller={employeeController} />} />
         )}
         {auth.role === 'hr' && (
-          <Route path="/hr/*" element={<HRRoutes hrId={auth.userId} />} />
+          <Route path="/hr/*" element={<HRRoutes hrId={auth.userId} updateAuth={updateAuth} />} />
         )}
         {auth.role === 'company' && (
-          <Route path="/company/*" element={<CompanyRoutes companyId={auth.userId} />} />
+          <Route path="/company/*" element={<CompanyRoutes companyId={auth.userId} updateAuth={updateAuth} />} />
         )}
         {auth.role === 'superadmin' && (
-          <Route path="/admin/*" element={<AdminRoutes />} />
+          <Route path="/admin/*" element={<AdminRoutes adminId={auth.userId} updateAuth={updateAuth} />} />
         )}
         <Route path="*" element={<Navigate to={`/${pathPrefix}/dashboard`} replace />} />
       </Routes>
@@ -259,11 +264,12 @@ function EmployeeRoutes({ controller }) {
   );
 }
 
-function HRRoutes({ hrId }) {
-  const controller = useHRController(hrId);
+function HRRoutes({ hrId, updateAuth }) {
+  const controller = useHRController(hrId, updateAuth);
   return (
     <Routes>
       <Route path="dashboard" element={<HRDashboardView {...controller} />} />
+      <Route path="today-attendance" element={<TodayAttendanceView {...controller} employees={controller.employeesList} />} />
       <Route path="leave-approvals" element={<HRLeaveApprovalsView {...controller} />} />
       <Route path="employees" element={<HREmployeesView {...controller} />} />
       <Route path="reports" element={<HRReportsView {...controller} />} />
@@ -275,29 +281,32 @@ function HRRoutes({ hrId }) {
   );
 }
 
-function CompanyRoutes({ companyId }) {
-  const controller = useCompanyController(companyId);
+function CompanyRoutes({ companyId, updateAuth }) {
+  const controller = useCompanyController(companyId, updateAuth);
   return (
     <Routes>
       <Route path="dashboard" element={<CompanyDashboardView {...controller} />} />
       <Route path="employees" element={<CompanyEmployeesView {...controller} />} />
       <Route path="attendance" element={<CompanyAttendanceView {...controller} />} />
       <Route path="calendar" element={<CompanyCalendarView role="company" companyId={companyId} />} />
+      <Route path="shift-notices" element={<CompanyShiftNoticesView {...controller} />} />
       <Route path="profile" element={<CompanyProfileView {...controller} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );
 }
 
-function AdminRoutes() {
-  const controller = useAdminController();
+function AdminRoutes({ adminId, updateAuth }) {
+  const controller = useAdminController(adminId, updateAuth);
   return (
     <Routes>
       <Route path="dashboard" element={<AdminDashboardView {...controller} />} />
+      <Route path="today-attendance" element={<TodayAttendanceView {...controller} />} />
       <Route path="users" element={<AdminUsersView {...controller} />} />
       <Route path="calendar" element={<CompanyCalendarView role="superadmin" />} />
       <Route path="reports" element={<AdminReportsView {...controller} />} />
       <Route path="companies" element={<AdminCompaniesView {...controller} />} />
+      <Route path="profile" element={<AdminProfileView {...controller} />} />
       <Route path="settings" element={<AdminSettingsView {...controller} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>

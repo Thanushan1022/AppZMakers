@@ -1,0 +1,38 @@
+
+--- VERIFY TOKEN ---
+Time: 2026-06-16T19:52:33.962Z
+Token received: RESET_TOKEN
+URL: /api/auth/verify-token?token=RESET_TOKEN
+Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+NO USER FOUND for token: RESET_TOKEN
+Returning 400 Invalid.
+-------------------
+
+--- VERIFY TOKEN ---
+Time: 2026-06-16T19:52:34.266Z
+Token received: RESET_TOKEN
+URL: /api/auth/verify-token?token=RESET_TOKEN
+Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+NO USER FOUND for token: RESET_TOKEN
+Returning 400 Invalid.
+-------------------
+
+--- VERIFY TOKEN ---
+Time: 2026-06-16T19:52:48.378Z
+Token received: e28909f9f8b15122f70408ee9515dfdfa137b392
+URL: /api/auth/verify-token?token=e28909f9f8b15122f70408ee9515dfdfa137b392
+Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+User found: thanushan1022@gmail.com
+Expires: Wed Jun 17 2026 01:52:22 GMT+0530 (India Standard Time)
+Success for: thanushan1022@gmail.com
+-------------------
+
+--- VERIFY TOKEN ---
+Time: 2026-06-16T19:52:49.229Z
+Token received: e28909f9f8b15122f70408ee9515dfdfa137b392
+URL: /api/auth/verify-token?token=e28909f9f8b15122f70408ee9515dfdfa137b392
+Browser: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+User found: thanushan1022@gmail.com
+Expires: Wed Jun 17 2026 01:52:22 GMT+0530 (India Standard Time)
+Success for: thanushan1022@gmail.com
+-------------------

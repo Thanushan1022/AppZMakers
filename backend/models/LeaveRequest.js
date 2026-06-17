@@ -5,7 +5,7 @@ const leaveRequestSchema = new mongoose.Schema(
     employeeId: { type: String, required: true, index: true },
     employeeName: { type: String, required: true },
     department: { type: String, default: '' },
-    type: { type: String, enum: ['annual', 'casual', 'medical'], required: true },
+    type: { type: String, enum: ['annual', 'casual', 'medical', 'client-assigned'], required: true },
     startDate: { type: String, required: true },
     endDate: { type: String, required: true },
     days: { type: Number, required: true },
@@ -14,6 +14,7 @@ const leaveRequestSchema = new mongoose.Schema(
     appliedOn: { type: String, default: () => new Date().toISOString().split('T')[0] },
     hrNote: { type: String },
     rejectionReason: { type: String },
+    hiddenForEmployee: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -15,7 +15,7 @@ const parseBreakSeconds = (breakTimeSetting) => {
   return allowedBreakMin * 60;
 };
 
-export function useEmployeeController(userId) {
+export function useEmployeeController(userId, updateAuth) {
   const getLocalTodayStr = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -41,6 +41,7 @@ export function useEmployeeController(userId) {
 
   // Timers and checkin/checkout states
   const [checkedIn, setCheckedIn] = useState(false);
+  const [hasAttendedToday, setHasAttendedToday] = useState(false);
   const [showCheckoutConfirm, setShowCheckoutConfirm] = useState(false);
   const [onBreak, setOnBreak] = useState(false);
   const [onTeaBreak, setOnTeaBreak] = useState(false);
@@ -107,6 +108,7 @@ export function useEmployeeController(userId) {
           todayRecord = attData.find(a => a.date === todayStr);
         }
         if (todayRecord) {
+          setHasAttendedToday(true);
           setCheckInTime(todayRecord.checkIn);
           setCheckedIn(!!todayRecord.checkIn && !todayRecord.checkOut);
           setTodayTasks(todayRecord.tasks || []);
@@ -340,6 +342,23 @@ export function useEmployeeController(userId) {
 
   const [showTaskWarning, setShowTaskWarning] = useState(false);
 
+  const handleDeleteLeave = async (leaveId) => {
+    try {
+      if (!window.confirm('Are you sure you want to hide this leave entry from your dashboard?')) return;
+      const res = await fetch(`${BACKEND_URL}/employees/${userId}/leaves/${leaveId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to remove leave history');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Actions
   const handleCheckIn = async () => {
     const todayStr = getLocalTodayStr();
@@ -527,6 +546,37 @@ export function useEmployeeController(userId) {
     }
   };
 
+  const handleEditTask = async (taskId, description, timeContext) => {
+    const todayStr = getLocalTodayStr();
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${userId}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'edit-task',
+          taskId,
+          description,
+          timeContext,
+          date: todayStr
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.record && data.record.tasks) {
+          setTodayTasks(data.record.tasks);
+        }
+        fetchData();
+        return { success: true };
+      } else {
+        const errData = await res.json();
+        return { success: false, error: errData.error || 'Failed to edit task' };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: 'Server error' };
+    }
+  };
+
   const handleUpdateProfile = async (profileData) => {
     try {
       const res = await fetch(`${BACKEND_URL}/employees/${userId}/profile`, {
@@ -539,6 +589,14 @@ export function useEmployeeController(userId) {
         const data = await res.json();
         setEmployee(data.employee);
         fetchData();
+        if (profileData.avatar !== undefined || profileData.name) {
+          if (updateAuth) {
+            updateAuth({
+              avatar: data.employee.avatar || '',
+              name: data.employee.name,
+            });
+          }
+        }
         return { success: true, message: data.message || 'Profile updated successfully' };
       } else {
         const errData = await res.json();
@@ -650,6 +708,7 @@ export function useEmployeeController(userId) {
     balance,
     mySalary,
     checkedIn,
+    hasAttendedToday,
     onBreak,
     onTeaBreak,
     sessionSecs,
@@ -701,17 +760,25 @@ export function useEmployeeController(userId) {
     handleBreak,
     handleTeaBreak,
     handleLeaveSubmit,
+    handleDeleteLeave,
     handleUpdateProfile,
     handleAddTask,
+    handleEditTask,
     todayTasks,
     showTaskWarning,
     setShowTaskWarning,
 
     // Tea break helpers
     teaBreakEnabled: settings.teaBreakEnabled !== false,
+    teaBreakAllowed: currentEmployee.teaBreakAllowed !== false && currentEmployee.companyTeaBreakAllowed !== false,
     teaBreakLimitReached: (breaks.filter(b => b.type === 'tea' && b.end).length >= (settings.teaBreaksMax !== undefined ? settings.teaBreaksMax : 2)) && !onTeaBreak,
     teaBreakGapRemainingSecs,
     teaBreakDuration: settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15,
+
+    // Meal break helpers
+    mealBreakCount: breaks.filter(b => b.type === 'meal').length,
+    mealBreakMax: settings.mealBreaksMax !== undefined ? settings.mealBreaksMax : 5,
+    mealBreakLimitReached: breaks.filter(b => b.type === 'meal').length >= (settings.mealBreaksMax !== undefined ? settings.mealBreaksMax : 5),
 
     // Filter properties
     filterType,

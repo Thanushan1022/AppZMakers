@@ -20,6 +20,7 @@ export const toEmployeeJSON = (doc) => {
     cvData: o.cvData,
     country: o.country,
     office: o.office,
+    teaBreakAllowed: o.teaBreakAllowed,
   };
 };
 
@@ -38,6 +39,8 @@ export const toCompanyJSON = (doc) => {
     joinedDate: o.joinedDate,
     address: o.address,
     country: o.country,
+    avatar: o.avatar || '',
+    teaBreakAllowed: o.teaBreakAllowed,
   };
 };
 
@@ -51,6 +54,7 @@ export const toHRJSON = (doc) => {
     department: o.department,
     status: o.status,
     joinDate: o.joinDate,
+    avatar: o.avatar || '',
   };
 };
 

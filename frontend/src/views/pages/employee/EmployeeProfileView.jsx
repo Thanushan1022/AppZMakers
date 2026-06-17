@@ -30,6 +30,31 @@ export function EmployeeProfileView({
     }, 4000);
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 1 * 1024 * 1024) {
+      showToast('error', 'Image size must be less than 1MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target.result;
+      const result = await handleUpdateProfile({ avatar: base64Data });
+      if (result && result.success) {
+        showToast('success', 'Profile photo updated successfully');
+      } else {
+        showToast('error', result?.error || 'Failed to update profile photo');
+      }
+    };
+    reader.onerror = () => {
+      showToast('error', 'Error reading image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCvUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -78,13 +103,26 @@ export function EmployeeProfileView({
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (password && password !== confirmPassword) {
-      showToast('error', 'Passwords do not match');
-      return;
+    if (phone) {
+      const digitsOnly = phone.replace(/\D/g, '');
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        showToast('error', 'Phone number must be between 7 and 15 digits');
+        return;
+      }
     }
-    if (password && password.length < 6) {
-      showToast('error', 'Password must be at least 6 characters long');
-      return;
+    if (password || confirmPassword) {
+      if (!password || !confirmPassword) {
+        showToast('error', 'Please fill in both password fields to change your password');
+        return;
+      }
+      if (password !== confirmPassword) {
+        showToast('error', 'Passwords do not match');
+        return;
+      }
+      if (password.length < 6) {
+        showToast('error', 'Password must be at least 6 characters long');
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -131,61 +169,97 @@ export function EmployeeProfileView({
         </div>
       </div>
 
-      {/* Profile header */}
-      <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        <div className="h-28 bg-gradient-to-r from-indigo-600 to-indigo-800" />
-        <div className="px-6 pb-6">
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-5 pt-3">
-            <div className="flex items-start gap-4">
-              <div className="w-20 h-20 -mt-12 bg-indigo-500 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg flex-shrink-0" style={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                {employee.avatar}
+      {/* Unique Bento Box Profile Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main ID Card */}
+        <div className="lg:col-span-1 relative rounded-[2rem] overflow-hidden shadow-sm group border border-slate-200 bg-white">
+           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-blue-500 to-sky-500 bg-[length:200%_200%] animate-gradient opacity-10"></div>
+           <div className="relative p-8 flex flex-col items-center text-center bg-white/40 backdrop-blur-xl h-full">
+              
+              <div className="relative w-32 h-32 mb-6 group/avatar">
+                 <div className="absolute inset-0 bg-gradient-to-tr from-indigo-400 to-blue-500 rounded-3xl rotate-6 group-hover/avatar:rotate-12 transition-transform duration-500 blur-md opacity-60"></div>
+                 <div className="relative w-full h-full bg-white rounded-3xl p-1 shadow-xl">
+                    <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-indigo-700 font-bold text-3xl">
+                      {employee.avatar && employee.avatar.startsWith('data:image/') ? (
+                        <img src={employee.avatar} alt={employee.name} className="w-full h-full object-cover" />
+                      ) : (
+                        employee.avatar || employee.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+                      )}
+                    </div>
+                 </div>
+                 <label className="absolute -bottom-3 -right-3 bg-white p-2.5 rounded-2xl shadow-xl border border-slate-100 cursor-pointer hover:scale-110 hover:-rotate-6 transition-transform text-indigo-600">
+                    <UploadCloud className="w-5 h-5" />
+                    <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                 </label>
               </div>
-              <div>
-                <h2 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.25rem' }}>{employee.name}</h2>
-                <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                  <span className="text-slate-500 text-sm">{employee.position}</span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-indigo-600 text-sm font-medium">{employee.department}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${employee.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                    {employee.status}
-                  </span>
-                </div>
+              
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">{employee.name}</h2>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm font-medium border border-indigo-100 mb-8">
+                 <Briefcase className="w-4 h-4" />
+                 {employee.position}
               </div>
-            </div>
 
-            <button
-              onClick={() => {
-                setPhone(employee.phone || '');
-                setAddress(employee.address || '');
-                setPassword('');
-                setConfirmPassword('');
-                setIsEditing(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-medium transition-colors border border-indigo-100 sm:mb-1"
-            >
-              <Edit2 className="w-4 h-4" />
-              Edit Profile
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  setPhone(employee.phone || '');
+                  setAddress(employee.address || '');
+                  setPassword('');
+                  setConfirmPassword('');
+                  setIsEditing(true);
+                }}
+                className="w-full mt-auto flex items-center justify-center gap-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-medium shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit Profile
+              </button>
+           </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: Mail, label: 'Email', value: employee.email },
-              { icon: Phone, label: 'Phone', value: employee.phone || 'Not set' },
-              { icon: MapPin, label: 'Address', value: employee.address || 'Not set' },
-              { icon: Building2, label: 'Company', value: employee.company },
-            ].map(({ icon: Icon, label, value }) => (
-              <div key={label} className="flex items-start gap-2.5">
-                <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon className="w-4 h-4 text-slate-400" />
-                </div>
-                <div>
-                  <div className="text-slate-400 text-xs">{label}</div>
-                  <div className="text-slate-700 text-sm mt-0.5">{value}</div>
-                </div>
+        {/* Info Tiles Grid */}
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+           <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <Building2 className="w-32 h-32 text-indigo-600" />
               </div>
-            ))}
-          </div>
+              <div className="w-12 h-12 bg-white text-indigo-600 rounded-2xl flex items-center justify-center mb-6 border border-indigo-100 shadow-sm">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Company</p>
+              <p className="text-slate-800 font-bold text-lg">{employee.company}</p>
+           </div>
+
+           <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <Mail className="w-32 h-32 text-blue-600" />
+              </div>
+              <div className="w-12 h-12 bg-white text-blue-600 rounded-2xl flex items-center justify-center mb-6 border border-blue-100 shadow-sm">
+                <Mail className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Email Address</p>
+              <p className="text-slate-800 font-bold text-lg truncate">{employee.email}</p>
+           </div>
+
+           <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <Phone className="w-32 h-32 text-sky-600" />
+              </div>
+              <div className="w-12 h-12 bg-white text-sky-600 rounded-2xl flex items-center justify-center mb-6 border border-sky-100 shadow-sm">
+                <Phone className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Phone</p>
+              <p className="text-slate-800 font-bold text-lg">{employee.phone || 'Not set'}</p>
+           </div>
+
+           <div className="bg-gradient-to-br from-fuchsia-50 to-white border border-fuchsia-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <MapPin className="w-32 h-32 text-fuchsia-600" />
+              </div>
+              <div className="w-12 h-12 bg-white text-fuchsia-600 rounded-2xl flex items-center justify-center mb-6 border border-fuchsia-100 shadow-sm">
+                <MapPin className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Address</p>
+              <p className="text-slate-800 font-bold text-lg truncate">{employee.address || 'Not set'}</p>
+           </div>
         </div>
       </div>
 
@@ -355,7 +429,7 @@ export function EmployeeProfileView({
                       id="phone"
                       type="text"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s\-()]/g, ''))}
                       placeholder="+1 (555) 000-0000"
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                     />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Calendar, Briefcase, Building2, Edit2, X, Lock, Save, Loader2, AlertCircle, CheckCircle2, User, Landmark } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Briefcase, Building2, Edit2, X, Lock, Save, Loader2, AlertCircle, CheckCircle2, User, Landmark, UploadCloud } from 'lucide-react';
 
 export function CompanyProfileView({
   company,
@@ -23,16 +23,69 @@ export function CompanyProfileView({
       setToast(null);
     }, 4000);
   };
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (password && password !== confirmPassword) {
-      showToast('error', 'Passwords do not match');
+    if (file.size > 1 * 1024 * 1024) {
+      showToast('error', 'Image size must be less than 1MB');
       return;
     }
-    if (password && password.length < 6) {
-      showToast('error', 'Password must be at least 6 characters long');
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target.result;
+      const result = await handleUpdateCompanyProfile({ avatar: base64Data });
+      if (result && result.success) {
+        showToast('success', 'Profile photo updated successfully');
+      } else {
+        showToast('error', result?.error || 'Failed to update profile photo');
+      }
+    };
+    reader.onerror = () => {
+      showToast('error', 'Error reading image file');
+    };
+    reader.readAsDataURL(file);
+  };
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!name || name.trim().length < 2 || name.trim().length > 30) {
+      showToast('error', 'Company name must be between 2 and 30 characters long.');
       return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      showToast('error', 'Please enter a valid email address.');
+      return;
+    }
+    if (!industry || industry.trim().length < 2 || industry.trim().length > 30) {
+      showToast('error', 'Industry sector must be between 2 and 30 characters long.');
+      return;
+    }
+    if (!contact || contact.trim().length < 2 || contact.trim().length > 30) {
+      showToast('error', 'Contact person must be between 2 and 30 characters long.');
+      return;
+    }
+    if (phone) {
+      const digitsOnly = phone.replace(/\D/g, '');
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        showToast('error', 'Phone number must be between 7 and 15 digits');
+        return;
+      }
+    }
+    if (password || confirmPassword) {
+      if (!password || !confirmPassword) {
+        showToast('error', 'Please fill in both password fields to change your password');
+        return;
+      }
+      if (password !== confirmPassword) {
+        showToast('error', 'Passwords do not match');
+        return;
+      }
+      if (password.length < 6) {
+        showToast('error', 'Password must be at least 6 characters long');
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -91,64 +144,100 @@ export function CompanyProfileView({
         </div>
       </div>
 
-      {/* Profile header */}
-      <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        <div className="h-28 bg-gradient-to-r from-emerald-600 to-teal-700" />
-        <div className="px-6 pb-6">
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-5 pt-3">
-            <div className="flex items-start gap-4">
-              <div className="w-20 h-20 -mt-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg flex-shrink-0" style={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                {avatarText}
+      {/* Unique Bento Box Profile Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main ID Card */}
+        <div className="lg:col-span-1 relative rounded-[2rem] overflow-hidden shadow-sm group border border-slate-200 bg-white">
+           <div className="absolute inset-0 bg-gradient-to-br from-teal-500 via-emerald-500 to-cyan-500 bg-[length:200%_200%] animate-gradient opacity-10"></div>
+           <div className="relative p-8 flex flex-col items-center text-center bg-white/40 backdrop-blur-xl h-full">
+              
+              <div className="relative w-32 h-32 mb-6 group/avatar">
+                 <div className="absolute inset-0 bg-gradient-to-tr from-teal-400 to-emerald-500 rounded-3xl rotate-6 group-hover/avatar:rotate-12 transition-transform duration-500 blur-md opacity-60"></div>
+                 <div className="relative w-full h-full bg-white rounded-3xl p-1 shadow-xl">
+                    <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-emerald-700 font-bold text-3xl">
+                      {company.avatar && company.avatar.startsWith('data:image/') ? (
+                        <img src={company.avatar} alt={company.name} className="w-full h-full object-cover" />
+                      ) : (
+                        avatarText
+                      )}
+                    </div>
+                 </div>
+                 <label className="absolute -bottom-3 -right-3 bg-white p-2.5 rounded-2xl shadow-xl border border-slate-100 cursor-pointer hover:scale-110 hover:-rotate-6 transition-transform text-emerald-600">
+                    <UploadCloud className="w-5 h-5" />
+                    <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                 </label>
               </div>
-              <div>
-                <h2 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.25rem' }}>{company.name}</h2>
-                <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                  <span className="text-slate-500 text-sm">Client Partner</span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-emerald-600 text-sm font-medium">{company.industry || 'General Industry'}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${company.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                    {company.status}
-                  </span>
-                </div>
+              
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">{company.name}</h2>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium border border-emerald-100 mb-8">
+                 <Building2 className="w-4 h-4" />
+                 Client Partner
               </div>
-            </div>
 
-            <button
-              onClick={() => {
-                setName(company.name || '');
-                setEmail(company.email || '');
-                setIndustry(company.industry || '');
-                setContact(company.contact || '');
-                setPhone(company.phone || '');
-                setPassword('');
-                setConfirmPassword('');
-                setIsEditing(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-sm font-medium transition-colors border border-emerald-100 sm:mb-1"
-            >
-              <Edit2 className="w-4 h-4" />
-              Edit Profile
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  setName(company.name || '');
+                  setEmail(company.email || '');
+                  setIndustry(company.industry || '');
+                  setContact(company.contact || '');
+                  setPhone(company.phone || '');
+                  setPassword('');
+                  setConfirmPassword('');
+                  setIsEditing(true);
+                }}
+                className="w-full mt-auto flex items-center justify-center gap-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-medium shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-1"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit Profile
+              </button>
+           </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: Mail, label: 'Email', value: company.email },
-              { icon: Phone, label: 'Phone', value: company.phone || 'Not set' },
-              { icon: Landmark, label: 'Industry', value: company.industry || 'Not set' },
-              { icon: User, label: 'Contact Person', value: company.contact || 'Not set' },
-            ].map(({ icon: Icon, label, value }) => (
-              <div key={label} className="flex items-start gap-2.5">
-                <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon className="w-4 h-4 text-slate-400" />
-                </div>
-                <div>
-                  <div className="text-slate-400 text-xs">{label}</div>
-                  <div className="text-slate-700 text-sm mt-0.5">{value}</div>
-                </div>
+        {/* Info Tiles Grid */}
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+           <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <Landmark className="w-32 h-32 text-emerald-600" />
               </div>
-            ))}
-          </div>
+              <div className="w-12 h-12 bg-white text-emerald-600 rounded-2xl flex items-center justify-center mb-6 border border-emerald-100 shadow-sm">
+                <Landmark className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Industry</p>
+              <p className="text-slate-800 font-bold text-lg">{company.industry || 'Not set'}</p>
+           </div>
+
+           <div className="bg-gradient-to-br from-teal-50 to-white border border-teal-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <Mail className="w-32 h-32 text-teal-600" />
+              </div>
+              <div className="w-12 h-12 bg-white text-teal-600 rounded-2xl flex items-center justify-center mb-6 border border-teal-100 shadow-sm">
+                <Mail className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Email Address</p>
+              <p className="text-slate-800 font-bold text-lg truncate">{company.email}</p>
+           </div>
+
+           <div className="bg-gradient-to-br from-cyan-50 to-white border border-cyan-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <Phone className="w-32 h-32 text-cyan-600" />
+              </div>
+              <div className="w-12 h-12 bg-white text-cyan-600 rounded-2xl flex items-center justify-center mb-6 border border-cyan-100 shadow-sm">
+                <Phone className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Phone</p>
+              <p className="text-slate-800 font-bold text-lg">{company.phone || 'Not set'}</p>
+           </div>
+
+           <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                <User className="w-32 h-32 text-sky-600" />
+              </div>
+              <div className="w-12 h-12 bg-white text-sky-600 rounded-2xl flex items-center justify-center mb-6 border border-sky-100 shadow-sm">
+                <User className="w-6 h-6" />
+              </div>
+              <p className="text-slate-500 text-sm font-medium mb-1">Contact Person</p>
+              <p className="text-slate-800 font-bold text-lg">{company.contact || 'Not set'}</p>
+           </div>
         </div>
       </div>
 
@@ -269,7 +358,7 @@ export function CompanyProfileView({
                       id="phone"
                       type="text"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s\-()]/g, ''))}
                       placeholder="+1 (555) 012-3456"
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     />

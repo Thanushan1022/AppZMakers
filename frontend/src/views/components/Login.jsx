@@ -15,6 +15,7 @@ const roles = [
 
 export function Login({
   mode,
+  setMode,
   toggleMode,
   selectedRole,
   setSelectedRole,
@@ -28,10 +29,34 @@ export function Login({
   setShowPass,
   handleLogin,
   handleSignup,
+  handleForgotPassword,
   error,
+  setError,
   loading,
 }) {
   const isSignup = mode === 'signup';
+  const isForgot = mode === 'forgot';
+
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setForgotLoading(true);
+    setError('');
+    setSuccessMessage('');
+    try {
+      const msg = await handleForgotPassword(forgotEmail);
+      setSuccessMessage(msg);
+      setForgotEmail('');
+    } catch (err) {
+      // error set by parent handler
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   return (
     <div className="h-screen w-full flex flex-col-reverse lg:flex-row bg-[#090d16] overflow-hidden relative" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -116,34 +141,40 @@ export function Login({
           {/* Header */}
           <div className="space-y-2">
             <span className="text-[#5b4cf5] text-[0px] font-extrabold uppercase tracking-widest block">Welcome back</span>
-            <h2 className="text-slate-900 text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap">Sign in to your AppZ Makers</h2>
-            <p className="text-slate-500 text-sm">Select your role and sign in to continue</p>
+            <h2 className="text-slate-900 text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap">
+              {isForgot ? 'Reset Password' : 'Sign in to your AppZ Makers'}
+            </h2>
+            <p className="text-slate-500 text-sm">
+              {isForgot ? 'Enter your email address to get a password reset link' : 'Select your role and sign in to continue'}
+            </p>
           </div>
 
           {/* Role selector */}
-          <div className="space-y-2.5">
-            <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Choose Portal Role</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-200/50 rounded-[14px] p-1 gap-1 border border-slate-200/30">
-              {roles.map((role) => {
-                const Icon = role.icon;
-                const isSelected = selectedRole === role.id;
-                return (
-                  <button
-                    key={role.id}
-                    type="button"
-                    onClick={() => setSelectedRole(role.id)}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-[11px] text-[11px] font-extrabold transition-all duration-150 ${isSelected
-                      ? 'bg-[#5b4cf5] text-white shadow-sm'
-                      : 'bg-[#5b4cf5]/5 hover:bg-[#5b4cf5]/10 text-indigo-950/70 hover:text-[#5b4cf5]'
-                      }`}
-                  >
-                    <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>{role.label.split(' ')[0]}</span>
-                  </button>
-                );
-              })}
+          {!isForgot && (
+            <div className="space-y-2.5">
+              <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Choose Portal Role</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-200/50 rounded-[14px] p-1 gap-1 border border-slate-200/30">
+                {roles.map((role) => {
+                  const Icon = role.icon;
+                  const isSelected = selectedRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => setSelectedRole(role.id)}
+                      className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-[11px] text-[11px] font-extrabold transition-all duration-150 ${isSelected
+                        ? 'bg-[#5b4cf5] text-white shadow-sm'
+                        : 'bg-[#5b4cf5]/5 hover:bg-[#5b4cf5]/10 text-indigo-950/70 hover:text-[#5b4cf5]'
+                        }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{role.label.split(' ')[0]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {error && (
             <div className="p-3.5 rounded-[12px] bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
@@ -151,80 +182,132 @@ export function Login({
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
-            {isSignup && (
-              <div className="space-y-1.5">
-                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
-                  placeholder="Your full name"
-                />
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
-                  placeholder="you@domain.com"
-                />
-              </div>
+          {successMessage && (
+            <div className="p-3.5 rounded-[12px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+              {successMessage}
             </div>
+          )}
 
-            <div className="space-y-1.5">
-              <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-12 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
-                  placeholder="••••••••"
-                />
+          {/* Form */}
+          {isForgot ? (
+            <form onSubmit={handleForgotSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    required
+                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    placeholder="you@domain.com"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={forgotLoading}
+                className="w-full bg-[#5b4cf5] hover:bg-[#4a3de0] disabled:opacity-60 text-white py-3.5 rounded-[12px] flex items-center justify-center gap-2 transition-all font-bold text-sm shadow-sm"
+              >
+                {forgotLoading ? 'Sending...' : 'Send Reset Link'}
+                <LogIn className="w-4 h-4" />
+              </button>
+
+              <div className="text-center pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                  onClick={() => {
+                    setMode('login');
+                    setError('');
+                    setSuccessMessage('');
+                  }}
+                  className="text-indigo-600 hover:text-indigo-800 text-xs font-bold transition-colors"
                 >
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  Back to Sign In
                 </button>
               </div>
-            </div>
+            </form>
+          ) : (
+            <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
+              {isSignup && (
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Full Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    placeholder="Your full name"
+                  />
+                </div>
+              )}
 
-            {/* Utility Row */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center gap-2 text-slate-500 cursor-pointer select-none font-medium">
-                <input
-                  type="checkbox"
-                  className="rounded border-slate-300 text-[#5b4cf5] focus:ring-[#5b4cf5]"
-                />
-                <span>Keep me signed in</span>
-              </label>
-            </div>
+              <div className="space-y-1.5">
+                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    placeholder="you@domain.com"
+                  />
+                </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#5b4cf5] hover:bg-[#4a3de0] disabled:opacity-60 text-white py-3.5 rounded-[12px] flex items-center justify-center gap-2 transition-all font-bold text-sm shadow-sm"
-            >
-              {loading ? 'Please wait...' : isSignup ? 'Register Portal' : 'Sign In to Workspace'}
-              <LogIn className="w-4 h-4" />
-            </button>
-          </form>
+              <div className="space-y-1.5">
+                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-12 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                  >
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Utility Row */}
+              <div className="flex items-center justify-end text-xs pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot');
+                    setError('');
+                    setSuccessMessage('');
+                  }}
+                  className="text-[#5b4cf5] hover:text-[#4a3de0] font-bold"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#5b4cf5] hover:bg-[#4a3de0] disabled:opacity-60 text-white py-3.5 rounded-[12px] flex items-center justify-center gap-2 transition-all font-bold text-sm shadow-sm"
+              >
+                {loading ? 'Please wait...' : isSignup ? 'Register Portal' : 'Sign In to Workspace'}
+                <LogIn className="w-4 h-4" />
+              </button>
+            </form>
+          )}
 
         </div>
       </div>

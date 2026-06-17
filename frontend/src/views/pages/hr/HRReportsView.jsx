@@ -1,3 +1,4 @@
+import { useRef, useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import { Download, BarChart3, Users, Calendar } from 'lucide-react';
 import { jsPDF } from 'jspdf';
@@ -34,6 +35,18 @@ const formatMin = (minsVal) => {
   }
 };
 
+const FormatMultilineName = ({ name }) => {
+  if (!name) return null;
+  const parts = name.trim().split(/\s+/);
+  return (
+    <div className="flex flex-col">
+      {parts.map((p, i) => (
+        <span key={i} className="leading-tight capitalize">{p}</span>
+      ))}
+    </div>
+  );
+};
+
 export function HRReportsView({
   reportType,
   setReportType,
@@ -44,6 +57,7 @@ export function HRReportsView({
   leaveTypeData,
   monthlyTrend,
   reportsSummary,
+  reportsAttendanceData,
   todayAttendance,
   reportsFilterType,
   setReportsFilterType,
@@ -62,6 +76,115 @@ export function HRReportsView({
   role,
 }) {
   const totalHours = todayAttendance?.reduce((s, r) => s + (r.totalHours || 0), 0) || 0;
+
+  const [selectedEmployeeFilter, setSelectedEmployeeFilter] = useState('all');
+
+  const filteredEmployeesList = useMemo(() => {
+    if (selectedEmployeeFilter === 'all') return employeesList || [];
+    return (employeesList || []).filter(e => String(e.id) === String(selectedEmployeeFilter));
+  }, [employeesList, selectedEmployeeFilter]);
+
+  const filteredLeavesList = useMemo(() => {
+    if (selectedEmployeeFilter === 'all') return leavesList || [];
+    return (leavesList || []).filter(l => String(l.employeeId) === String(selectedEmployeeFilter));
+  }, [leavesList, selectedEmployeeFilter]);
+
+  const filteredEmployeeAttendanceData = useMemo(() => {
+    if (selectedEmployeeFilter === 'all' || !reportsAttendanceData) return [];
+    return [...reportsAttendanceData].filter(a => String(a.employeeId) === String(selectedEmployeeFilter)).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [reportsAttendanceData, selectedEmployeeFilter]);
+
+  const dynamicSummary = useMemo(() => {
+    if (selectedEmployeeFilter === 'all') {
+      return reportsSummary || {};
+    }
+    const emp = filteredEmployeesList[0];
+    if (!emp) return {};
+    const stats = getEmployeeStats ? getEmployeeStats(emp.id) : null;
+    return {
+      totalEmployees: 1,
+      activeEmployees: emp.status === 'active' ? 1 : 0,
+      avgAttendance: stats ? stats.pct : 0,
+      totalHours: stats ? stats.hours : 0,
+      leaveDaysUsed: filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0)
+    };
+  }, [reportsSummary, selectedEmployeeFilter, filteredEmployeesList, filteredLeavesList, getEmployeeStats]);
+
+  const containerRef = useRef(null);
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const handleMouseDown = (e) => {
+    if (e.target.closest('button, input, select, a')) return;
+    isDown.current = true;
+    containerRef.current.classList.add('cursor-grabbing');
+    containerRef.current.classList.remove('cursor-grab');
+    startX.current = e.pageX - containerRef.current.offsetLeft;
+    scrollLeft.current = containerRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDown.current = false;
+    if (containerRef.current) {
+      containerRef.current.classList.remove('cursor-grabbing');
+      containerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDown.current = false;
+    if (containerRef.current) {
+      containerRef.current.classList.remove('cursor-grabbing');
+      containerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDown.current) return;
+    e.preventDefault();
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    containerRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
+  const leaveContainerRef = useRef(null);
+  const isLeaveDown = useRef(false);
+  const leaveStartX = useRef(0);
+  const leaveScrollLeft = useRef(0);
+
+  const handleLeaveMouseDown = (e) => {
+    if (e.target.closest('button, input, select, a')) return;
+    isLeaveDown.current = true;
+    leaveContainerRef.current.classList.add('cursor-grabbing');
+    leaveContainerRef.current.classList.remove('cursor-grab');
+    leaveStartX.current = e.pageX - leaveContainerRef.current.offsetLeft;
+    leaveScrollLeft.current = leaveContainerRef.current.scrollLeft;
+  };
+
+  const handleLeaveMouseLeave = () => {
+    isLeaveDown.current = false;
+    if (leaveContainerRef.current) {
+      leaveContainerRef.current.classList.remove('cursor-grabbing');
+      leaveContainerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleLeaveMouseUp = () => {
+    isLeaveDown.current = false;
+    if (leaveContainerRef.current) {
+      leaveContainerRef.current.classList.remove('cursor-grabbing');
+      leaveContainerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleLeaveMouseMove = (e) => {
+    if (!isLeaveDown.current) return;
+    e.preventDefault();
+    const x = e.pageX - leaveContainerRef.current.offsetLeft;
+    const walk = (x - leaveStartX.current) * 1.5;
+    leaveContainerRef.current.scrollLeft = leaveScrollLeft.current - walk;
+  };
 
   const availableYears = [];
   for (let y = 2030; y >= 2024; y--) {
@@ -143,7 +266,7 @@ export function HRReportsView({
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(14);
       doc.setTextColor(30, 41, 59);
-      const reportTitle = (reportType || 'Attendance').charAt(0).toUpperCase() + (reportType || 'Attendance').slice(1) + ' Report';
+      let reportTitle = (reportType || 'Attendance').charAt(0).toUpperCase() + (reportType || 'Attendance').slice(1) + ' Report';
       doc.text(reportTitle, 14, 38);
 
       let periodText = 'Period: All Time';
@@ -161,54 +284,83 @@ export function HRReportsView({
       doc.setTextColor(71, 85, 105);
       doc.text(periodText, 14, 44);
 
+      let currentY = 48;
+
+      if (selectedEmployeeFilter !== 'all' && filteredEmployeesList.length > 0) {
+        const emp = filteredEmployeesList[0];
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(30, 41, 59);
+        doc.text(`Employee: ${emp.name}`, 14, currentY);
+        doc.setFont('Helvetica', 'normal');
+        doc.text(`Department: ${emp.department || '—'}`, 14, currentY + 5);
+        currentY += 12;
+      }
+
       // Summary Cards block
       doc.setFillColor(lightBgColor[0], lightBgColor[1], lightBgColor[2]);
-      doc.rect(14, 48, 182, 22, 'F');
+      doc.rect(14, currentY, 182, 22, 'F');
       doc.setDrawColor(226, 232, 240);
-      doc.rect(14, 48, 182, 22, 'S');
+      doc.rect(14, currentY, 182, 22, 'S');
 
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
-      doc.text('TOTAL EMPLOYEES', 20, 54);
-      doc.text('AVG ATTENDANCE', 65, 54);
-      doc.text('TOTAL HOURS', 110, 54);
-      doc.text('LEAVE DAYS USED', 155, 54);
+      doc.text('TOTAL EMPLOYEES', 20, currentY + 6);
+      doc.text('AVG ATTENDANCE', 65, currentY + 6);
+      doc.text('TOTAL HOURS', 110, currentY + 6);
+      doc.text('LEAVE DAYS USED', 155, currentY + 6);
 
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(12);
       doc.setTextColor(30, 41, 59);
-      const sumVal1 = String(reportsSummary?.totalEmployees ?? employeesList?.length ?? 0);
-      const sumVal2 = `${reportsSummary?.avgAttendance ?? 0}%`;
-      const sumVal3 = `${(reportsSummary?.totalHours ?? totalHours ?? 0).toFixed(0)}h`;
-      const sumVal4 = String(reportsSummary?.leaveDaysUsed ?? leavesList?.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0) ?? 0);
-      
-      doc.text(sumVal1, 20, 62);
-      doc.text(sumVal2, 65, 62);
-      doc.text(sumVal3, 110, 62);
-      doc.text(sumVal4, 155, 62);
+      const sumVal1 = String(dynamicSummary?.totalEmployees ?? filteredEmployeesList.length ?? 0);
+      const sumVal2 = `${dynamicSummary?.avgAttendance ?? 0}%`;
+      const sumVal3 = `${(dynamicSummary?.totalHours ?? totalHours ?? 0).toFixed(0)}h`;
+      const sumVal4 = String(dynamicSummary?.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0) ?? 0);
+
+      doc.text(sumVal1, 20, currentY + 14);
+      doc.text(sumVal2, 65, currentY + 14);
+      doc.text(sumVal3, 110, currentY + 14);
+      doc.text(sumVal4, 155, currentY + 14);
+
+      currentY += 30;
 
       let tableHeaders = [];
       let tableRows = [];
 
       if (reportType === 'attendance') {
-        tableHeaders = [['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate']];
-        tableRows = (employeesList || []).map((emp) => {
-          const stats = getEmployeeStats ? getEmployeeStats(emp.id) : { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
-          return [
-            emp.name,
-            emp.department || '—',
-            String(stats.present),
-            formatMin(stats.mealBreakMinutes),
-            formatMin(stats.teaBreakMinutes),
-            formatHrMin(stats.hours),
-            stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—',
-            stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—',
-            `${stats.pct || 0}%`
-          ];
-        });
+        if (selectedEmployeeFilter !== 'all') {
+          tableHeaders = [['Date', 'Check In', 'Check Out', 'Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Status']];
+          tableRows = filteredEmployeeAttendanceData.map((a) => [
+            a.date,
+            a.checkIn || '—',
+            a.checkOut || '—',
+            formatMin(a.breakMinutes || 0),
+            formatHrMin(a.totalHours || 0),
+            a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—',
+            a.lessHours > 0 ? `${formatHrMin(a.lessHours)}` : '—',
+            a.status
+          ]);
+        } else {
+          tableHeaders = [['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate']];
+          tableRows = filteredEmployeesList.map((emp) => {
+            const stats = getEmployeeStats ? getEmployeeStats(emp.id) : { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
+            return [
+              emp.name,
+              emp.department || '—',
+              String(stats.present),
+              formatMin(stats.mealBreakMinutes),
+              formatMin(stats.teaBreakMinutes),
+              formatHrMin(stats.hours),
+              stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—',
+              stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—',
+              `${stats.pct || 0}%`
+            ];
+          });
+        }
       } else if (reportType === 'leave') {
         tableHeaders = [['Employee', 'Dept', 'Type', 'From', 'To', 'Days', 'Status', 'Applied']];
-        tableRows = (leavesList || []).map((l) => [
+        tableRows = filteredLeavesList.map((l) => [
           l.employeeName,
           l.department || '—',
           l.type,
@@ -220,7 +372,7 @@ export function HRReportsView({
         ]);
       } else {
         tableHeaders = [['Employee', 'Company', 'Department', 'Position', 'Join Date', 'Status']];
-        tableRows = (employeesList || []).map((emp) => [
+        tableRows = filteredEmployeesList.map((emp) => [
           emp.name,
           emp.company || '—',
           emp.department || '—',
@@ -233,7 +385,7 @@ export function HRReportsView({
       autoTable(doc, {
         head: tableHeaders,
         body: tableRows,
-        startY: 76,
+        startY: currentY,
         theme: 'striped',
         headStyles: {
           fillColor: primaryColor,
@@ -257,7 +409,13 @@ export function HRReportsView({
       } else if (reportsFilterType === 'custom') {
         suffix = `${reportsCustomStartDate}_to_${reportsCustomEndDate}`;
       }
-      const filename = `AppzMaker_${reportType}_Report_${suffix}.pdf`;
+
+      let empNameSuffix = '';
+      if (selectedEmployeeFilter !== 'all' && filteredEmployeesList.length > 0) {
+        empNameSuffix = `_${filteredEmployeesList[0].name.replace(/\s+/g, '_')}`;
+      }
+
+      const filename = `AppzMaker_${reportType}_Report_${suffix}${empNameSuffix}.pdf`;
       doc.save(filename);
     } catch (err) {
       console.error('PDF generation error:', err);
@@ -371,23 +529,21 @@ export function HRReportsView({
                       type="button"
                       onClick={handlePrevWeek}
                       className="px-2 py-1 border border-border rounded-xl bg-white hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-sm text-xs"
-                      title="Previous Week"
                     >
-                      &larr;
+                      ←
                     </button>
                     <input
                       type="date"
                       value={reportsSelectedWeekDate}
                       onChange={e => setReportsSelectedWeekDate(e.target.value)}
-                      className="text-xs border border-border rounded-xl px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
+                      className="text-xs border border-border rounded-xl px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                     />
                     <button
                       type="button"
                       onClick={handleNextWeek}
                       className="px-2 py-1 border border-border rounded-xl bg-white hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-sm text-xs"
-                      title="Next Week"
                     >
-                      &rarr;
+                      →
                     </button>
                   </div>
                 </div>
@@ -396,11 +552,11 @@ export function HRReportsView({
                   const format = (s) => {
                     const [y, m, d] = s.split('-');
                     const date = new Date(y, m - 1, d);
-                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                   };
                   return (
-                    <div className="text-xs text-slate-500 font-medium">
-                      Resolved: <strong className="text-slate-700">{format(mondayStr)}</strong> to <strong className="text-slate-700">{format(sundayStr)}</strong>
+                    <div className="text-xs text-slate-500 font-semibold bg-indigo-50/50 px-3 py-1.5 rounded-lg border border-indigo-100/30">
+                      🗓️ Period: <strong className="text-indigo-700">{format(mondayStr)} - {format(sundayStr)}</strong>
                     </div>
                   );
                 })()}
@@ -410,7 +566,7 @@ export function HRReportsView({
             {reportsFilterType === 'custom' && (
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <label className="text-xs text-slate-500 font-semibold">Start</label>
+                  <label className="text-xs text-slate-500 font-semibold">From</label>
                   <input
                     type="date"
                     value={reportsCustomStartDate}
@@ -418,8 +574,9 @@ export function HRReportsView({
                     className="text-xs border border-border rounded-xl px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                   />
                 </div>
+                <span className="text-slate-300">-</span>
                 <div className="flex items-center gap-1.5">
-                  <label className="text-xs text-slate-500 font-semibold">End</label>
+                  <label className="text-xs text-slate-500 font-semibold">To</label>
                   <input
                     type="date"
                     value={reportsCustomEndDate}
@@ -429,16 +586,33 @@ export function HRReportsView({
                 </div>
               </div>
             )}
+
+            {/* Individual Employee Filter */}
+            <div className="flex items-center gap-2 w-full md:w-auto md:pl-3 md:border-l border-slate-200 min-w-0 pt-2 md:pt-0 border-t md:border-t-0 mt-2 md:mt-0">
+              <label className="text-xs text-slate-500 font-semibold whitespace-nowrap">Employee</label>
+              <select
+                value={selectedEmployeeFilter}
+                onChange={e => setSelectedEmployeeFilter(e.target.value)}
+                className="text-xs border border-border rounded-xl px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer flex-1 md:flex-none min-w-0 md:max-w-[300px] truncate"
+              >
+                <option value="all">All Employees</option>
+                {(employeesList || []).map(emp => (
+                  <option key={emp.id} value={emp.id}>
+                    {(emp.name || '').split(' ')[0]} - {emp.department || 'No Dept'}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Employees', value: reportsSummary.totalEmployees || employeesList.length, sub: `${reportsSummary.activeEmployees || employeesList.filter((e) => e.status === 'active').length} active` },
-          { label: 'Avg Attendance', value: `${reportsSummary.avgAttendance || 0}%`, sub: 'This period' },
-          { label: 'Total Hours', value: `${(reportsSummary.totalHours || totalHours).toFixed(0)}h`, sub: 'All employees' },
-          { label: 'Leave Days Used', value: reportsSummary.leaveDaysUsed || leavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
+          { label: 'Total Employees', value: dynamicSummary.totalEmployees || filteredEmployeesList.length, sub: `${dynamicSummary.activeEmployees || filteredEmployeesList.filter((e) => e.status === 'active').length} active` },
+          { label: 'Avg Attendance', value: `${dynamicSummary.avgAttendance || 0}%`, sub: 'This period' },
+          { label: 'Total Hours', value: `${(dynamicSummary.totalHours || totalHours).toFixed(0)}h`, sub: selectedEmployeeFilter === 'all' ? 'All employees' : 'Selected employee' },
+          { label: 'Leave Days Used', value: dynamicSummary.leaveDaysUsed || filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-2xl border border-border p-5">
             <div className="text-slate-800 mb-0.5" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: '1.5rem' }}>{s.value}</div>
@@ -481,44 +655,90 @@ export function HRReportsView({
 
           <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6">
             <h3 className="text-slate-800 font-semibold mb-4">Employee Attendance Report</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    {['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate'].map((h) => (
-                      <th key={h} className="text-left text-slate-400 font-medium pb-3 pr-4 whitespace-nowrap">{h}</th>
-                    ))}
+            <div
+              ref={containerRef}
+              onMouseDown={handleMouseDown}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              className="overflow-auto max-h-[600px] border border-slate-100 rounded-xl relative cursor-grab select-none"
+            >
+              <table className="w-full text-sm border-collapse">
+                <thead className="z-10">
+                  <tr className="border-b border-border bg-white">
+                    {selectedEmployeeFilter !== 'all' ? (
+                      ['Date', 'Check In', 'Check Out', 'Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Status'].map((h, i) => (
+                        <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap bg-white z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] ${i === 0 ? 'min-w-[200px]' : ''}`}>{h}</th>
+                      ))
+                    ) : (
+                      ['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate'].map((h, i) => (
+                        <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap bg-white z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] ${i === 0 ? 'min-w-[200px]' : ''}`}>{h}</th>
+                      ))
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {employeesList.map((emp) => {
-                    const stats = getEmployeeStats(emp.id);
-                    return (
-                      <tr key={emp.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 pr-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold flex-shrink-0">{emp.avatar}</div>
-                            <span className="text-slate-700">{emp.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 pr-4 text-slate-500">{emp.department}</td>
-                        <td className="py-3 pr-4 text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.present}</td>
-                        <td className="py-3 pr-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatMin(stats.mealBreakMinutes)}</td>
-                        <td className="py-3 pr-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatMin(stats.teaBreakMinutes)}</td>
-                        <td className="py-3 pr-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatHrMin(stats.hours)}</td>
-                        <td className="py-3 pr-4 text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—'}</td>
-                        <td className="py-3 pr-4 text-red-500 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—'}</td>
-                        <td className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-slate-100 rounded-full max-w-16">
-                              <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${stats.pct}%` }} />
-                            </div>
-                            <span className="text-slate-600 text-xs" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.pct}%</span>
-                          </div>
-                        </td>
+                  {selectedEmployeeFilter !== 'all' ? (
+                    filteredEmployeeAttendanceData.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="py-8 text-center text-slate-500">No attendance records found for this period.</td>
                       </tr>
-                    );
-                  })}
+                    ) : (
+                      filteredEmployeeAttendanceData.map((a) => (
+                        <tr key={a._id || a.id} className="group hover:bg-slate-50/50">
+                          <td className="py-3 px-4 bg-white group-hover:bg-slate-50/50 text-slate-700 font-medium whitespace-nowrap min-w-[200px]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.date}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkIn || '—'}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkOut || '—'}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatMin(a.breakMinutes || 0)}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatHrMin(a.totalHours || 0)}</td>
+                          <td className="py-3 px-4 text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—'}</td>
+                          <td className="py-3 px-4 text-red-500 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.lessHours > 0 ? `${formatHrMin(a.lessHours)}` : '—'}</td>
+                          <td className="py-3 px-4 capitalize">
+                            <span className={`px-2 py-1 rounded-md text-xs font-medium ${a.status === 'present' ? 'bg-emerald-50 text-emerald-700' :
+                                a.status === 'absent' ? 'bg-red-50 text-red-700' :
+                                  a.status === 'late' ? 'bg-amber-50 text-amber-700' :
+                                    'bg-slate-100 text-slate-700'
+                              }`}>{a.status}</span>
+                          </td>
+                        </tr>
+                      ))
+                    )
+                  ) : (
+                    filteredEmployeesList.map((emp) => {
+                      const stats = getEmployeeStats(emp.id);
+                      return (
+                        <tr key={emp.id} className="group hover:bg-slate-50/50">
+                          <td className="py-3 px-4 bg-white group-hover:bg-slate-50/50 min-w-[200px]">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold flex-shrink-0 overflow-hidden">
+                                {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                                  <img src={emp.avatar} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  emp.avatar
+                                )}
+                              </div>
+                              <FormatMultilineName name={emp.name} />
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">{emp.department}</td>
+                          <td className="py-3 px-4 text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.present}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatMin(stats.mealBreakMinutes)}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatMin(stats.teaBreakMinutes)}</td>
+                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatHrMin(stats.hours)}</td>
+                          <td className="py-3 px-4 text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—'}</td>
+                          <td className="py-3 px-4 text-red-500 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—'}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-1.5 bg-slate-100 rounded-full max-w-16">
+                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${stats.pct}%` }} />
+                              </div>
+                              <span className="text-slate-600 text-xs" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.pct}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -568,30 +788,39 @@ export function HRReportsView({
 
           <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6">
             <h3 className="text-slate-800 font-semibold mb-4">Leave Request Details</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    {['Employee', 'Dept', 'Type', 'From', 'To', 'Days', 'Status', 'Applied'].map((h) => (
-                      <th key={h} className="text-left text-slate-400 font-medium pb-3 pr-3 whitespace-nowrap">{h}</th>
+            <div
+              ref={leaveContainerRef}
+              onMouseDown={handleLeaveMouseDown}
+              onMouseLeave={handleLeaveMouseLeave}
+              onMouseUp={handleLeaveMouseUp}
+              onMouseMove={handleLeaveMouseMove}
+              className="overflow-auto max-h-[600px] border border-slate-100 rounded-xl relative cursor-grab select-none"
+            >
+              <table className="w-full text-sm border-collapse">
+                <thead className="z-30">
+                  <tr className="border-b border-border bg-white">
+                    {['Employee', 'Dept', 'Type', 'From', 'To', 'Days', 'Status', 'Applied'].map((h, i) => (
+                      <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap bg-white z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] ${i === 0 ? 'min-w-[200px]' : ''}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {leavesList.map((l) => {
-                    const sc = { approved: 'bg-emerald-50 text-emerald-700', rejected: 'bg-red-50 text-red-600', pending: 'bg-amber-50 text-amber-600' };
+                  {filteredLeavesList.map((l) => {
+                    const sc = { approved: 'bg-emerald-50 text-emerald-700', rejected: 'bg-red-50 text-red-600', pending: 'bg-amber-50 text-amber-700' };
                     return (
-                      <tr key={l.id} className="hover:bg-slate-50/50">
-                        <td className="py-2.5 pr-3 text-slate-700 font-medium whitespace-nowrap">{l.employeeName}</td>
-                        <td className="py-2.5 pr-3 text-slate-500 whitespace-nowrap">{l.department}</td>
-                        <td className="py-2.5 pr-3 capitalize text-slate-500 whitespace-nowrap">{l.type}</td>
-                        <td className="py-2.5 pr-3 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.startDate}</td>
-                        <td className="py-2.5 pr-3 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.endDate}</td>
-                        <td className="py-2.5 pr-3 text-slate-600 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.days}</td>
-                        <td className="py-2.5 pr-3 whitespace-nowrap">
+                      <tr key={l.id} className="group hover:bg-slate-50/50 transition-colors">
+                        <td className="py-2.5 px-4 text-slate-700 font-medium whitespace-nowrap bg-white group-hover:bg-slate-50/50 min-w-[200px]">
+                          <FormatMultilineName name={l.employeeName} />
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-500 whitespace-nowrap">{l.department}</td>
+                        <td className="py-2.5 px-4 capitalize text-slate-500 whitespace-nowrap">{l.type}</td>
+                        <td className="py-2.5 px-4 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.startDate}</td>
+                        <td className="py-2.5 px-4 text-slate-500 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.endDate}</td>
+                        <td className="py-2.5 px-4 text-slate-600 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.days}</td>
+                        <td className="py-2.5 px-4 whitespace-nowrap">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${sc[l.status] || 'bg-slate-50'}`}>{l.status}</span>
                         </td>
-                        <td className="py-2.5 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.appliedOn}</td>
+                        <td className="py-2.5 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{l.appliedOn}</td>
                       </tr>
                     );
                   })}
@@ -615,12 +844,20 @@ export function HRReportsView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {employeesList.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-50/50">
+                {filteredEmployeesList.map((emp) => (
+                  <tr key={emp.id} className="group hover:bg-slate-50/50 transition-colors">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold">{emp.avatar}</div>
-                        <span className="text-slate-700 font-medium whitespace-nowrap">{emp.name}</span>
+                        <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold overflow-hidden">
+                          {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                            <img src={emp.avatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            emp.avatar
+                          )}
+                        </div>
+                        <div className="text-slate-700 font-medium whitespace-nowrap">
+                          <FormatMultilineName name={emp.name} />
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 pr-4 text-slate-500 whitespace-nowrap">{emp.company}</td>

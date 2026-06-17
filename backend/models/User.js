@@ -24,9 +24,20 @@ const userSchema = new mongoose.Schema(
       enum: ['employee', 'hr', 'company', 'superadmin'],
       required: true,
     },
-    /** Links to workforce profile: emp001, hr001, co001, etc. */
     profileId: {
       type: String,
+      default: null,
+    },
+    avatar: {
+      type: String,
+      default: '',
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
       default: null,
     },
   },
@@ -40,6 +51,7 @@ userSchema.methods.toSafeJSON = function toSafeJSON() {
     email: this.email,
     role: this.role,
     profileId: this.profileId,
+    avatar: this.avatar,
   };
 };
 

@@ -13,6 +13,8 @@ const companySchema = new mongoose.Schema(
     joinedDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
     address: { type: String, default: '' },
     country: { type: String, default: 'Sri Lanka' },
+    avatar: { type: String, default: '' },
+    teaBreakAllowed: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

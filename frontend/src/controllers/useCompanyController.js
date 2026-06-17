@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
 
-export function useCompanyController(companyId) {
+export function useCompanyController(companyId, updateAuth) {
   const [company, setCompany] = useState({
     name: 'Loading...',
     industry: '',
@@ -44,6 +44,46 @@ export function useCompanyController(companyId) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(noticeData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchShiftNotices();
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, error: data.error };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const handleUpdateShiftNotice = async (noticeId, noticeData) => {
+    if (!companyId) return { success: false, error: 'No company ID' };
+    try {
+      const res = await fetch(`${BACKEND_URL}/companies/${companyId}/shift-notices/${noticeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(noticeData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchShiftNotices();
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, error: data.error };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const handleDeleteShiftNotice = async (noticeId) => {
+    if (!companyId) return { success: false, error: 'No company ID' };
+    try {
+      const res = await fetch(`${BACKEND_URL}/companies/${companyId}/shift-notices/${noticeId}`, {
+        method: 'DELETE',
       });
       const data = await res.json();
       if (res.ok) {
@@ -104,6 +144,14 @@ export function useCompanyController(companyId) {
       const data = await res.json();
       if (res.ok) {
         setCompany(data.company);
+        if (updateData.avatar !== undefined || updateData.name) {
+          if (updateAuth) {
+            updateAuth({
+              avatar: data.company.avatar || '',
+              name: data.company.name,
+            });
+          }
+        }
         return { success: true, message: data.message };
       } else {
         return { success: false, error: data.error };
@@ -132,6 +180,8 @@ export function useCompanyController(companyId) {
     handleUpdateCompanyProfile,
     shiftNotices,
     handleCreateShiftNotice,
+    handleUpdateShiftNotice,
+    handleDeleteShiftNotice,
     fetchShiftNotices,
   };
 }

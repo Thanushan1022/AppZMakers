@@ -19,6 +19,7 @@ const employeeSchema = new mongoose.Schema(
     cvData: { type: String, default: '' },
     country: { type: String, default: 'Sri Lanka' },
     office: { type: String, default: 'Colombo' },
+    teaBreakAllowed: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

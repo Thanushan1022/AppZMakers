@@ -15,6 +15,7 @@ router.get('/employees/:id/attendance', employeeController.getAttendance);
 router.post('/employees/:id/attendance', employeeController.logAttendance);
 router.get('/employees/:id/leaves', employeeController.getLeaves);
 router.post('/employees/:id/leaves', employeeController.createLeaveRequest);
+router.delete('/employees/:id/leaves/:leaveId', employeeController.deleteLeaveRequest);
 router.put('/employees/:id/client', employeeController.updateClient);
 router.put('/employees/:id/profile', employeeController.updateProfile);
 router.get('/employees/:id/shift-notices', employeeController.getEmployeeShiftNotices);
@@ -44,6 +45,8 @@ router.get('/companies/:id/profile', companyController.getProfile);
 router.put('/companies/:id/profile', companyController.updateProfile);
 router.get('/companies/:id/shift-notices', companyController.getCompanyShiftNotices);
 router.post('/companies/:id/shift-notices', companyController.createShiftNotice);
+router.put('/companies/:id/shift-notices/:noticeId', companyController.updateShiftNotice);
+router.delete('/companies/:id/shift-notices/:noticeId', companyController.deleteShiftNotice);
 
 // ==========================================
 // SUPERADMIN ROUTES
@@ -61,6 +64,8 @@ router.delete('/admin/hr/:id', adminController.deleteHR);
 router.delete('/admin/companies/:id', adminController.deleteCompany);
 router.get('/admin/settings', adminController.getSettings);
 router.post('/admin/settings', adminController.updateSettings);
+router.get('/admin/:id/profile', adminController.getProfile);
+router.put('/admin/:id/profile', adminController.updateProfile);
 
 // ==========================================
 // CALENDAR & GOOGLE CALENDAR ROUTES

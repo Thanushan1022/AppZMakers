@@ -39,12 +39,22 @@ export function useAuthController() {
       role: data.role,
       userId: data.userId,
       token: data.token,
+      avatar: data.avatar || '',
     };
     setAuth(authPayload);
     localStorage.setItem('wf_auth', JSON.stringify(authPayload));
     const defaultPage = defaultPages[data.role] || 'dashboard';
     setCurrentPage(defaultPage);
     localStorage.setItem('wf_page', defaultPage);
+  };
+
+  const updateAuth = (updatedFields) => {
+    setAuth((prev) => {
+      if (!prev) return null;
+      const newAuth = { ...prev, ...updatedFields };
+      localStorage.setItem('wf_auth', JSON.stringify(newAuth));
+      return newAuth;
+    });
   };
 
   const handleLogin = async (e) => {
@@ -132,11 +142,56 @@ export function useAuthController() {
     setError('');
   };
 
+  const handleForgotPassword = async (emailToReset) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`${BACKEND_URL}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToReset }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Request failed');
+      }
+      return data.message;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (token, newPassword) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`${BACKEND_URL}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password: newPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Password reset failed');
+      }
+      return data.message;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     auth,
     currentPage,
     setCurrentPage: navigateTo,
     mode,
+    setMode,
     toggleMode,
     selectedRole,
     setSelectedRole: handleRoleChange,
@@ -150,8 +205,12 @@ export function useAuthController() {
     setShowPass,
     handleLogin,
     handleSignup,
+    handleForgotPassword,
+    handleResetPassword,
     handleLogout,
+    updateAuth,
     error,
+    setError,
     loading,
   };
 }

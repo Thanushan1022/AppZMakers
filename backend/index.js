@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
-
 import apiRouter from './routes/api.js';
 import authRoutes from './routes/authRoutes.js';
 import { connectDatabase } from './config/db.js';
@@ -19,29 +18,15 @@ const PORT = process.env.PORT || 5001;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ✅ CORS (ALLOW YOUR VERCEL FRONTEND)
-const allowedOrigins = [
-  "https://app-z-makers.vercel.app",
-  "https://app-z-makers-8peo.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:3000"
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: "https://app-z-makers-8peo.vercel.app",
   credentials: true
 }));
+
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// ✅ HEALTH CHECK ROUTE
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -53,27 +38,22 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ✅ ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api', apiRouter);
 
-// ✅ Swagger setup
 let swaggerSpec;
 try {
   const mod = await import('./config/swagger.js');
   swaggerSpec = mod.default;
-
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     explorer: true,
     customSiteTitle: 'WorkForge API Docs',
   }));
-
   app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 } catch (err) {
-  console.warn('⚠️ Swagger setup skipped:', err.message);
+  console.warn('⚠️  Swagger setup skipped:', err.message);
 }
 
-// ✅ START SERVER
 const startServer = async () => {
   try {
     await connectDatabase();
@@ -81,20 +61,19 @@ const startServer = async () => {
     await ensureUserProfiles();
 
     const server = app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📚 Swagger: ${BASE_URL}/api-docs`);
-      console.log(`🔐 Auth: ${BASE_URL}/api/auth/login`);
+      console.log(`🚀 WorkForge Server running on port ${PORT}`);
+      console.log(`📚 Swagger UI: ${BASE_URL}/api-docs`);
+      console.log(`🔐 Auth API:  ${BASE_URL}/api/auth/login`);
     });
 
     server.on('error', (error) => {
       if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} already in use`);
+        console.error(`❌ Port ${PORT} is already in use. Stop the other process or change PORT in backend/.env`);
       } else {
-        console.error('❌ Server error:', error.message);
+        console.error('❌ Failed to start server:', error.message);
       }
       process.exit(1);
     });
-
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
     process.exit(1);

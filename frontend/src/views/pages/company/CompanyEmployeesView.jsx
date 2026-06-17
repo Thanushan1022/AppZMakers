@@ -44,8 +44,12 @@ export function CompanyEmployeesView({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50/50">
           {filteredEmployees.map(emp => (
             <div key={emp.id} className="bg-white rounded-xl border border-border p-5 hover:border-indigo-200 transition-colors flex gap-4">
-              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold text-base flex-shrink-0">
-                {emp.avatar}
+              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold text-base flex-shrink-0 overflow-hidden">
+                {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                  <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+                ) : (
+                  emp.avatar
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">

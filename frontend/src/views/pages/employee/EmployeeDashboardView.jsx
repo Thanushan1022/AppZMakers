@@ -39,11 +39,15 @@ export function EmployeeDashboardView({
   totalExtraHours,
   totalLessHours,
   teaBreakEnabled,
+  teaBreakAllowed,
   teaBreakLimitReached,
     teaBreakGapRemainingSecs,
     teaBreakDuration,
     todayTasks = [],
     shiftNotices = [],
+    mealBreakCount,
+    mealBreakMax,
+    mealBreakLimitReached,
   }) {
     const recentAttendance = filteredAttendance.slice(0, 5);
   
@@ -109,18 +113,20 @@ export function EmployeeDashboardView({
           <div className="flex items-center gap-3">
             {checkedIn && (
               <div className="flex items-center gap-2">
-                <button
+                 <button
                   onClick={handleBreak}
-                  disabled={onTeaBreak}
+                  disabled={onTeaBreak || (!onBreak && mealBreakLimitReached)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors border ${onBreak
                       ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
-                      : 'bg-slate-50 text-slate-600 border-border hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                      : mealBreakLimitReached
+                      ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                      : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
                     }`}
                 >
-                  <Coffee className="w-4 h-4" />
-                  {onBreak ? 'End Meal Break' : 'Start Meal Break'}
+                  <Coffee className={`w-4 h-4 ${onBreak ? 'text-amber-500' : mealBreakLimitReached ? 'text-slate-400' : 'text-blue-500'}`} />
+                  {onBreak ? `End Meal Break (${mealBreakCount}-${mealBreakMax})` : mealBreakLimitReached ? `Meal Break Limit Reached (${mealBreakCount}-${mealBreakMax})` : `Start Meal Break (${mealBreakCount}-${mealBreakMax})`}
                 </button>
-                {teaBreakEnabled && (
+                {teaBreakEnabled && teaBreakAllowed && (
                   <>
                     {onTeaBreak ? (
                       <button
@@ -164,7 +170,7 @@ export function EmployeeDashboardView({
         </div>
 
         {checkedIn && (
-          <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <div className={`mt-4 pt-4 border-t border-border grid grid-cols-2 ${teaBreakEnabled && teaBreakAllowed ? 'sm:grid-cols-5' : 'sm:grid-cols-4'} gap-4`}>
             <div className="text-center">
               <div className="text-emerald-600 text-sm" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>
                 {formatDuration(sessionSecs)}
@@ -177,12 +183,14 @@ export function EmployeeDashboardView({
               </div>
               <div className="text-slate-400 text-xs mt-0.5">Meal Break</div>
             </div>
-            <div className="text-center">
-              <div className="text-emerald-500 text-sm" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>
-                {formatDuration(teaBreakSecs)}
+            {teaBreakEnabled && teaBreakAllowed && (
+              <div className="text-center">
+                <div className="text-emerald-500 text-sm" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>
+                  {formatDuration(teaBreakSecs)}
+                </div>
+                <div className="text-slate-400 text-xs mt-0.5">Tea Break</div>
               </div>
-              <div className="text-slate-400 text-xs mt-0.5">Tea Break</div>
-            </div>
+            )}
             <div className="text-center">
               <div className={`${isBreakOver ? 'text-rose-600 font-bold' : 'text-slate-600'} text-sm`} style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                 {isBreakOver ? 'Over Limit!' : formatDuration(remainingBreakSecs)}
@@ -316,7 +324,7 @@ export function EmployeeDashboardView({
 
               <div className="space-y-3">
                 {/* Take Meal Break button */}
-                {checkedIn && !onBreak && (
+                {checkedIn && !onBreak && !mealBreakLimitReached && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);
@@ -330,7 +338,7 @@ export function EmployeeDashboardView({
                 )}
 
                 {/* Take Tea Break button */}
-                {checkedIn && teaBreakEnabled && !teaBreakLimitReached && teaBreakGapRemainingSecs <= 0 && !onTeaBreak && (
+                {checkedIn && teaBreakEnabled && teaBreakAllowed && !teaBreakLimitReached && teaBreakGapRemainingSecs <= 0 && !onTeaBreak && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);

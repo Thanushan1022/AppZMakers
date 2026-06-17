@@ -204,12 +204,68 @@ export const getEvents = async (req, res) => {
   }
 };
 
+const validateCalendarEvent = (title, description, isNew = false, start = null, end = null) => {
+  if (title !== undefined) {
+    const titleText = title.trim();
+    if (!titleText) {
+      return 'Title is required.';
+    }
+    const titleWords = titleText.split(/\s+/).filter(Boolean).length;
+    if (titleWords > 20) {
+      return 'Title word limit is 20 words.';
+    }
+    if (titleText.length > 100) {
+      return 'Title cannot exceed 100 characters.';
+    }
+    const hasLongWord = titleText.split(/\s+/).some(word => word.length > 20);
+    if (hasLongWord) {
+      return 'Individual words in the title cannot exceed 20 characters.';
+    }
+  }
+
+  if (description !== undefined) {
+    const descText = description.trim();
+    const descWords = descText.split(/\s+/).filter(Boolean).length;
+    if (descWords > 50) {
+      return 'Description word limit is 50 words.';
+    }
+    if (descText.length > 300) {
+      return 'Description cannot exceed 300 characters.';
+    }
+    const hasLongWord = descText.split(/\s+/).some(word => word.length > 25);
+    if (hasLongWord) {
+      return 'Individual words in the description cannot exceed 25 characters.';
+    }
+  }
+
+  if (isNew) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (start && start < todayStr) {
+      return 'Start date cannot be in the past.';
+    }
+    if (end && end < todayStr) {
+      return 'End date cannot be in the past.';
+    }
+  }
+
+  return null;
+};
+
 /**
  * Create a new event
  */
 export const createEvent = async (req, res) => {
   try {
     const { title, description, start, end, type, targetLocation, targetValue, createdBy } = req.body;
+
+    const errorMsg = validateCalendarEvent(title, description, true, start, end);
+    if (errorMsg) {
+      return res.status(400).json({ error: errorMsg });
+    }
+
+    if (!type) {
+      return res.status(400).json({ error: 'Please select an event type.' });
+    }
 
     const event = new CompanyEvent({
       title,
@@ -243,6 +299,11 @@ export const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, start, end, type, targetLocation, targetValue } = req.body;
+
+    const errorMsg = validateCalendarEvent(title, description, false);
+    if (errorMsg) {
+      return res.status(400).json({ error: errorMsg });
+    }
 
     const event = await CompanyEvent.findById(id);
     if (!event) return res.status(404).json({ error: 'Event not found' });

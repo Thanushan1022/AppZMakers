@@ -1,12 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Search, Calendar, Clock, ClipboardList } from 'lucide-react';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
 export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = [] }) {
+  const FormatMultilineName = ({ name }) => {
+    if (!name) return null;
+    const parts = name.trim().split(/\s+/);
+    return (
+      <div className="flex flex-col">
+        {parts.map((p, i) => (
+          <span key={i} className="leading-tight capitalize">{p}</span>
+        ))}
+      </div>
+    );
+  };
+
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(() => new Date().toISOString().split('T')[0]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedTasks, setSelectedTasks] = useState(null);
+
+  const containerRef = useRef(null);
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const handleMouseDown = (e) => {
+    if (e.target.closest('button, input, select, a')) return;
+    isDown.current = true;
+    containerRef.current.classList.add('cursor-grabbing');
+    containerRef.current.classList.remove('cursor-grab');
+    startX.current = e.pageX - containerRef.current.offsetLeft;
+    scrollLeft.current = containerRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDown.current = false;
+    if (containerRef.current) {
+      containerRef.current.classList.remove('cursor-grabbing');
+      containerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDown.current = false;
+    if (containerRef.current) {
+      containerRef.current.classList.remove('cursor-grabbing');
+      containerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDown.current) return;
+    e.preventDefault();
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    containerRef.current.scrollLeft = scrollLeft.current - walk;
+  };
 
   // Resolve logs: if dateFilter is specified, ensure all employees are shown (generate virtual absent logs if missing)
   const resolvedLogs = React.useMemo(() => {
@@ -178,12 +228,19 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
           <span className="text-slate-500 text-sm">{filteredHistory.length} logs found</span>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-slate-50/50">
-                {['Employee', 'Date', 'Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map(h => (
-                  <th key={h} className="text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap">{h}</th>
+        <div
+          ref={containerRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          className="overflow-auto max-h-[600px] border border-slate-100 rounded-xl relative cursor-grab select-none"
+        >
+          <table className="w-full text-sm border-collapse">
+            <thead className="z-30">
+              <tr className="border-b border-border bg-white">
+                {['Employee', 'Date', 'Check In', 'Check Out', 'Meal Break', 'Tea Break', 'Net Hours', 'Extra Hours', 'Less Hours', 'Status', 'Tasks'].map((h, i) => (
+                  <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap bg-white z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] ${i === 0 ? 'min-w-[200px]' : ''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -192,13 +249,19 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                 const emp = myEmployees.find(e => e.id === rec.employeeId);
                 const isAbsent = rec.status === 'absent';
                 return (
-                  <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3 px-4">
+                  <tr key={rec.id} className="group hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3 px-4 bg-white group-hover:bg-slate-50/50 min-w-[200px]">
                       {emp ? (
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 text-xs font-bold">{emp.avatar}</div>
+                          <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 text-xs font-bold overflow-hidden flex-shrink-0">
+                            {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                              <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+                            ) : (
+                              emp.avatar
+                            )}
+                          </div>
                           <div>
-                            <div className="text-slate-700 font-medium whitespace-nowrap">{emp.name}</div>
+                            <div className="text-slate-700 font-medium whitespace-nowrap"><FormatMultilineName name={emp.name} /></div>
                             <div className="text-slate-400 text-xs">{emp.position}</div>
                           </div>
                         </div>

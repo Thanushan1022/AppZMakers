@@ -28,8 +28,24 @@ export const getProfile = async (req, res) => {
       await autoEndOverdueTeaBreaks(todayRecord, settings);
     }
 
+    const empJson = toEmployeeJSON(emp);
+    if (empJson) {
+      let companyTeaBreakAllowed = true;
+      if (emp.companyId) {
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(emp.companyId);
+        const compQuery = isValidObjectId
+          ? { $or: [{ legacyId: emp.companyId }, { _id: emp.companyId }] }
+          : { legacyId: emp.companyId };
+        const comp = await Company.findOne(compQuery);
+        if (comp) {
+          companyTeaBreakAllowed = comp.teaBreakAllowed !== false;
+        }
+      }
+      empJson.companyTeaBreakAllowed = companyTeaBreakAllowed;
+    }
+
     res.json({
-      employee: toEmployeeJSON(emp),
+      employee: empJson,
       leaveBalance: toLeaveBalanceJSON(balance),
       settings,
     });
@@ -93,6 +109,14 @@ export const logAttendance = async (req, res) => {
       });
     } else if (action === 'start-break') {
       if (!todayRecord) return res.status(400).json({ error: 'Not clocked in' });
+      if (todayRecord.onBreak || todayRecord.onTeaBreak) {
+        return res.status(400).json({ error: 'Already on a break' });
+      }
+      const mealCount = todayRecord.breaks?.filter(b => b.type === 'meal').length || 0;
+      const maxAllowed = settings.mealBreaksMax !== undefined ? settings.mealBreaksMax : 5;
+      if (mealCount >= maxAllowed) {
+        return res.status(400).json({ error: 'Meal Break limit reached' });
+      }
       todayRecord.onBreak = true;
       if (!todayRecord.breaks) todayRecord.breaks = [];
       todayRecord.breaks.push({ start: time, end: null, type: 'meal' });
@@ -121,6 +145,19 @@ export const logAttendance = async (req, res) => {
       if (!todayRecord) return res.status(400).json({ error: 'Not clocked in' });
       if (settings.teaBreakEnabled === false) {
         return res.status(400).json({ error: 'Tea Break feature is currently disabled' });
+      }
+      if (emp.teaBreakAllowed === false) {
+        return res.status(400).json({ error: 'Tea Break is not allowed for your profile' });
+      }
+      if (emp.companyId) {
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(emp.companyId);
+        const compQuery = isValidObjectId
+          ? { $or: [{ legacyId: emp.companyId }, { _id: emp.companyId }] }
+          : { legacyId: emp.companyId };
+        const comp = await Company.findOne(compQuery);
+        if (comp && comp.teaBreakAllowed === false) {
+          return res.status(400).json({ error: 'Tea Break is not allowed for your company' });
+        }
       }
       if (todayRecord.onBreak || todayRecord.onTeaBreak) {
         return res.status(400).json({ error: 'Already on a break' });
@@ -179,8 +216,8 @@ export const logAttendance = async (req, res) => {
       finalizeClockOut(todayRecord, time, settings);
       await todayRecord.save();
     } else if (action === 'add-task') {
-      if (!todayRecord || todayRecord.checkOut) {
-        return res.status(400).json({ error: 'You can only log tasks during active working hours.' });
+      if (!todayRecord) {
+        return res.status(400).json({ error: 'You can only log tasks for days you have attended.' });
       }
       const { description, timeContext } = req.body;
       if (!description) {
@@ -192,6 +229,25 @@ export const logAttendance = async (req, res) => {
       }
       if (!todayRecord.tasks) todayRecord.tasks = [];
       todayRecord.tasks.push({ description, timeContext });
+      await todayRecord.save();
+    } else if (action === 'edit-task') {
+      if (!todayRecord) {
+        return res.status(400).json({ error: 'You can only edit tasks for days you have attended.' });
+      }
+      const { taskId, description, timeContext } = req.body;
+      if (!taskId) return res.status(400).json({ error: 'Task ID is required.' });
+      if (!description) return res.status(400).json({ error: 'Task description is required.' });
+      const wordCount = description.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount > 50) {
+        return res.status(400).json({ error: 'Task description cannot exceed 50 words.' });
+      }
+      if (!todayRecord.tasks) return res.status(404).json({ error: 'Task not found.' });
+
+      const taskIndex = todayRecord.tasks.findIndex(t => (t._id && t._id.toString() === taskId) || (t.id && t.id.toString() === taskId));
+      if (taskIndex === -1) return res.status(404).json({ error: 'Task not found.' });
+
+      todayRecord.tasks[taskIndex].description = description;
+      todayRecord.tasks[taskIndex].timeContext = timeContext;
       await todayRecord.save();
     }
 
@@ -206,10 +262,26 @@ export const getLeaves = async (req, res) => {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
-    const leaves = await LeaveRequest.find({ employeeId: getEmployeeLegacyId(emp) }).sort({ createdAt: -1 });
+    const leaves = await LeaveRequest.find({ employeeId: getEmployeeLegacyId(emp), hiddenForEmployee: { $ne: true } }).sort({ createdAt: -1 });
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteLeaveRequest = async (req, res) => {
+  try {
+    const { id, leaveId } = req.params;
+    const leave = await LeaveRequest.findOne({ _id: leaveId, employeeId: id });
+    if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+    
+    // Soft delete: hide from employee dashboard
+    leave.hiddenForEmployee = true;
+    await leave.save();
+    
+    res.json({ message: 'Leave request removed from dashboard' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -286,7 +358,7 @@ export const updateProfile = async (req, res) => {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
-    const { phone, address, password, cvName, cvData } = req.body;
+    const { phone, address, password, cvName, cvData, avatar } = req.body;
 
     if (password && password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
@@ -296,23 +368,21 @@ export const updateProfile = async (req, res) => {
     if (address !== undefined) emp.address = address;
     if (cvName !== undefined) emp.cvName = cvName;
     if (cvData !== undefined) emp.cvData = cvData;
+    if (avatar !== undefined) emp.avatar = avatar;
 
     await emp.save();
 
-    if (password) {
-      if (emp.userId) {
-        const user = await User.findById(emp.userId);
-        if (user) {
-          user.password = await bcrypt.hash(password, 10);
-          await user.save();
-        }
-      } else {
-        const user = await User.findOne({ email: emp.email.toLowerCase() });
-        if (user) {
-          user.password = await bcrypt.hash(password, 10);
-          await user.save();
-        }
+    // Sync password and avatar to auth User model
+    const userQuery = emp.userId ? { _id: emp.userId } : { email: emp.email.toLowerCase() };
+    const user = await User.findOne(userQuery);
+    if (user) {
+      if (password) {
+        user.password = await bcrypt.hash(password, 10);
       }
+      if (avatar !== undefined) {
+        user.avatar = avatar;
+      }
+      await user.save();
     }
 
     res.json({
@@ -348,3 +418,4 @@ export const getEmployeeShiftNotices = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+

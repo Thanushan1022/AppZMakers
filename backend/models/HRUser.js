@@ -9,6 +9,7 @@ const hrUserSchema = new mongoose.Schema(
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     joinDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    avatar: { type: String, default: '' },
   },
   { timestamps: true }
 );

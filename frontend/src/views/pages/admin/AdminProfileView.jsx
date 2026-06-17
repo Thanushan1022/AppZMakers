@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Calendar, Briefcase, Building2, Edit2, X, Lock, Save, Loader2, AlertCircle, CheckCircle2, User, UploadCloud } from 'lucide-react';
+import { Mail, ShieldCheck, Edit2, X, Lock, Save, Loader2, AlertCircle, CheckCircle2, User, UploadCloud } from 'lucide-react';
 
-export function HRProfileView({
-  hrProfile,
-  handleUpdateHRProfile,
+export function AdminProfileView({
+  adminProfile,
+  handleUpdateProfile,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [department, setDepartment] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -21,6 +20,7 @@ export function HRProfileView({
       setToast(null);
     }, 4000);
   };
+
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -33,7 +33,7 @@ export function HRProfileView({
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Data = event.target.result;
-      const result = await handleUpdateHRProfile({ avatar: base64Data });
+      const result = await handleUpdateProfile({ avatar: base64Data });
       if (result && result.success) {
         showToast('success', 'Profile photo updated successfully');
       } else {
@@ -45,6 +45,7 @@ export function HRProfileView({
     };
     reader.readAsDataURL(file);
   };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!name || name.trim().length < 2 || name.trim().length > 30) {
@@ -58,14 +59,6 @@ export function HRProfileView({
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       showToast('error', 'Please enter a valid email address.');
-      return;
-    }
-    if (!department || department.trim().length < 2 || department.trim().length > 20) {
-      showToast('error', 'Department must be between 2 and 20 characters long.');
-      return;
-    }
-    if (!/^[a-zA-Z\s.\-()&]+$/.test(department)) {
-      showToast('error', 'Department contains invalid characters.');
       return;
     }
     if (password || confirmPassword) {
@@ -84,12 +77,12 @@ export function HRProfileView({
     }
 
     setIsSaving(true);
-    const updateData = { name, email, department };
+    const updateData = { name, email };
     if (password) {
       updateData.password = password;
     }
 
-    const result = await handleUpdateHRProfile(updateData);
+    const result = await handleUpdateProfile(updateData);
     setIsSaving(false);
 
     if (result && result.success) {
@@ -102,17 +95,17 @@ export function HRProfileView({
     }
   };
 
-  if (!hrProfile) {
+  if (!adminProfile) {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
       </div>
     );
   }
 
-  const avatarText = hrProfile.name
-    ? hrProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'HR';
+  const avatarText = adminProfile.name
+    ? adminProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'AD';
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
@@ -134,8 +127,8 @@ export function HRProfileView({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>My HR Profile</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Your personal information and account details</p>
+          <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>My Profile</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Your personal information and system administrator settings</p>
         </div>
       </div>
 
@@ -143,37 +136,36 @@ export function HRProfileView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main ID Card */}
         <div className="lg:col-span-1 relative rounded-[2rem] overflow-hidden shadow-sm group border border-slate-200 bg-white">
-           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-sky-500 to-fuchsia-500 bg-[length:200%_200%] animate-gradient opacity-10"></div>
+           <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 bg-[length:200%_200%] animate-gradient opacity-10"></div>
            <div className="relative p-8 flex flex-col items-center text-center bg-white/40 backdrop-blur-xl h-full">
               
               <div className="relative w-32 h-32 mb-6 group/avatar">
-                 <div className="absolute inset-0 bg-gradient-to-tr from-sky-400 to-indigo-500 rounded-3xl rotate-6 group-hover/avatar:rotate-12 transition-transform duration-500 blur-md opacity-60"></div>
+                 <div className="absolute inset-0 bg-gradient-to-tr from-violet-400 to-indigo-500 rounded-3xl rotate-6 group-hover/avatar:rotate-12 transition-transform duration-500 blur-md opacity-60"></div>
                  <div className="relative w-full h-full bg-white rounded-3xl p-1 shadow-xl">
-                    <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-sky-700 font-bold text-3xl">
-                      {hrProfile.avatar && hrProfile.avatar.startsWith('data:image/') ? (
-                        <img src={hrProfile.avatar} alt={hrProfile.name} className="w-full h-full object-cover" />
+                    <div className="w-full h-full bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-violet-700 font-bold text-3xl">
+                      {adminProfile.avatar && adminProfile.avatar.startsWith('data:image/') ? (
+                        <img src={adminProfile.avatar} alt={adminProfile.name} className="w-full h-full object-cover" />
                       ) : (
                         avatarText
                       )}
                     </div>
                  </div>
-                 <label className="absolute -bottom-3 -right-3 bg-white p-2.5 rounded-2xl shadow-xl border border-slate-100 cursor-pointer hover:scale-110 hover:-rotate-6 transition-transform text-sky-600">
+                 <label className="absolute -bottom-3 -right-3 bg-white p-2.5 rounded-2xl shadow-xl border border-slate-100 cursor-pointer hover:scale-110 hover:-rotate-6 transition-transform text-violet-600">
                     <UploadCloud className="w-5 h-5" />
                     <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                  </label>
               </div>
               
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">{hrProfile.name}</h2>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-600 rounded-full text-sm font-medium border border-sky-100 mb-8">
-                 <Briefcase className="w-4 h-4" />
-                 HR Manager
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">{adminProfile.name}</h2>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-50 text-violet-600 rounded-full text-sm font-medium border border-violet-100 mb-8">
+                 <ShieldCheck className="w-4 h-4" />
+                 Super Admin
               </div>
 
               <button
                 onClick={() => {
-                  setName(hrProfile.name || '');
-                  setEmail(hrProfile.email || '');
-                  setDepartment(hrProfile.department || '');
+                  setName(adminProfile.name || '');
+                  setEmail(adminProfile.email || '');
                   setPassword('');
                   setConfirmPassword('');
                   setIsEditing(true);
@@ -188,15 +180,15 @@ export function HRProfileView({
 
         {/* Info Tiles Grid */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-           <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+           <div className="bg-gradient-to-br from-violet-50 to-white border border-violet-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
               <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-                <Building2 className="w-32 h-32 text-sky-600" />
+                <ShieldCheck className="w-32 h-32 text-violet-600" />
               </div>
-              <div className="w-12 h-12 bg-white text-sky-600 rounded-2xl flex items-center justify-center mb-6 border border-sky-100 shadow-sm">
-                <Building2 className="w-6 h-6" />
+              <div className="w-12 h-12 bg-white text-violet-600 rounded-2xl flex items-center justify-center mb-6 border border-violet-100 shadow-sm">
+                <ShieldCheck className="w-6 h-6" />
               </div>
-              <p className="text-slate-500 text-sm font-medium mb-1">Department</p>
-              <p className="text-slate-800 font-bold text-lg">{hrProfile.department || 'Human Resources'}</p>
+              <p className="text-slate-500 text-sm font-medium mb-1">Permissions</p>
+              <p className="text-slate-800 font-bold text-lg">All System Controls</p>
            </div>
 
            <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -207,18 +199,18 @@ export function HRProfileView({
                 <Mail className="w-6 h-6" />
               </div>
               <p className="text-slate-500 text-sm font-medium mb-1">Email Address</p>
-              <p className="text-slate-800 font-bold text-lg truncate">{hrProfile.email}</p>
+              <p className="text-slate-800 font-bold text-lg truncate">{adminProfile.email}</p>
            </div>
 
            <div className="bg-gradient-to-br from-fuchsia-50 to-white border border-fuchsia-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
               <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-                <Calendar className="w-32 h-32 text-fuchsia-600" />
+                <User className="w-32 h-32 text-fuchsia-600" />
               </div>
               <div className="w-12 h-12 bg-white text-fuchsia-600 rounded-2xl flex items-center justify-center mb-6 border border-fuchsia-100 shadow-sm">
-                <Calendar className="w-6 h-6" />
+                <User className="w-6 h-6" />
               </div>
-              <p className="text-slate-500 text-sm font-medium mb-1">Joined Date</p>
-              <p className="text-slate-800 font-bold text-lg">{hrProfile.joinDate || 'N/A'}</p>
+              <p className="text-slate-500 text-sm font-medium mb-1">Account Type</p>
+              <p className="text-slate-800 font-bold text-lg">Super Admin</p>
            </div>
 
            <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-center items-center group">
@@ -228,7 +220,7 @@ export function HRProfileView({
                     <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                  </div>
                  <p className="text-slate-500 text-sm font-medium mb-1">Account Status</p>
-                 <p className="text-emerald-600 font-bold text-xl capitalize">{hrProfile.status}</p>
+                 <p className="text-emerald-600 font-bold text-xl capitalize">Active</p>
               </div>
            </div>
         </div>
@@ -272,8 +264,8 @@ export function HRProfileView({
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Amanda Foster"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                      placeholder="Admin User"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
                     />
                   </div>
                 </div>
@@ -288,24 +280,8 @@ export function HRProfileView({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="amanda@company.com"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="department">Department</label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      id="department"
-                      type="text"
-                      required
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      placeholder="Human Resources"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                      placeholder="admin@system.com"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
                     />
                   </div>
                 </div>
@@ -313,7 +289,7 @@ export function HRProfileView({
 
               <div className="pt-2 border-t border-border space-y-4">
                 <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-sky-500" />
+                  <Lock className="w-4 h-4 text-violet-500" />
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Change Password (Optional)</h4>
                 </div>
                 
@@ -326,7 +302,7 @@ export function HRProfileView({
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
                     />
                   </div>
 
@@ -338,7 +314,7 @@ export function HRProfileView({
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
                     />
                   </div>
                 </div>
@@ -357,7 +333,7 @@ export function HRProfileView({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-medium shadow-md shadow-sky-600/10 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-medium shadow-md shadow-violet-600/10 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <>

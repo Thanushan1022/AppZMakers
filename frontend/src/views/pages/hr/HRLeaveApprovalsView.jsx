@@ -4,6 +4,7 @@ const typeColors = {
   annual: 'bg-indigo-50 text-indigo-700 border-indigo-100',
   casual: 'bg-sky-50 text-sky-700 border-sky-100',
   personal: 'bg-rose-50 text-rose-700 border-rose-100',
+  'client-assigned': 'bg-amber-55 text-amber-700 border-amber-150',
 };
 
 export function HRLeaveApprovalsView({
@@ -81,7 +82,9 @@ export function HRLeaveApprovalsView({
                 </div>
 
                 <div className="mt-3 flex items-center gap-3 flex-wrap">
-                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${typeColors[leave.type] || 'bg-slate-50 text-slate-600'}`}>{leave.type} Leave</span>
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${typeColors[leave.type] || 'bg-slate-50 text-slate-600'}`}>
+                    {leave.type === 'client-assigned' ? 'Client' : leave.type} Leave
+                  </span>
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <Calendar className="w-3.5 h-3.5" />
                     <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{leave.startDate}</span>

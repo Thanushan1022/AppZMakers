@@ -43,23 +43,26 @@ export const autoEndOverdueTeaBreaks = async (records, settings) => {
 };
 
 export const parseBreakMinutes = (breakTime) => {
-  let allowedBreakMin = 60;
-  if (breakTime) {
-    const match = breakTime.match(/(\d+)\s*(hour|minute|min)/i);
-    if (match) {
-      const val = parseInt(match[1], 10);
-      const unit = match[2].toLowerCase();
-      allowedBreakMin = unit.startsWith('hour') ? val * 60 : val;
-    }
+  if (breakTime === null || breakTime === undefined || breakTime === '') return 60;
+  const val = parseFloat(breakTime);
+  if (!isNaN(val)) {
+    return val * 60;
   }
-  return allowedBreakMin;
+  const match = String(breakTime).match(/(-?\d+(\.\d+)?)\s*(hour|minute|min)/i);
+  if (match) {
+    const numericVal = parseFloat(match[1]);
+    const unit = match[3].toLowerCase();
+    return unit.startsWith('hour') ? numericVal * 60 : numericVal;
+  }
+  return 60;
 };
 
 export const parseStdHours = (workHours) => {
-  if (workHours) {
-    const match = workHours.match(/(\d+)/);
-    if (match) return parseInt(match[1], 10);
-  }
+  if (workHours === null || workHours === undefined || workHours === '') return 8;
+  const val = parseFloat(workHours);
+  if (!isNaN(val)) return val;
+  const match = String(workHours).match(/(-?\d+(\.\d+)?)/);
+  if (match) return parseFloat(match[1]);
   return 8;
 };
 

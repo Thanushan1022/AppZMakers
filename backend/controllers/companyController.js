@@ -15,6 +15,7 @@ import {
 import { findCompany } from '../utils/entityLookup.js';
 import { toCompanyJSON, toEmployeeJSON, toAttendanceJSON } from '../utils/formatters.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
+import { syncLeaveBalance } from '../services/leaveService.js';
 
 export const getDashboard = async (req, res) => {
   try {
@@ -79,7 +80,7 @@ export const updateProfile = async (req, res) => {
     const comp = await findCompany(req.params.id);
     if (!comp) return res.status(404).json({ error: 'Company not found' });
 
-    const { name, industry, contact, email, phone, password } = req.body;
+    const { name, industry, contact, email, phone, password, avatar } = req.body;
 
     if (password && password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
@@ -90,6 +91,7 @@ export const updateProfile = async (req, res) => {
     if (contact !== undefined) comp.contact = contact;
     if (email !== undefined) comp.email = email;
     if (phone !== undefined) comp.phone = phone;
+    if (avatar !== undefined) comp.avatar = avatar;
 
     await comp.save();
 
@@ -102,6 +104,9 @@ export const updateProfile = async (req, res) => {
       if (email !== undefined) user.email = email.toLowerCase();
       if (password) {
         user.password = await bcrypt.hash(password, 10);
+      }
+      if (avatar !== undefined) {
+        user.avatar = avatar;
       }
       await user.save();
     }
@@ -118,7 +123,7 @@ export const updateProfile = async (req, res) => {
 export const createShiftNotice = async (req, res) => {
   try {
     const { id } = req.params; // Company ID
-    const { employeeId, date, time, reason } = req.body;
+    const { employeeId, date, time, reason, noticeType, endDate, leaveType } = req.body;
 
     const company = await findCompany(id);
     if (!company) {
@@ -135,12 +140,15 @@ export const createShiftNotice = async (req, res) => {
       if (emp) empName = emp.name;
     }
 
-    // 6 hours check logic
-    const shiftStart = new Date(`${date}T${time}`);
-    const now = new Date();
-    const diffMs = shiftStart - now;
-    const diffHours = diffMs / (1000 * 60 * 60);
-    const informHR = diffHours < 6;
+    // 6 hours check logic (only relevant for shift type)
+    let informHR = false;
+    if (noticeType !== 'leave') {
+      const shiftStart = new Date(`${date}T${time}`);
+      const now = new Date();
+      const diffMs = shiftStart - now;
+      const diffHours = diffMs / (1000 * 60 * 60);
+      informHR = diffHours < 6;
+    }
 
     const notice = await ShiftNotice.create({
       companyId: cid,
@@ -148,13 +156,60 @@ export const createShiftNotice = async (req, res) => {
       employeeId,
       employeeName: empName,
       date,
-      time,
+      time: noticeType === 'leave' ? undefined : time,
       reason,
       informHR,
+      noticeType: noticeType || 'shift',
+      endDate: noticeType === 'leave' ? endDate : undefined,
+      leaveType: noticeType === 'leave' ? 'client-assigned' : undefined,
     });
 
+    if (noticeType === 'leave') {
+      const start = new Date(date);
+      const end = new Date(endDate);
+      const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000) + 1);
+
+      if (employeeId !== 'all') {
+        const emp = await Employee.findOne({
+          $or: [{ legacyId: employeeId }, { _id: mongoose.isValidObjectId(employeeId) ? employeeId : null }],
+        });
+        if (emp) {
+          await LeaveRequest.create({
+            employeeId: emp.legacyId || emp._id.toString(),
+            employeeName: emp.name,
+            department: emp.department || '',
+            type: 'client-assigned',
+            startDate: date,
+            endDate,
+            days,
+            reason: `Client assigned leave: ${reason}`,
+            status: 'pending',
+            appliedOn: new Date().toISOString().split('T')[0],
+          });
+          await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
+        }
+      } else {
+        const companyEmployees = await Employee.find({ companyId: cid });
+        for (const emp of companyEmployees) {
+          await LeaveRequest.create({
+            employeeId: emp.legacyId || emp._id.toString(),
+            employeeName: emp.name,
+            department: emp.department || '',
+            type: 'client-assigned',
+            startDate: date,
+            endDate,
+            days,
+            reason: `Client assigned leave: ${reason}`,
+            status: 'pending',
+            appliedOn: new Date().toISOString().split('T')[0],
+          });
+          await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
+        }
+      }
+    }
+
     res.status(201).json({
-      message: 'Shift start notice sent successfully',
+      message: noticeType === 'leave' ? 'Shift start notice & leave request sent successfully' : 'Shift start notice sent successfully',
       notice,
     });
   } catch (error) {
@@ -173,6 +228,160 @@ export const getCompanyShiftNotices = async (req, res) => {
     const cid = company.legacyId || company._id.toString();
     const notices = await ShiftNotice.find({ companyId: cid }).sort({ createdAt: -1 });
     res.json(notices);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateShiftNotice = async (req, res) => {
+  try {
+    const { id, noticeId } = req.params;
+    const { employeeId, date, time, reason, noticeType, endDate, leaveType } = req.body;
+
+    const company = await findCompany(id);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    const notice = await ShiftNotice.findById(noticeId);
+    if (!notice) {
+      return res.status(404).json({ error: 'Shift notice not found' });
+    }
+
+    // Delete previous LeaveRequest records created for this notice
+    if (notice.noticeType === 'leave') {
+      const oldLeaves = await LeaveRequest.find({
+        startDate: notice.date,
+        endDate: notice.endDate,
+        type: notice.leaveType || 'client-assigned',
+        reason: `Client assigned leave: ${notice.reason}`,
+      });
+      for (const oldLeave of oldLeaves) {
+        await LeaveRequest.findByIdAndDelete(oldLeave._id);
+        const emp = await Employee.findOne({
+          $or: [{ legacyId: oldLeave.employeeId }, { _id: mongoose.isValidObjectId(oldLeave.employeeId) ? oldLeave.employeeId : null }],
+        });
+        if (emp) {
+          await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
+        }
+      }
+    }
+
+    if (employeeId !== undefined && employeeId !== notice.employeeId) {
+      let empName = 'All Employees';
+      if (employeeId !== 'all') {
+        const emp = await Employee.findOne({
+          $or: [{ legacyId: employeeId }, { _id: mongoose.isValidObjectId(employeeId) ? employeeId : null }],
+        });
+        if (emp) empName = emp.name;
+      }
+      notice.employeeId = employeeId;
+      notice.employeeName = empName;
+    }
+
+    if (date !== undefined) notice.date = date;
+    if (time !== undefined) notice.time = time;
+    if (reason !== undefined) notice.reason = reason;
+    if (noticeType !== undefined) notice.noticeType = noticeType;
+    if (endDate !== undefined) notice.endDate = endDate;
+    notice.leaveType = notice.noticeType === 'leave' ? 'client-assigned' : undefined;
+
+    if (notice.noticeType !== 'leave') {
+      const shiftStart = new Date(`${notice.date}T${notice.time}`);
+      const now = new Date();
+      const diffMs = shiftStart - now;
+      const diffHours = diffMs / (1000 * 60 * 60);
+      notice.informHR = diffHours < 6;
+      notice.endDate = undefined;
+      notice.leaveType = undefined;
+    } else {
+      notice.time = undefined;
+      notice.informHR = false;
+    }
+
+    await notice.save();
+
+    // Re-create new approved LeaveRequests if noticeType is leave
+    if (notice.noticeType === 'leave') {
+      const cid = company.legacyId || company._id.toString();
+      const start = new Date(notice.date);
+      const end = new Date(notice.endDate);
+      const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000) + 1);
+
+      if (notice.employeeId !== 'all') {
+        const emp = await Employee.findOne({
+          $or: [{ legacyId: notice.employeeId }, { _id: mongoose.isValidObjectId(notice.employeeId) ? notice.employeeId : null }],
+        });
+        if (emp) {
+          await LeaveRequest.create({
+            employeeId: emp.legacyId || emp._id.toString(),
+            employeeName: emp.name,
+            department: emp.department || '',
+            type: 'client-assigned',
+            startDate: notice.date,
+            endDate: notice.endDate,
+            days,
+            reason: `Client assigned leave: ${notice.reason}`,
+            status: 'pending',
+            appliedOn: new Date().toISOString().split('T')[0],
+          });
+          await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
+        }
+      } else {
+        const companyEmployees = await Employee.find({ companyId: cid });
+        for (const emp of companyEmployees) {
+          await LeaveRequest.create({
+            employeeId: emp.legacyId || emp._id.toString(),
+            employeeName: emp.name,
+            department: emp.department || '',
+            type: 'client-assigned',
+            startDate: notice.date,
+            endDate: notice.endDate,
+            days,
+            reason: `Client assigned leave: ${notice.reason}`,
+            status: 'pending',
+            appliedOn: new Date().toISOString().split('T')[0],
+          });
+          await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
+        }
+      }
+    }
+
+    res.json({ message: 'Shift notice updated successfully', notice });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteShiftNotice = async (req, res) => {
+  try {
+    const { noticeId } = req.params;
+    const notice = await ShiftNotice.findById(noticeId);
+    if (!notice) {
+      return res.status(404).json({ error: 'Shift notice not found' });
+    }
+
+    // Delete associated approved LeaveRequest records if it was a leave
+    if (notice.noticeType === 'leave') {
+      const oldLeaves = await LeaveRequest.find({
+        startDate: notice.date,
+        endDate: notice.endDate,
+        type: notice.leaveType || 'client-assigned',
+        reason: `Client assigned leave: ${notice.reason}`,
+      });
+      for (const oldLeave of oldLeaves) {
+        await LeaveRequest.findByIdAndDelete(oldLeave._id);
+        const emp = await Employee.findOne({
+          $or: [{ legacyId: oldLeave.employeeId }, { _id: mongoose.isValidObjectId(oldLeave.employeeId) ? oldLeave.employeeId : null }],
+        });
+        if (emp) {
+          await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
+        }
+      }
+    }
+
+    await ShiftNotice.findByIdAndDelete(noticeId);
+    res.json({ message: 'Shift notice deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

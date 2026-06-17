@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User } from 'lucide-react';
 
 export function AdminUsersView({
@@ -40,6 +40,44 @@ export function AdminUsersView({
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
 
+  const containerRef = useRef(null);
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const handleMouseDown = (e) => {
+    if (e.target.closest('button, input, select, a')) return;
+    isDown.current = true;
+    containerRef.current.classList.add('cursor-grabbing');
+    containerRef.current.classList.remove('cursor-grab');
+    startX.current = e.pageX - containerRef.current.offsetLeft;
+    scrollLeft.current = containerRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDown.current = false;
+    if (containerRef.current) {
+      containerRef.current.classList.remove('cursor-grabbing');
+      containerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDown.current = false;
+    if (containerRef.current) {
+      containerRef.current.classList.remove('cursor-grabbing');
+      containerRef.current.classList.add('cursor-grab');
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDown.current) return;
+    e.preventDefault();
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    containerRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
   const [adjustingRec, setAdjustingRec] = useState(null);
   const [adjustForm, setAdjustForm] = useState({
     checkIn: '',
@@ -58,6 +96,18 @@ export function AdminUsersView({
     reason: '',
     breakMinutes: 0,
   });
+
+  const FormatMultilineName = ({ name }) => {
+    if (!name) return null;
+    const parts = name.trim().split(/\s+/);
+    return (
+      <div className="flex flex-col">
+        {parts.map((p, i) => (
+          <span key={i} className="leading-tight capitalize">{p}</span>
+        ))}
+      </div>
+    );
+  };
 
   const getTodayDateString = () => {
     const d = new Date();
@@ -123,32 +173,52 @@ export function AdminUsersView({
         <div className={`grid gap-6 ${selectedEmployee ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
           <div className={selectedEmployee ? 'lg:col-span-2' : ''}>
             <div className="bg-white rounded-2xl border border-border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border bg-slate-50/50">
-                      {['Employee', 'Position', 'Department', 'Client', 'Status', 'Actions'].map(h => (
-                        <th key={h} className="text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap">{h}</th>
-                      ))}
+              <div
+                ref={containerRef}
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                className="overflow-x-auto max-h-[530px] overflow-y-auto cursor-grab select-none"
+              >
+                <table className="w-full text-sm min-w-[800px]">
+                  <thead className="z-10">
+                    <tr className="border-b border-border bg-slate-50">
+                      {['Employee', 'Position', 'Department', 'Client', 'Status', 'Actions'].map((h, i) => {
+                        const minWidths = ['min-w-[200px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[100px]', 'min-w-[100px]'];
+                        return (
+                          <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {filteredEmployees.map(emp => (
-                      <tr key={emp.id} className={`hover:bg-slate-50/50 transition-colors ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50' : ''}`}>
-                        <td className="py-3 px-4 cursor-pointer" onClick={() => setSelectedEmployeeId(selectedEmployeeId === emp.id ? null : emp.id)}>
+                      <tr key={emp.id} className={`group hover:bg-slate-50/50 transition-colors ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50' : ''}`}>
+                        <td className={`py-3 px-4 cursor-pointer ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50' : 'bg-white'} group-hover:bg-slate-50/50 min-w-[200px]`} onClick={() => setSelectedEmployeeId(selectedEmployeeId === emp.id ? null : emp.id)}>
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold">{emp.avatar}</div>
+                            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold overflow-hidden flex-shrink-0">
+                              {emp.avatar && emp.avatar.startsWith('data:image/') ? (
+                                <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+                              ) : (
+                                emp.avatar
+                              )}
+                            </div>
                             <div>
-                              <div className="text-slate-700 font-medium whitespace-nowrap hover:text-indigo-600 transition-colors">{emp.name}</div>
-                              <div className="text-slate-400 text-xs">{emp.email}</div>
-                              <div className="text-slate-400 text-[10px]">Joined: {emp.joinDate || 'N/A'}</div>
+                              <div className="text-slate-700 font-medium hover:text-indigo-600 transition-colors break-all break-words"><FormatMultilineName name={emp.name} /></div>
+                              <div className="text-slate-400 text-xs break-all break-words">{emp.email}</div>
+                              <div className="text-slate-400 text-[10px] whitespace-nowrap">Joined: {emp.joinDate || 'N/A'}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">{emp.position}</td>
-                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">{emp.department}</td>
-                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
-                          {emp.company || 'General (Our Company)'}
+                        <td className="py-3 px-4 text-slate-500">
+                          <div className="break-all break-words">{emp.position}</div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-500">
+                          <div className="break-all break-words">{emp.department}</div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-500">
+                          <div className="break-all break-words">{emp.company || 'General (Our Company)'}</div>
                         </td>
                         <td className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${emp.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{emp.status}</span>
@@ -183,9 +253,15 @@ export function AdminUsersView({
                 {/* Profile card */}
                 <div className="bg-white rounded-2xl border border-border p-5">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold">{selectedEmployee.avatar}</div>
+                    <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold overflow-hidden flex-shrink-0">
+                      {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
+                        <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                      ) : (
+                        selectedEmployee.avatar
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-slate-800 truncate">{selectedEmployee.name}</div>
+                      <div className="font-semibold text-slate-800 truncate"><FormatMultilineName name={selectedEmployee.name} /></div>
                       <div className="text-slate-400 text-xs truncate">{selectedEmployee.position}</div>
                     </div>
                     <button
@@ -442,13 +518,16 @@ export function AdminUsersView({
       {/* HR table */}
       {activeTab === 'hr' && (
         <div className="bg-white rounded-2xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-slate-50/50">
-                  {['HR Manager', 'Department', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left text-slate-400 font-medium py-3 px-4">{h}</th>
-                  ))}
+          <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
+            <table className="w-full text-sm min-w-[650px]">
+              <thead className="z-10">
+                <tr className="border-b border-border bg-slate-50">
+                  {['HR Manager', 'Department', 'Status', 'Actions'].map((h, i) => {
+                    const minWidths = ['min-w-[250px]', 'min-w-[200px]', 'min-w-[100px]', 'min-w-[100px]'];
+                    return (
+                      <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -456,17 +535,19 @@ export function AdminUsersView({
                   <tr key={hr.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center text-sky-700 text-xs font-bold">
+                        <div className="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center text-sky-700 text-xs font-bold flex-shrink-0">
                           {hr.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
                         <div>
-                          <div className="text-slate-700 font-medium">{hr.name}</div>
-                          <div className="text-slate-400 text-xs">{hr.email}</div>
-                          <div className="text-slate-400 text-[10px]">Joined: {hr.joinDate || 'N/A'}</div>
+                          <div className="text-slate-700 font-medium break-all break-words">{hr.name}</div>
+                          <div className="text-slate-400 text-xs break-all break-words">{hr.email}</div>
+                          <div className="text-slate-400 text-[10px] whitespace-nowrap">Joined: {hr.joinDate || 'N/A'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-slate-500">{hr.department}</td>
+                    <td className="py-3 px-4 text-slate-500">
+                      <div className="break-all break-words">{hr.department}</div>
+                    </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${hr.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{hr.status}</span>
                     </td>
@@ -488,13 +569,17 @@ export function AdminUsersView({
       {/* Clients table */}
       {activeTab === 'companies' && (
         <div className="bg-white rounded-2xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-slate-50/50">
-                  {['Client', 'Industry', 'Contact', 'Employees', 'Joined', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap">{h}</th>
-                  ))}
+          <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
+            <table className="w-full text-sm min-w-[800px]">
+              <thead className="z-10">
+                <tr className="border-b border-border bg-slate-50">
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[200px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Client</th>
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Industry</th>
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Contact</th>
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Employees</th>
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Joined</th>
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Status</th>
+                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -502,15 +587,21 @@ export function AdminUsersView({
                   <tr key={co.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 text-xs font-bold">
+                        <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 text-xs font-bold flex-shrink-0">
                           {co.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
-                        <div className="text-slate-700 font-medium whitespace-nowrap">{co.name}</div>
+                        <div className="text-slate-700 font-medium break-all break-words">{co.name}</div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-slate-500 whitespace-nowrap">{co.industry}</td>
-                    <td className="py-3 px-4 text-slate-500 whitespace-nowrap">{co.contact}</td>
-                    <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{employees.filter(e => e.companyId === co.id).length}</td>
+                    <td className="py-3 px-4 text-slate-500">
+                      <div className="break-all break-words">{co.industry}</div>
+                    </td>
+                    <td className="py-3 px-4 text-slate-500">
+                      <div className="break-all break-words">{co.contact}</div>
+                    </td>
+                    <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                      {employees.filter(e => e.companyId === co.id).length}
+                    </td>
                     <td className="py-3 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{co.joinedDate}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${co.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{co.status}</span>
@@ -535,7 +626,7 @@ export function AdminUsersView({
 
       {/* Add/Edit Employee Modal */}
       {showModal && activeTab === 'employees' && (
-        <div className="fixed inset-0 bg-black/40 z-[9999] flex items-start justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 my-8">
             <h3 className="text-slate-800 font-semibold mb-5">{editingItem ? 'Edit Employee' : 'Add New Employee'}</h3>
             <form onSubmit={handleAddEmployee} className="space-y-4">
@@ -547,19 +638,40 @@ export function AdminUsersView({
                   { key: 'department', label: 'Department', placeholder: 'Engineering' },
                   { key: 'joinDate', label: 'Join Date', placeholder: '' },
                 ].map(f => (
-                  <div key={f.key} className={f.key === 'name' || f.key === 'email' ? 'col-span-2' : ''}>
+                  <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="block text-slate-600 text-sm mb-1.5">{f.label}</label>
                     <input
-                      type={f.key === 'joinDate' ? 'date' : 'text'}
+                      type={f.key === 'joinDate' ? 'date' : f.key === 'email' ? 'email' : 'text'}
                       value={empForm[f.key] || ''}
                       onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
                       placeholder={f.placeholder}
-                      required={f.key !== 'joinDate'}
+                      required
+                      max={f.key === 'joinDate' ? new Date().toISOString().split('T')[0] : undefined}
+                      minLength={f.key !== 'joinDate' && f.key !== 'email' ? 2 : undefined}
+                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'email' ? 20 : undefined}
+                      pattern={
+                        f.key === 'name'
+                          ? "^[a-zA-Z\\s.\\-]+$"
+                          : f.key === 'position' || f.key === 'department'
+                            ? "^[a-zA-Z\\s.\\-()&]+$"
+                            : f.key === 'email'
+                              ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                              : undefined
+                      }
+                      title={
+                        f.key === 'name'
+                          ? "Only letters, spaces, dots, and hyphens are allowed."
+                          : f.key === 'position' || f.key === 'department'
+                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                            : f.key === 'email'
+                              ? "Please enter a valid email address."
+                              : undefined
+                      }
                       className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                     />
                   </div>
                 ))}
-                
+
                 <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Address</label>
                   <input
@@ -567,6 +679,10 @@ export function AdminUsersView({
                     value={empForm.address || ''}
                     onChange={e => setEmpForm(p => ({ ...p, address: e.target.value }))}
                     placeholder="123 Main St, Colombo"
+                    required
+                    minLength={5}
+                    maxLength={50}
+                    pattern="^(?!\\s*$).+"
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -574,7 +690,8 @@ export function AdminUsersView({
                 <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Working Location (Country)</label>
                   <select
-                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(empForm.country) ? (empForm.country || 'Sri Lanka') : 'other'}
+                    required
+                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) ? (empForm.country || '') : 'other'}
                     onChange={e => {
                       const val = e.target.value;
                       if (val === 'other') {
@@ -585,6 +702,7 @@ export function AdminUsersView({
                     }}
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   >
+                    <option value="" disabled>Choose Location...</option>
                     <option value="Sri Lanka">Sri Lanka</option>
                     <option value="USA">USA</option>
                     <option value="UK">UK</option>
@@ -592,7 +710,7 @@ export function AdminUsersView({
                     <option value="Australia">Australia</option>
                     <option value="other">Other (Type Custom)...</option>
                   </select>
-                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(empForm.country) && (
+                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) && (
                     <input
                       type="text"
                       placeholder="Type custom country name..."
@@ -616,7 +734,7 @@ export function AdminUsersView({
       )}
 
       {showModal && activeTab === 'hr' && (
-        <div className="fixed inset-0 bg-black/40 z-[9999] flex items-start justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 my-8">
             <h3 className="text-slate-800 font-semibold mb-5">{editingItem ? 'Edit HR Manager' : 'Add New HR Manager'}</h3>
             <form onSubmit={handleAddHR} className="space-y-4">
@@ -629,6 +747,10 @@ export function AdminUsersView({
                     onChange={e => setHrForm(p => ({ ...p, name: e.target.value }))}
                     placeholder="Amanda Foster"
                     required
+                    minLength={2}
+                    maxLength={40}
+                    pattern="^[a-zA-Z\s.\-]+$"
+                    title="Only letters, spaces, dots, and hyphens are allowed."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -640,6 +762,8 @@ export function AdminUsersView({
                     onChange={e => setHrForm(p => ({ ...p, email: e.target.value }))}
                     placeholder="amanda@company.com"
                     required
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    title="Please enter a valid email address."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -647,9 +771,13 @@ export function AdminUsersView({
                   <label className="block text-slate-600 text-sm mb-1.5">Department</label>
                   <input
                     type="text"
-                    value={hrForm.department || 'HR'}
+                    value={hrForm.department || 'Human Resources'}
                     onChange={e => setHrForm(p => ({ ...p, department: e.target.value }))}
-                    placeholder="HR"
+                    placeholder="Human Resources"
+                    minLength={2}
+                    maxLength={40}
+                    pattern="^[a-zA-Z\s.\-()&]+$"
+                    title="Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -659,6 +787,8 @@ export function AdminUsersView({
                     type="date"
                     value={hrForm.joinDate || ''}
                     onChange={e => setHrForm(p => ({ ...p, joinDate: e.target.value }))}
+                    max={new Date().toISOString().split('T')[0]}
+                    required
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -675,12 +805,12 @@ export function AdminUsersView({
       )}
 
       {showModal && activeTab === 'companies' && (
-        <div className="fixed inset-0 bg-black/40 z-[9999] flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 my-8">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 my-8">
             <h3 className="text-slate-800 font-semibold mb-5">{editingItem ? 'Edit Client Company' : 'Add New Client Company'}</h3>
             <form onSubmit={handleAddCompany} className="space-y-4">
-              <div className="space-y-4">
-                <div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Company Name</label>
                   <input
                     type="text"
@@ -688,6 +818,10 @@ export function AdminUsersView({
                     onChange={e => setCoForm(p => ({ ...p, name: e.target.value }))}
                     placeholder="TechVentures Ltd"
                     required
+                    minLength={2}
+                    maxLength={40}
+                    pattern="^[a-zA-Z0-9\s.\-()&]+$"
+                    title="Only letters, numbers, spaces, dots, hyphens, brackets, and ampersands are allowed."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -699,6 +833,10 @@ export function AdminUsersView({
                     onChange={e => setCoForm(p => ({ ...p, industry: e.target.value }))}
                     placeholder="Technology"
                     required
+                    minLength={2}
+                    maxLength={40}
+                    pattern="^[a-zA-Z\s.\-()&]+$"
+                    title="Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -710,10 +848,14 @@ export function AdminUsersView({
                     onChange={e => setCoForm(p => ({ ...p, contact: e.target.value }))}
                     placeholder="Mark Reynolds"
                     required
+                    minLength={2}
+                    maxLength={40}
+                    pattern="^[a-zA-Z\s.\-]+$"
+                    title="Only letters, spaces, dots, and hyphens are allowed."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Email</label>
                   <input
                     type="email"
@@ -721,6 +863,8 @@ export function AdminUsersView({
                     onChange={e => setCoForm(p => ({ ...p, email: e.target.value }))}
                     placeholder="mark@techventures.com"
                     required
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    title="Please enter a valid email address."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -729,8 +873,10 @@ export function AdminUsersView({
                   <input
                     type="text"
                     value={coForm.phone || ''}
-                    onChange={e => setCoForm(p => ({ ...p, phone: e.target.value }))}
+                    onChange={e => setCoForm(p => ({ ...p, phone: e.target.value.replace(/[^0-9+\s\-()]/g, '') }))}
                     placeholder="+1 (555) 100-2000"
+                    pattern="^\+?[0-9\s\-()]{7,20}$"
+                    title="Please enter a valid phone number (7-20 digits)."
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
@@ -740,23 +886,30 @@ export function AdminUsersView({
                     type="date"
                     value={coForm.joinedDate || ''}
                     onChange={e => setCoForm(p => ({ ...p, joinedDate: e.target.value }))}
+                    required
+                    max={new Date().toISOString().split('T')[0]}
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Address</label>
                   <input
                     type="text"
                     value={coForm.address || ''}
                     onChange={e => setCoForm(p => ({ ...p, address: e.target.value }))}
                     placeholder="123 Main St, Colombo"
+                    required
+                    minLength={5}
+                    maxLength={40}
+                    pattern="^(?!\\s*$).+"
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="block text-slate-600 text-sm mb-1.5">Country</label>
                   <select
-                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(coForm.country) ? (coForm.country || 'Sri Lanka') : 'other'}
+                    required
+                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(coForm.country) ? (coForm.country || '') : 'other'}
                     onChange={e => {
                       const val = e.target.value;
                       if (val === 'other') {
@@ -767,6 +920,7 @@ export function AdminUsersView({
                     }}
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   >
+                    <option value="" disabled>Choose Location...</option>
                     <option value="Sri Lanka">Sri Lanka</option>
                     <option value="USA">USA</option>
                     <option value="UK">UK</option>
@@ -774,7 +928,7 @@ export function AdminUsersView({
                     <option value="Australia">Australia</option>
                     <option value="other">Other (Type Custom)...</option>
                   </select>
-                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(coForm.country) && (
+                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(coForm.country) && (
                     <input
                       type="text"
                       placeholder="Type custom country name..."
@@ -805,15 +959,15 @@ export function AdminUsersView({
                 <h3 className="text-slate-800 font-semibold">Assign Workers to Client</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Manage workforce assigned to <strong className="text-slate-700">{assigningCompany.name}</strong></p>
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setAssigningCompany(null)}
                 className="text-slate-400 hover:text-slate-600 text-sm font-medium"
               >
                 Close
               </button>
             </div>
-            
+
             <div className="overflow-y-auto my-4 flex-1 divide-y divide-border pr-1">
               {employees.map(emp => {
                 const isAssigned = emp.companyId === assigningCompany.id;
@@ -841,11 +995,11 @@ export function AdminUsersView({
                 <p className="text-slate-400 text-sm py-8 text-center">No employees available</p>
               )}
             </div>
-            
+
             <div className="pt-4 border-t border-border flex justify-end">
-              <button 
-                type="button" 
-                onClick={() => setAssigningCompany(null)} 
+              <button
+                type="button"
+                onClick={() => setAssigningCompany(null)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition-colors"
               >
                 Done
