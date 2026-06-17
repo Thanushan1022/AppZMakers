@@ -260,7 +260,8 @@ export const forgotPassword = async (req, res) => {
     await user.save();
 
     // Send email via EmailJS REST API
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app-z-makers.vercel.app';
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
     const emailjsData = {
       service_id: process.env.EMAILJS_SERVICE_ID || 'service_6vky48h',
       template_id: process.env.EMAILJS_FORGOT_TEMPLATE_ID || 'template_phjzjeh',
