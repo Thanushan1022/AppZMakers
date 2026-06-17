@@ -4,7 +4,7 @@ import { KeyRound, Lock, Eye, EyeOff, CheckCircle2, AlertTriangle, ArrowLeft } f
 import logoImg from '../../assets/APPZ New Logo.png';
 import bgVideo from '../../assets/Employee_Enters_Office_Lobby_GIF.mp4';
 
-const BACKEND_URL = 'http://localhost:5001/api/auth';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api/auth';
 
 export function ResetPassword() {
   const [searchParams] = useSearchParams();
