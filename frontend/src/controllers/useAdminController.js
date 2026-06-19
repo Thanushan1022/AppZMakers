@@ -111,6 +111,7 @@ export function useAdminController(adminId, updateAuth) {
     department: '',
     company: 'General',
     joinDate: '',
+    dateOfBirth: '',
     address: '',
     country: '',
   });
@@ -120,6 +121,7 @@ export function useAdminController(adminId, updateAuth) {
     email: '',
     department: 'Human Resources',
     joinDate: '',
+    dateOfBirth: '',
   });
 
   const [coForm, setCoForm] = useState({
@@ -440,6 +442,7 @@ export function useAdminController(adminId, updateAuth) {
         position: empForm.position,
         department: empForm.department,
         joinDate: empForm.joinDate || new Date().toISOString().split('T')[0],
+        dateOfBirth: empForm.dateOfBirth || null,
         address: empForm.address,
         country: empForm.country,
       };
@@ -456,7 +459,7 @@ export function useAdminController(adminId, updateAuth) {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || (isEdit ? 'Employee updated successfully.' : 'Employee created successfully.'));
-        setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', address: '', country: '' });
+        setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
@@ -494,13 +497,14 @@ export function useAdminController(adminId, updateAuth) {
           email: hrForm.email,
           department: hrForm.department || 'Human Resources',
           joinDate: hrForm.joinDate || new Date().toISOString().split('T')[0],
+          dateOfBirth: hrForm.dateOfBirth || null,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
         alert(data.message || (isEdit ? 'HR Manager updated successfully.' : 'HR Manager created successfully.'));
-        setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '' });
+        setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '', dateOfBirth: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
@@ -567,6 +571,7 @@ export function useAdminController(adminId, updateAuth) {
         department: item.department || '',
         company: item.company || 'General',
         joinDate: item.joinDate ? item.joinDate.split('T')[0] : '',
+        dateOfBirth: item.dateOfBirth ? item.dateOfBirth.split('T')[0] : '',
         address: item.address || '',
         country: item.country || '',
       });
@@ -576,6 +581,7 @@ export function useAdminController(adminId, updateAuth) {
         email: item.email || '',
         department: item.department || 'Human Resources',
         joinDate: item.joinDate ? item.joinDate.split('T')[0] : '',
+        dateOfBirth: item.dateOfBirth ? item.dateOfBirth.split('T')[0] : '',
       });
     } else if (type === 'company') {
       setCoForm({
@@ -594,8 +600,8 @@ export function useAdminController(adminId, updateAuth) {
 
   const handleAddClick = () => {
     setEditingItem(null);
-    setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', address: '', country: '' });
-    setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '' });
+    setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '' });
+    setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '', dateOfBirth: '' });
     setCoForm({ name: '', industry: '', contact: '', email: '', phone: '', joinedDate: '', address: '', country: '' });
     setShowModal(true);
   };

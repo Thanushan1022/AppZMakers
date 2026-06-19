@@ -191,6 +191,7 @@ export function HREmployeesView({
                     { icon: Mail, value: selectedEmployee.email },
                     { icon: Phone, value: selectedEmployee.phone || 'N/A' },
                     { icon: Calendar, value: `Joined: ${selectedEmployee.joinDate || 'N/A'}` },
+                    { icon: Calendar, value: `DOB: ${selectedEmployee.dateOfBirth || 'N/A'}` },
                   ].map(({ icon: Icon, value }) => (
                     <div key={value} className="flex items-center gap-2 text-slate-500">
                       <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
@@ -205,22 +206,20 @@ export function HREmployeesView({
                     <button
                       type="button"
                       onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'active')}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        selectedEmployee.status === 'active'
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'active'
                           ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500 shadow-sm shadow-emerald-500/10'
                           : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:text-[#5b4cf5]'
-                      }`}
+                        }`}
                     >
                       Active
                     </button>
                     <button
                       type="button"
                       onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'inactive')}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        selectedEmployee.status === 'inactive'
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'inactive'
                           ? 'bg-red-500 hover:bg-red-600 text-white border-red-500 shadow-sm shadow-red-500/10'
                           : 'bg-white hover:bg-slate-50 text-slate-650 border-slate-200 hover:text-red-500'
-                      }`}
+                        }`}
                     >
                       Deactivate
                     </button>
@@ -488,35 +487,36 @@ export function HREmployeesView({
                   { key: 'position', label: 'Position', placeholder: 'Software Engineer' },
                   { key: 'department', label: 'Department', placeholder: 'Engineering' },
                   { key: 'joinDate', label: 'Join Date', placeholder: '' },
+                  { key: 'dateOfBirth', label: 'Date of Birth', placeholder: '' },
                 ].map(f => (
                   <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="block text-slate-600 text-sm mb-1.5">{f.label}</label>
                     <input
-                      type={f.key === 'joinDate' ? 'date' : f.key === 'email' ? 'email' : 'text'}
+                      type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
                       value={empForm[f.key] || ''}
                       onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
                       placeholder={f.placeholder}
-                      required
-                      max={f.key === 'joinDate' ? new Date().toISOString().split('T')[0] : undefined}
-                      minLength={f.key !== 'joinDate' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'email' ? 20 : undefined}
+                      required={f.key !== 'dateOfBirth'}
+                      max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
+                      minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
+                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 20 : undefined}
                       pattern={
                         f.key === 'name'
                           ? "^[a-zA-Z\\s.\\-]+$"
                           : f.key === 'position' || f.key === 'department'
-                          ? "^[a-zA-Z\\s.\\-()&]+$"
-                          : f.key === 'email'
-                          ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-                          : undefined
+                            ? "^[a-zA-Z\\s.\\-()&]+$"
+                            : f.key === 'email'
+                              ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                              : undefined
                       }
                       title={
                         f.key === 'name'
                           ? "Only letters, spaces, dots, and hyphens are allowed."
                           : f.key === 'position' || f.key === 'department'
-                          ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                          : f.key === 'email'
-                          ? "Please enter a valid email address."
-                          : undefined
+                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                            : f.key === 'email'
+                              ? "Please enter a valid email address."
+                              : undefined
                       }
                       className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                     />

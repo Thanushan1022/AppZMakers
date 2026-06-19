@@ -130,7 +130,7 @@ export const reviewLeave = async (req, res) => {
 
 export const createHR = async (req, res) => {
   try {
-    const { name, email, department, joinDate } = req.body;
+    const { name, email, department, joinDate, dateOfBirth } = req.body;
 
     const today = new Date().toISOString().split('T')[0];
     if (joinDate && joinDate > today) {
@@ -169,6 +169,7 @@ export const createHR = async (req, res) => {
       department: department || 'Human Resources',
       status: 'active',
       joinDate: joinDate || new Date().toISOString().split('T')[0],
+      dateOfBirth: dateOfBirth || null,
       userId: newUser._id,
     });
 
@@ -442,7 +443,7 @@ export const updateEmployee = async (req, res) => {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
-    const { name, email, position, department, joinDate, address, country, teaBreakAllowed } = req.body;
+    const { name, email, position, department, joinDate, dateOfBirth, address, country, teaBreakAllowed } = req.body;
 
     if (name !== undefined) {
       if (name.trim().length < 2 || name.trim().length > 30) {
@@ -516,6 +517,7 @@ export const updateEmployee = async (req, res) => {
       }
       emp.joinDate = joinDate;
     }
+    if (dateOfBirth !== undefined) emp.dateOfBirth = dateOfBirth;
     if (teaBreakAllowed !== undefined) emp.teaBreakAllowed = teaBreakAllowed;
 
     await emp.save();
@@ -530,7 +532,7 @@ export const updateHR = async (req, res) => {
     const hr = await findHRUser(req.params.id);
     if (!hr) return res.status(404).json({ error: 'HR User not found' });
 
-    const { name, email, department, joinDate } = req.body;
+    const { name, email, department, joinDate, dateOfBirth } = req.body;
 
     const today = new Date().toISOString().split('T')[0];
     if (joinDate && joinDate > today) {
@@ -562,6 +564,7 @@ export const updateHR = async (req, res) => {
     }
     if (department !== undefined) hr.department = department;
     if (joinDate !== undefined) hr.joinDate = joinDate;
+    if (dateOfBirth !== undefined) hr.dateOfBirth = dateOfBirth;
 
     await hr.save();
     res.json({ message: 'HR User updated successfully', hrUser: toHRJSON(hr) });

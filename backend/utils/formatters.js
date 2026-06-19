@@ -21,6 +21,7 @@ export const toEmployeeJSON = (doc) => {
     country: o.country,
     office: o.office,
     teaBreakAllowed: o.teaBreakAllowed,
+    dateOfBirth: o.dateOfBirth,
   };
 };
 
@@ -55,6 +56,7 @@ export const toHRJSON = (doc) => {
     status: o.status,
     joinDate: o.joinDate,
     avatar: o.avatar || '',
+    dateOfBirth: o.dateOfBirth,
   };
 };
 

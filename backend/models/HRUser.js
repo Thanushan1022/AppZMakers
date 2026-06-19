@@ -8,6 +8,7 @@ const hrUserSchema = new mongoose.Schema(
     department: { type: String, default: 'Human Resources' },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     joinDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
+    dateOfBirth: { type: String, default: null },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     avatar: { type: String, default: '' },
   },

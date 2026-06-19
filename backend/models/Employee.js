@@ -11,6 +11,7 @@ const employeeSchema = new mongoose.Schema(
     companyId: { type: String, default: null },
     avatar: { type: String, default: '' },
     joinDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
+    dateOfBirth: { type: String, default: null },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     phone: { type: String, default: null },
     address: { type: String, default: null },

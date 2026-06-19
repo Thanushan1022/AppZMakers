@@ -145,19 +145,19 @@ export function AdminUsersView({
 
       {/* Tabs */}
       <div className="bg-white rounded-2xl border border-border p-4 flex flex-col sm:flex-row gap-3">
-        <div className="flex w-full items-center gap-1 bg-slate-100 rounded-xl p-1">
+        <div className="flex w-full sm:w-auto items-center gap-1 bg-slate-100 rounded-xl p-1">
           {tabs.map(({ id, label, icon: Icon, count }) => (
             <button
               key={id}
               onClick={() => { setActiveTab(id); setSearchQuery(''); }}
-              className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${activeTab === id ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${activeTab === id ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               <Icon className="w-3.5 h-3.5 flex-shrink-0" />{label} <span className="text-slate-400">({count})</span>
             </button>
           ))}
         </div>
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="flex-1 relative min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
             type="text"
             placeholder={`Search ${activeTab}...`}
@@ -276,6 +276,7 @@ export function AdminUsersView({
                       { icon: Mail, value: selectedEmployee.email },
                       { icon: Phone, value: selectedEmployee.phone || 'N/A' },
                       { icon: Calendar, value: `Joined: ${selectedEmployee.joinDate || 'N/A'}` },
+                      { icon: Calendar, value: `DOB: ${selectedEmployee.dateOfBirth || 'N/A'}` },
                     ].map(({ icon: Icon, value }) => (
                       <div key={value} className="flex items-center gap-2 text-slate-500">
                         <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
@@ -637,18 +638,19 @@ export function AdminUsersView({
                   { key: 'position', label: 'Position', placeholder: 'Software Engineer' },
                   { key: 'department', label: 'Department', placeholder: 'Engineering' },
                   { key: 'joinDate', label: 'Join Date', placeholder: '' },
+                  { key: 'dateOfBirth', label: 'Date of Birth', placeholder: '' },
                 ].map(f => (
                   <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="block text-slate-600 text-sm mb-1.5">{f.label}</label>
                     <input
-                      type={f.key === 'joinDate' ? 'date' : f.key === 'email' ? 'email' : 'text'}
+                      type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
                       value={empForm[f.key] || ''}
                       onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
                       placeholder={f.placeholder}
-                      required
-                      max={f.key === 'joinDate' ? new Date().toISOString().split('T')[0] : undefined}
-                      minLength={f.key !== 'joinDate' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'email' ? 20 : undefined}
+                      required={f.key !== 'dateOfBirth'}
+                      max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
+                      minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
+                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 20 : undefined}
                       pattern={
                         f.key === 'name'
                           ? "^[a-zA-Z\\s.\\-]+$"
@@ -789,6 +791,16 @@ export function AdminUsersView({
                     onChange={e => setHrForm(p => ({ ...p, joinDate: e.target.value }))}
                     max={new Date().toISOString().split('T')[0]}
                     required
+                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 text-sm mb-1.5">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={hrForm.dateOfBirth || ''}
+                    onChange={e => setHrForm(p => ({ ...p, dateOfBirth: e.target.value }))}
+                    max={new Date().toISOString().split('T')[0]}
                     className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
                   />
                 </div>

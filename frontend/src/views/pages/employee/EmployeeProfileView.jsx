@@ -275,6 +275,7 @@ export function EmployeeProfileView({
               { label: 'Position', value: employee.position },
               { label: 'Department', value: employee.department },
               { label: 'Join Date', value: new Date(employee.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
+              { label: 'Date of Birth', value: employee.dateOfBirth ? new Date(employee.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' },
               { label: 'Tenure', value: `${yearsTenure} yr${yearsTenure !== 1 ? 's' : ''} ${monthsTenure} mo${monthsTenure !== 1 ? 's' : ''}` },
               { label: 'Working Country', value: employee.country || 'N/A' },
               { label: 'Employment Status', value: employee.status ? employee.status.charAt(0).toUpperCase() + employee.status.slice(1) : 'Active' },

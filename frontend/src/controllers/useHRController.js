@@ -57,6 +57,7 @@ export function useHRController(hrId, updateAuth) {
     position: '',
     department: '',
     joinDate: '',
+    dateOfBirth: '',
     address: '',
     country: '',
   });
@@ -472,6 +473,7 @@ export function useHRController(hrId, updateAuth) {
           position: empForm.position,
           department: empForm.department,
           joinDate: empForm.joinDate || new Date().toISOString().split('T')[0],
+          dateOfBirth: empForm.dateOfBirth || null,
           companyId: null,
           phone: null,
           address: empForm.address,
@@ -482,7 +484,7 @@ export function useHRController(hrId, updateAuth) {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || 'Employee created successfully.');
-        setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', address: '', country: '' });
+        setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', dateOfBirth: '', address: '', country: '' });
         setShowModal(false);
         fetchData();
       } else {

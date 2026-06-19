@@ -116,12 +116,12 @@ export const getEvents = async (req, res) => {
         const compId = comp.legacyId || comp._id.toString();
         const employees = await Employee.find({ companyId: compId });
         const empIds = employees.map((emp) => emp.legacyId || emp._id.toString());
-        
+
         const approvedLeaves = await LeaveRequest.find({
           employeeId: { $in: empIds },
           status: 'approved'
         });
-        
+
         approvedLeaves.forEach((leave) => {
           mergedEvents.push({
             id: leave._id,
@@ -136,7 +136,6 @@ export const getEvents = async (req, res) => {
         });
       }
     } else {
-      // HR and Super Admin view all approved leaves in the system
       const approvedLeaves = await LeaveRequest.find({
         status: 'approved'
       });
@@ -153,6 +152,92 @@ export const getEvents = async (req, res) => {
         });
       });
     }
+
+    // --- Generate Birthdays and Work Anniversaries ---
+    let targetEmployees = [];
+    if (employeeId) {
+      let query = { $or: [{ legacyId: employeeId }] };
+      if (mongoose.Types.ObjectId.isValid(employeeId)) {
+        query.$or.push({ _id: employeeId });
+        query.$or.push({ userId: employeeId });
+      }
+      const emp = await Employee.findOne(query);
+      if (emp) {
+        if (emp.companyId) {
+          targetEmployees = await Employee.find({ companyId: emp.companyId, status: 'active' });
+        } else {
+          targetEmployees = await Employee.find({ status: 'active' });
+        }
+      }
+    } else if (companyId) {
+      let query = { $or: [{ legacyId: companyId }] };
+      if (mongoose.Types.ObjectId.isValid(companyId)) {
+        query.$or.push({ _id: companyId });
+      }
+      const comp = await Company.findOne(query);
+      if (comp) {
+        const compId = comp.legacyId || comp._id.toString();
+        targetEmployees = await Employee.find({ companyId: compId, status: 'active' });
+      }
+    } else {
+      // HR/Admin sees all active employees
+      targetEmployees = await Employee.find({ status: 'active' });
+    }
+
+    const currentYear = new Date().getFullYear();
+    const eventYears = [currentYear - 1, currentYear, currentYear + 1];
+
+    targetEmployees.forEach(emp => {
+      // Generate Birthdays
+      if (emp.dateOfBirth) {
+        const [, month, day] = emp.dateOfBirth.split('-');
+        if (month && day) {
+          eventYears.forEach(year => {
+            mergedEvents.push({
+              id: `bday-${emp._id}-${year}`,
+              title: `🎂 ${emp.name}'s Birthday`,
+              description: `Wish ${emp.name} a Happy Birthday!`,
+              start: `${year}-${month}-${day}`,
+              end: `${year}-${month}-${day}`,
+              type: `birthday`,
+              targetLocation: 'all',
+              targetValue: 'all',
+              allDay: true,
+            });
+          });
+        }
+      }
+
+      // Generate Anniversaries
+      if (emp.joinDate) {
+        const [joinYearStr, month, day] = emp.joinDate.split('-');
+        const joinYear = parseInt(joinYearStr, 10);
+        if (!isNaN(joinYear) && month && day) {
+          eventYears.forEach(year => {
+            const diff = year - joinYear;
+            if (diff > 0) {
+              let suffix = 'th';
+              if (diff % 10 === 1 && diff !== 11) suffix = 'st';
+              else if (diff % 10 === 2 && diff !== 12) suffix = 'nd';
+              else if (diff % 10 === 3 && diff !== 13) suffix = 'rd';
+
+              mergedEvents.push({
+                id: `annv-${emp._id}-${year}`,
+                title: `🎉 ${emp.name}'s ${diff}${suffix} Work Anniversary`,
+                description: `Celebrate ${emp.name}'s ${diff}${suffix} year with us!`,
+                start: `${year}-${month}-${day}`,
+                end: `${year}-${month}-${day}`,
+                type: `anniversary`,
+                targetLocation: 'all',
+                targetValue: 'all',
+                allDay: true,
+              });
+            }
+          });
+        }
+      }
+    });
+    // --- End Generate Birthdays and Work Anniversaries ---
 
     let googleHolidays = [];
     try {
@@ -366,7 +451,7 @@ export const importHolidays = async (req, res) => {
     }
 
     const holidays = await fetchHolidaysFromGoogle(country);
-    
+
     let importedCount = 0;
     for (const holiday of holidays) {
       const exists = await CompanyEvent.findOne({
@@ -401,4 +486,6 @@ export const importHolidays = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
 

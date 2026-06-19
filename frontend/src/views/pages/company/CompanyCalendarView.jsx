@@ -26,6 +26,8 @@ const EVENT_TYPE_COLORS = {
   'annual-leave': 'bg-indigo-50 text-indigo-750 text-indigo-700 border-indigo-200 font-bold shadow-sm shadow-indigo-500/5',
   'casual-leave': 'bg-sky-50 text-sky-750 text-sky-700 border-sky-200 font-bold shadow-sm shadow-sky-500/5',
   'medical-leave': 'bg-rose-50 text-rose-750 text-rose-700 border-rose-200 font-bold shadow-sm shadow-rose-500/5',
+  birthday: 'bg-pink-50 text-pink-700 border-pink-200 font-bold shadow-sm shadow-pink-500/5',
+  anniversary: 'bg-yellow-50 text-yellow-700 border-yellow-200 font-bold shadow-sm shadow-yellow-500/5',
 };
 
 const EVENT_TYPE_DOTS = {
@@ -41,6 +43,8 @@ const EVENT_TYPE_DOTS = {
   'annual-leave': 'bg-indigo-600',
   'casual-leave': 'bg-sky-500',
   'medical-leave': 'bg-rose-500',
+  birthday: 'bg-pink-500',
+  anniversary: 'bg-yellow-500',
 };
 
 const COUNTRY_STYLES = {
@@ -62,6 +66,12 @@ const getEventStyle = (event) => {
   }
   if (event.type === 'medical-leave') {
     return { flag: '🤒', color: EVENT_TYPE_COLORS['medical-leave'] };
+  }
+  if (event.type === 'birthday') {
+    return { flag: '🎂', color: EVENT_TYPE_COLORS['birthday'] };
+  }
+  if (event.type === 'anniversary') {
+    return { flag: '🎉', color: EVENT_TYPE_COLORS['anniversary'] };
   }
 
   if (event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival') {
@@ -86,7 +96,7 @@ const limitWords = (text, limit) => {
   const words = text.split(/(\s+)/);
   let wordCount = 0;
   const result = [];
-  
+
   for (let token of words) {
     if (token.trim() !== '') {
       wordCount++;
@@ -152,7 +162,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   // Calendar Math Helpers
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -174,12 +184,14 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
     );
   };
 
-  const canManageEvents = role === 'hr' || role === 'superadmin';
-  const canEditOrDelete = role === 'superadmin';
+
 
   const isEventHoliday = (event) => {
-    return event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival' || !!event.googleEventId;
+    return event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival';
   };
+
+  const canManageEvents = role === 'hr' || role === 'superadmin';
+  const canEditOrDelete = role === 'superadmin';
 
   const openAddEvent = (day) => {
     if (!canManageEvents) return;
@@ -325,7 +337,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         <div>
           <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Company Calendar</h1>
           <p className="text-slate-500 text-sm mt-0.5">
-            {canManageEvents 
+            {canManageEvents
               ? 'Manage company events'
               : 'View company holidays, team events, and meetings'
             }
@@ -376,7 +388,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
               {monthNames[month]} {year}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-1.5">
             <button
               onClick={prevMonth}
@@ -649,7 +661,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 {selectedEvent.title}
               </h3>
             </div>
-            
+
             <p className="text-slate-600 text-sm mb-4 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
               {selectedEvent.description || 'No description provided.'}
             </p>

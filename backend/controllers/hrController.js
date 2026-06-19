@@ -94,7 +94,7 @@ export const getEmployeeDetail = async (req, res) => {
 
 export const createEmployee = async (req, res) => {
   try {
-    const { name, email, position, department, companyId, phone, address, country, joinDate } = req.body;
+    const { name, email, position, department, companyId, phone, address, country, joinDate, dateOfBirth } = req.body;
 
     if (!name || name.trim().length < 2 || name.trim().length > 30) {
       return res.status(400).json({ error: 'Name must be between 2 and 30 characters long.' });
@@ -193,6 +193,7 @@ export const createEmployee = async (req, res) => {
       country: country,
       status: 'active',
       joinDate: joinDate,
+      dateOfBirth: dateOfBirth || null,
       userId: newUser._id,
     });
 

@@ -588,12 +588,12 @@ export function HRReportsView({
             )}
 
             {/* Individual Employee Filter */}
-            <div className="flex items-center gap-2 w-full md:w-auto md:pl-3 md:border-l border-slate-200 min-w-0 pt-2 md:pt-0 border-t md:border-t-0 mt-2 md:mt-0">
+            <div className="flex items-center gap-2 md:pl-3 md:border-l border-slate-200 min-w-0 pt-2 md:pt-0 border-t md:border-t-0 mt-2 md:mt-0">
               <label className="text-xs text-slate-500 font-semibold whitespace-nowrap">Employee</label>
               <select
                 value={selectedEmployeeFilter}
                 onChange={e => setSelectedEmployeeFilter(e.target.value)}
-                className="text-xs border border-border rounded-xl px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer flex-1 md:flex-none min-w-0 md:max-w-[300px] truncate"
+                className="text-xs border border-border rounded-xl px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer max-w-[160px] sm:max-w-[200px] md:max-w-[300px] truncate"
               >
                 <option value="all">All Employees</option>
                 {(employeesList || []).map(emp => (
@@ -635,7 +635,6 @@ export function HRReportsView({
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
                 <Bar dataKey="present" name="Present" fill="#10b981" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="absent" name="Absent" fill="#ef4444" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="late" name="Late" fill="#f59e0b" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

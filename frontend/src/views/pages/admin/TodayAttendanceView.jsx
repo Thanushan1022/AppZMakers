@@ -21,6 +21,11 @@ export function TodayAttendanceView({
   };
 
   const [selectedTasks, setSelectedTasks] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+
+  const departments = [...new Set((employees || []).filter(e => e.status === 'active').map(e => e.department))].filter(Boolean).sort();
+
   
   const containerRef = useRef(null);
   const isDown = useRef(false);
@@ -73,14 +78,41 @@ export function TodayAttendanceView({
             <h3 className="text-slate-800 font-semibold">Telemetry Log</h3>
             <p className="text-slate-500 text-xs mt-0.5">Viewing records for the selected date</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500 text-xs font-medium">Filter by Date:</span>
-            <input
-              type="date"
-              value={selectedDate || ''}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-border rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-            />
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 text-xs font-medium">Department:</span>
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
+              >
+                <option value="all">All</option>
+                {departments.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 text-xs font-medium">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
+              >
+                <option value="all">All</option>
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">
+              <span className="text-slate-500 text-xs font-medium">Date:</span>
+              <input
+                type="date"
+                value={selectedDate || ''}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
+              />
+            </div>
           </div>
         </div>
         <div
@@ -116,7 +148,19 @@ export function TodayAttendanceView({
             </thead>
             <tbody className="divide-y divide-border">
               {(employees || [])
-                .filter((e) => e.status === 'active')
+                .filter((e) => {
+                  if (e.status !== 'active') return false;
+                  if (departmentFilter !== 'all' && e.department !== departmentFilter) return false;
+                  
+                  const rec = todayAttendance.find((a) => a.employeeId === e.id);
+                  const status = rec?.status || 'absent';
+                  const isAbsent = status === 'absent';
+                  
+                  if (statusFilter === 'present' && isAbsent) return false;
+                  if (statusFilter === 'absent' && !isAbsent) return false;
+
+                  return true;
+                })
                 .sort((empA, empB) => {
                   const recA = todayAttendance.find((a) => a.employeeId === empA.id);
                   const recB = todayAttendance.find((a) => a.employeeId === empB.id);
