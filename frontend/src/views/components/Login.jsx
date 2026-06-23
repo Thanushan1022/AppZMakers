@@ -100,7 +100,6 @@ export function Login({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <span className="px-4 py-2 border border-[#2e2880] rounded-full text-xs font-extrabold text-[#a59bfb] bg-[#1a1550]/60 uppercase tracking-wider">SOC 2 Certified</span>
             <span className="px-4 py-2 border border-[#2e2880] rounded-full text-xs font-extrabold text-[#a59bfb] bg-[#1a1550]/60 uppercase tracking-wider">Real-time Sync</span>
           </div>
         </div>
