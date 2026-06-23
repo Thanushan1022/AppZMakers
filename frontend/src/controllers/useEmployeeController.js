@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://app-z-makers.vercel.app/api';
+const BACKEND_URL = import.meta.env.DEV ? 'http://localhost:5001/api' : 'https://app-z-makers.vercel.app/api';
 
 const parseBreakSeconds = (breakTimeSetting) => {
   let allowedBreakMin = 60;
