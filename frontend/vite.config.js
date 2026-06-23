@@ -32,7 +32,5 @@ export default defineConfig({
   },
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
-  
- base: process.env.VITE_BASE_PATH || "/AppZMakers",
-
+  base: process.env.VITE_BASE_PATH || "/",
 })

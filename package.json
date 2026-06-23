@@ -1,21 +1,8 @@
 {
   "name": "appzmaker-main",
   "version": "1.0.0",
-  "description": "This is the development repository for the WorkForge Portal, a modern web application designed to track employee attendance, manage leave requests, and view analytics.",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Thanushan1022/AppzMakers.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Thanushan1022/AppzMakers/issues"
-  },
-  "homepage": "https://github.com/Thanushan1022/AppzMakers#readme"
-}
+    "build": "cd frontend && npm install && npm run build"
+  }
 }
