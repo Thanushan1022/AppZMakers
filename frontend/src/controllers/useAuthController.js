@@ -78,7 +78,7 @@ export function useAuthController() {
       }
 
       if (!response.ok) {
-        throw new Error(data?.error || data?.message || 'Login failed');
+        throw new Error(data?.error || data?.message || `HTTP Error ${response.status}: ${response.statusText}`);
       }
 
       persistAuth(data);
