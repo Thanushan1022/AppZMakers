@@ -146,7 +146,7 @@ function AppRoutes() {
   const [toasts, setToasts] = React.useState([]);
 
   React.useEffect(() => {
-    const socket = io('http://localhost:5001');
+    const socket = io('https://app-z-makers.vercel.app');
     
     socket.on('attendance_update', (data) => {
       window.dispatchEvent(new CustomEvent('refresh_attendance', { detail: data }));

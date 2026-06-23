@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const BACKEND_URL = 'https://app-z-makers.vercel.app:5001/api/auth';
+const BACKEND_URL = 'https://app-z-makers.vercel.app/api/auth';
 
 const defaultPages = {
   employee: 'dashboard',

@@ -46,8 +46,6 @@ app.use(cors({
   credentials: true
 }));
 
-
-app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -104,4 +102,9 @@ const startServer = async () => {
   }
 };
 
-startServer();
+// Start server if not running in a serverless environment like Vercel
+if (process.env.NODE_ENV !== 'production') {
+  startServer();
+}
+
+export default app;
