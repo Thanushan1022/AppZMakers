@@ -330,33 +330,44 @@ export function useEmployeeController(userId, updateAuth) {
   useEffect(() => {
     const duration = settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15; // in minutes
     const limitSecs = duration * 60;
+    let interval = null;
+
     if (onTeaBreak) {
-      // Find the current active tea break
-      const activeTeaBreak = breaks.find(b => b.type === 'tea' && !b.end);
-      if (activeTeaBreak && activeTeaBreak.start) {
-        const parts = activeTeaBreak.start.split(':').map(Number);
-        const startSecsRaw = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+      const checkAndEndBreak = () => {
+        const activeTeaBreak = breaks.find(b => b.type === 'tea' && !b.end);
+        if (activeTeaBreak && activeTeaBreak.start) {
+          const parts = activeTeaBreak.start.split(':').map(Number);
+          const startSecsRaw = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
 
-        // Need to know checkInSecs to adjust if start time is past midnight
-        const getSecsFromTime = (tStr) => {
-          if (!tStr) return 0;
-          const p = tStr.split(':').map(Number);
-          return (p[0] || 0) * 3600 + (p[1] || 0) * 60 + (p[2] || 0);
-        };
-        const checkInSecs = getSecsFromTime(checkInTime);
-        const startSecs = startSecsRaw < checkInSecs ? startSecsRaw + 86400 : startSecsRaw;
+          const getSecsFromTime = (tStr) => {
+            if (!tStr) return 0;
+            const p = tStr.split(':').map(Number);
+            return (p[0] || 0) * 3600 + (p[1] || 0) * 60 + (p[2] || 0);
+          };
+          const checkInSecs = getSecsFromTime(checkInTime);
+          const startSecs = startSecsRaw < checkInSecs ? startSecsRaw + 86400 : startSecsRaw;
 
-        const now = new Date();
-        const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-        const nowSecs = nowSecsRaw < checkInSecs ? nowSecsRaw + 86400 : nowSecsRaw;
+          const now = new Date();
+          const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+          const nowSecs = nowSecsRaw < checkInSecs ? nowSecsRaw + 86400 : nowSecsRaw;
 
-        const currentBreakDurationSecs = nowSecs - startSecs;
+          const currentBreakDurationSecs = nowSecs - startSecs;
 
-        if (currentBreakDurationSecs >= limitSecs) {
-          handleTeaBreak();
+          if (currentBreakDurationSecs >= limitSecs) {
+            handleTeaBreak();
+          }
         }
-      }
+      };
+      
+      // Check immediately
+      checkAndEndBreak();
+      // Then check every second
+      interval = setInterval(checkAndEndBreak, 1000);
     }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [onTeaBreak, breaks, checkInTime, settings]);
 
   // Helpers
