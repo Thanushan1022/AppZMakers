@@ -105,6 +105,12 @@ const startServer = async () => {
 // Start server if not running in a serverless environment like Vercel
 if (process.env.NODE_ENV !== 'production') {
   startServer();
+} else {
+  // In production (Vercel Serverless), connect to the database
+  // but do not call app.listen()
+  connectDatabase()
+    .then(() => console.log('✅ MongoDB connected in Vercel Serverless'))
+    .catch((err) => console.error('❌ Failed to connect to MongoDB:', err.message));
 }
 
 export default app;

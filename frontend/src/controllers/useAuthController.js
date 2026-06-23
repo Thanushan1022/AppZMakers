@@ -69,9 +69,16 @@ export function useAuthController() {
         body: JSON.stringify({ email, password, role: selectedRole }),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        throw new Error(`Server returned invalid response: ${response.status} ${response.statusText}`);
+      }
+
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Login failed');
+        throw new Error(data?.error || data?.message || 'Login failed');
       }
 
       persistAuth(data);
@@ -99,9 +106,16 @@ export function useAuthController() {
         }),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        throw new Error(`Server returned invalid response: ${response.status} ${response.statusText}`);
+      }
+
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Registration failed');
+        throw new Error(data?.error || data?.message || 'Registration failed');
       }
 
       const loginRes = await fetch(`${BACKEND_URL}/login`, {
@@ -110,8 +124,15 @@ export function useAuthController() {
         body: JSON.stringify({ email, password, role: selectedRole }),
       });
 
-      const loginData = await loginRes.json();
-      if (!loginRes.ok) {
+      const loginText = await loginRes.text();
+      let loginData;
+      try {
+        loginData = loginText ? JSON.parse(loginText) : {};
+      } catch (e) {
+        // Just let it fall through to the non-ok block if invalid
+      }
+
+      if (!loginRes.ok || !loginData) {
         setMode('login');
         setError('Account created. Please sign in.');
         return;
