@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const breakSchema = new mongoose.Schema(
-  { start: String, end: String, type: { type: String, enum: ['normal', 'meal', 'tea'], default: 'meal' } },
+  { start: String, end: String, type: { type: String, enum: ['normal', 'meal', 'tea'], default: 'meal' }, startTimestamp: { type: Number, default: null } },
   { _id: false }
 );
 

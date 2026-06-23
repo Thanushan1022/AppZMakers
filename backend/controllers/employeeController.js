@@ -22,10 +22,9 @@ export const getProfile = async (req, res) => {
     const settings = await getSettings();
 
     // Auto end any overdue tea break
-    const todayStr = new Date().toISOString().split('T')[0];
-    const todayRecord = await Attendance.findOne({ employeeId: empId, date: todayStr });
-    if (todayRecord) {
-      await autoEndOverdueTeaBreaks(todayRecord, settings);
+    const activeBreakRecord = await Attendance.findOne({ employeeId: empId, onTeaBreak: true });
+    if (activeBreakRecord) {
+      await autoEndOverdueTeaBreaks(activeBreakRecord, settings);
     }
 
     const empJson = toEmployeeJSON(emp);
@@ -217,7 +216,7 @@ export const logAttendance = async (req, res) => {
 
       todayRecord.onTeaBreak = true;
       if (!todayRecord.breaks) todayRecord.breaks = [];
-      todayRecord.breaks.push({ start: time, end: null, type: 'tea' });
+      todayRecord.breaks.push({ start: time, end: null, type: 'tea', startTimestamp: Date.now() });
       await todayRecord.save();
     } else if (action === 'end-tea-break') {
       if (!todayRecord) return res.status(400).json({ error: 'Not clocked in' });

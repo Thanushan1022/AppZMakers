@@ -19,32 +19,42 @@ export const autoEndOverdueTeaBreaks = async (records, settings) => {
   if (!records) return;
   const list = Array.isArray(records) ? records : [records];
   const teaDuration = settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15; // in minutes
-  const limitSecs = teaDuration * 60;
+  const limitMs = teaDuration * 60 * 1000;
 
   for (const record of list) {
     if (record.onTeaBreak && record.breaks) {
       const activeTeaBreak = record.breaks.find(b => b.type === 'tea' && !b.end);
-      if (activeTeaBreak && activeTeaBreak.start) {
-        const startSecs = getSecsFromTime(activeTeaBreak.start);
-        const tz = process.env.TIMEZONE || 'Asia/Colombo';
-        const formatter = new Intl.DateTimeFormat('en-US', {
-          timeZone: tz,
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric',
-          hourCycle: 'h23'
-        });
-        const parts = formatter.formatToParts(new Date());
-        const h = parseInt(parts.find(p => p.type === 'hour').value, 10);
-        const m = parseInt(parts.find(p => p.type === 'minute').value, 10);
-        const s = parseInt(parts.find(p => p.type === 'second').value, 10);
-        const nowSecsRaw = h * 3600 + m * 60 + s;
-        const nowSecs = nowSecsRaw < startSecs ? (nowSecsRaw + 86400) : nowSecsRaw;
+      
+      if (activeTeaBreak) {
+        let elapsedMs = 0;
+        
+        // Safely use absolute UTC timestamp (Timezone agnostic)
+        if (activeTeaBreak.startTimestamp) {
+          elapsedMs = Date.now() - activeTeaBreak.startTimestamp;
+        } else if (activeTeaBreak.start) {
+          // Fallback for older records
+          const startSecs = getSecsFromTime(activeTeaBreak.start);
+          const tz = process.env.TIMEZONE || 'Asia/Colombo';
+          const formatter = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' });
+          const parts = formatter.formatToParts(new Date());
+          const h = parseInt(parts.find(p => p.type === 'hour').value, 10);
+          const m = parseInt(parts.find(p => p.type === 'minute').value, 10);
+          const s = parseInt(parts.find(p => p.type === 'second').value, 10);
+          const nowSecsRaw = h * 3600 + m * 60 + s;
+          const nowSecs = nowSecsRaw < startSecs ? (nowSecsRaw + 86400) : nowSecsRaw;
+          elapsedMs = (nowSecs - startSecs) * 1000;
+        }
 
-        const elapsedSecs = nowSecs - startSecs;
-        if (elapsedSecs >= limitSecs) {
-          const endSecs = startSecs + limitSecs;
-          activeTeaBreak.end = getTimeStringFromSecs(endSecs);
+        if (elapsedMs >= limitMs) {
+          // Calculate the end time exactly relative to the original client string
+          // This keeps the display strings visually correct for the user's local timezone
+          if (activeTeaBreak.start) {
+             const startSecs = getSecsFromTime(activeTeaBreak.start);
+             const endSecs = startSecs + (teaDuration * 60);
+             activeTeaBreak.end = getTimeStringFromSecs(endSecs);
+          } else {
+             activeTeaBreak.end = getTimeStringFromSecs(getSecsFromTime('00:00:00') + (teaDuration * 60));
+          }
           record.onTeaBreak = false;
           await record.save();
         }
