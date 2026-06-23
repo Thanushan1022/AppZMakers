@@ -26,8 +26,19 @@ export const autoEndOverdueTeaBreaks = async (records, settings) => {
       const activeTeaBreak = record.breaks.find(b => b.type === 'tea' && !b.end);
       if (activeTeaBreak && activeTeaBreak.start) {
         const startSecs = getSecsFromTime(activeTeaBreak.start);
-        const now = new Date();
-        const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const tz = process.env.TIMEZONE || 'Asia/Colombo';
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          hourCycle: 'h23'
+        });
+        const parts = formatter.formatToParts(new Date());
+        const h = parseInt(parts.find(p => p.type === 'hour').value, 10);
+        const m = parseInt(parts.find(p => p.type === 'minute').value, 10);
+        const s = parseInt(parts.find(p => p.type === 'second').value, 10);
+        const nowSecsRaw = h * 3600 + m * 60 + s;
         const nowSecs = nowSecsRaw < startSecs ? (nowSecsRaw + 86400) : nowSecsRaw;
 
         const elapsedSecs = nowSecs - startSecs;
