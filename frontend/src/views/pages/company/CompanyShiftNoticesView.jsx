@@ -171,62 +171,71 @@ export function CompanyShiftNoticesView({
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div>
-        <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Shift & Leave Messages</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Send work start instructions or assign leaves to employees, and manage history</p>
+      <div className="flex justify-between items-center gap-4 flex-wrap mb-4">
+        <div>
+          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Shift & Leave Messages</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Send work start instructions or assign leaves to employees, and manage history</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Input Message Form Box */}
-        <div className="bg-white rounded-2xl border border-border p-6 flex flex-col justify-between">
-          <div>
-            <h3 className="text-slate-800 font-semibold mb-1 flex items-center gap-2">
+        <div className="relative overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl border border-white/60 dark:border-slate-700/50 p-8 flex flex-col justify-between shadow-2xl shadow-indigo-500/10 dark:shadow-none">
+          {/* Liquid Theme Background Blobs */}
+          <div className="absolute inset-0 z-0 pointer-events-none opacity-60 dark:opacity-30">
+            <div className="absolute -top-24 -left-24 w-72 h-72 bg-gradient-to-br from-fuchsia-400/50 to-purple-500/50 dark:from-fuchsia-600/40 dark:to-purple-700/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[60px] animate-pulse" style={{ animationDuration: '7s' }}></div>
+            <div className="absolute top-1/4 -right-24 w-80 h-80 bg-gradient-to-bl from-cyan-400/50 to-blue-500/50 dark:from-cyan-600/40 dark:to-blue-700/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[70px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }}></div>
+            <div className="absolute -bottom-24 left-1/4 w-96 h-96 bg-gradient-to-tr from-indigo-400/50 to-violet-500/50 dark:from-indigo-600/40 dark:to-violet-700/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '4s' }}></div>
+          </div>
+          
+          <div className="relative z-10">
+            <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight mb-2 flex items-center gap-2">
               {editingId 
                 ? (formData.noticeType === 'leave' ? '🍁 Edit Leave Assignment' : '✏️ Edit Shift Start Notice') 
                 : (formData.noticeType === 'leave' ? '🍁 Assign Leave' : '💬 Schedule Start Shift Message')}
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
               {formData.noticeType === 'leave' 
                 ? 'Assign approved leave period to target employees.' 
                 : 'Inform your employees when their work starts, with reasons.'}
             </p>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Message Type Selector */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Message Type</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Message Type</label>
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, noticeType: 'shift' })}
-                    className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                    className={`py-3 px-4 text-xs font-black uppercase tracking-widest rounded-2xl border transition-all cursor-pointer shadow-sm ${
                       formData.noticeType === 'shift'
-                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                        : 'bg-slate-50 border-border text-slate-650 hover:bg-slate-100'
+                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-400'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                     }`}
                   >
-                    💬 Shift Message
+                    💬 Shift
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, noticeType: 'leave' })}
-                    className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                    className={`py-3 px-4 text-xs font-black uppercase tracking-widest rounded-2xl border transition-all cursor-pointer shadow-sm ${
                       formData.noticeType === 'leave'
-                        ? 'bg-amber-50 border-amber-200 text-amber-700'
-                        : 'bg-slate-50 border-border text-slate-650 hover:bg-slate-100'
+                        ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-500'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                     }`}
                   >
-                    🍁 Leave Assignment
+                    🍁 Leave
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Target Employees</label>
+                <label className="block text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-2">Target Employees</label>
                 <select
                   value={formData.employeeId}
                   onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                  className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full border border-white/60 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all appearance-none cursor-pointer shadow-sm hover:bg-white/80 dark:hover:bg-slate-800/80"
                 >
                   <option value="all">All Employees</option>
                   {myEmployees.map((emp) => (
@@ -239,22 +248,22 @@ export function CompanyShiftNoticesView({
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Start Date</label>
+                      <label className="block text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-2">Start Date</label>
                       <input
                         type="date"
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full border border-white/60 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all cursor-pointer shadow-sm hover:bg-white/80 dark:hover:bg-slate-800/80"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">End Date</label>
+                      <label className="block text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-2">End Date</label>
                       <input
                         type="date"
                         min={formData.date}
                         value={formData.endDate}
                         onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full border border-white/60 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all cursor-pointer shadow-sm hover:bg-white/80 dark:hover:bg-slate-800/80"
                       />
                     </div>
                   </div>
@@ -262,58 +271,58 @@ export function CompanyShiftNoticesView({
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Start Date</label>
+                    <label className="block text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-2">Start Date</label>
                     <input
                       type="date"
                       min={editingId ? undefined : getTomorrowStr()}
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      className="w-full border border-white/60 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all cursor-pointer shadow-sm hover:bg-white/80 dark:hover:bg-slate-800/80"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Start Time</label>
+                    <label className="block text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-2">Start Time</label>
                     <input
                       type="time"
                       value={formData.time}
                       onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                      className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      className="w-full border border-white/60 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all cursor-pointer shadow-sm hover:bg-white/80 dark:hover:bg-slate-800/80"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Reason / Instructions</label>
-                  <span className="text-[10px] font-bold text-slate-400">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Reason / Instructions</label>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-sm border border-white/50 dark:border-slate-700/50">
                     {getWordCount(formData.reason)}/75 words
                   </span>
                 </div>
                 <textarea
                   value={formData.reason}
                   onChange={handleReasonChange}
-                  rows={3}
+                  rows={4}
                   placeholder={formData.noticeType === 'leave' ? 'Reason for assigning this leave...' : 'Reason why the employee should login at this time...'}
-                  className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full border border-white/60 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all placeholder:text-slate-400 resize-none custom-scrollbar shadow-sm hover:bg-white/80 dark:hover:bg-slate-800/80"
                 />
               </div>
 
               {isUrgent && formData.noticeType === 'shift' && (
-                <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 text-xs text-rose-600 font-semibold flex items-start gap-2 animate-pulse">
-                  <span>⚠️ Warning: Notice scheduled for less than 6 hours from now. HR will be automatically notified.</span>
+                <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800/50 rounded-2xl p-4 text-xs text-rose-700 dark:text-rose-400 font-black tracking-widest flex items-start gap-2 animate-pulse shadow-sm">
+                  <span>⚠️ WARNING: Notice scheduled for less than 6 hours from now. HR will be automatically notified.</span>
                 </div>
               )}
 
-              {errorMsg && <div className="text-xs font-semibold text-red-500">{errorMsg}</div>}
-              {successMsg && <div className="text-xs font-semibold text-emerald-600">{successMsg}</div>}
+              {errorMsg && <div className="text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 p-3 rounded-xl border border-rose-100 dark:border-rose-800/50">{errorMsg}</div>}
+              {successMsg && <div className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/50">{successMsg}</div>}
 
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/50">
                 {editingId && (
                   <button
                     type="button"
                     onClick={handleCancelEdit}
-                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all cursor-pointer"
+                    className="flex-1 py-3 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-black uppercase tracking-wider rounded-2xl transition-all cursor-pointer active:scale-95"
                   >
                     Cancel
                   </button>
@@ -321,10 +330,10 @@ export function CompanyShiftNoticesView({
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50 ${
+                  className={`flex-[2] py-3 text-white text-xs font-black uppercase tracking-wider rounded-2xl transition-all shadow-xl cursor-pointer disabled:opacity-50 active:scale-95 ${
                     formData.noticeType === 'leave'
-                      ? 'bg-amber-600 hover:bg-amber-700 hover:shadow-amber-500/10'
-                      : 'bg-[#5b4cf5] hover:bg-[#473ac7] hover:shadow-indigo-500/10'
+                      ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 shadow-orange-500/40 bg-[length:200%_auto] hover:bg-right'
+                      : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:from-indigo-600 hover:via-purple-600 hover:to-fuchsia-600 shadow-indigo-500/40 bg-[length:200%_auto] hover:bg-right'
                   }`}
                 >
                   {loading ? 'Saving...' : editingId ? 'Update Notice' : formData.noticeType === 'leave' ? 'Assign Leave' : 'Send Shift Message'}
@@ -335,65 +344,66 @@ export function CompanyShiftNoticesView({
         </div>
 
         {/* History Log Box */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6 flex flex-col">
-          <h3 className="text-slate-800 font-semibold mb-1 flex items-center gap-2">📋 Notice Sent History</h3>
-          <p className="text-xs text-slate-400 mb-4">View previous shift messages and leave assignments sent to your employees.</p>
+        <div className="lg:col-span-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-8 flex flex-col shadow-xl shadow-slate-200/40 dark:shadow-none">
+          <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight mb-2 flex items-center gap-2">📋 Notice Sent History</h3>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">View previous shift messages and leave assignments sent to your employees.</p>
           
-          <div className="flex-1 overflow-y-auto max-h-[460px] pr-1 space-y-3">
+          <div className="flex-1 overflow-y-auto max-h-[600px] pr-2 space-y-4 custom-scrollbar">
             {shiftNotices.length > 0 ? (
               shiftNotices.map((n, idx) => (
                 <div 
                   key={n._id || idx} 
-                  className={`p-4 border rounded-xl flex flex-col sm:flex-row sm:items-start justify-between gap-3 shadow-sm hover:shadow-md transition-shadow ${
+                  className={`p-6 border rounded-3xl flex flex-col sm:flex-row sm:items-start justify-between gap-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
                     n.noticeType === 'leave' 
-                      ? 'bg-amber-50/20 border-amber-200 hover:border-amber-300' 
-                      : 'bg-slate-50 border-slate-100 hover:border-slate-200'
+                      ? 'bg-amber-50/30 dark:bg-amber-900/10 border-amber-200/50 dark:border-amber-800/30' 
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                   }`}
                 >
-                  <div className="space-y-1.5 flex-1">
+                  <div className="space-y-3 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-slate-700 font-bold bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full capitalize">
+                      <span className="text-[10px] text-slate-700 dark:text-slate-300 font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-3 py-1 rounded-xl">
                         {n.employeeName}
                       </span>
                       {n.noticeType === 'leave' ? (
-                        <span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-250 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                        <span className="text-[10px] text-amber-700 dark:text-amber-500 bg-amber-100/50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 px-3 py-1 rounded-xl font-black uppercase tracking-widest">
                           🍁 Client Leave
                         </span>
                       ) : (
-                        <span className="text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-150 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                        <span className="text-[10px] text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200/50 dark:border-indigo-800/50 px-3 py-1 rounded-xl font-black uppercase tracking-widest">
                           💬 Shift
                         </span>
                       )}
                       {n.informHR && n.noticeType !== 'leave' && (
-                        <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full font-bold">
+                        <span className="text-[10px] text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 border border-rose-200/50 dark:border-rose-800/50 px-3 py-1 rounded-xl font-black uppercase tracking-widest animate-pulse">
                           ⚠️ HR Notified (&lt; 6h)
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-slate-600 font-medium leading-relaxed">
-                      <strong>Reason:</strong> {n.reason}
+                    <div className="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed bg-white/50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/50">
+                      <strong className="text-slate-800 dark:text-slate-100 font-black tracking-tight mr-2 block mb-1">Reason:</strong> 
+                      {n.reason}
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:items-end gap-3 flex-shrink-0">
-                    <div className="text-left sm:text-right text-xs text-slate-400 font-semibold">
-                      <div className={`${n.noticeType === 'leave' ? 'text-amber-600' : 'text-indigo-600'} font-bold`}>
+                  <div className="flex flex-col sm:items-end gap-4 flex-shrink-0 min-w-[140px]">
+                    <div className="text-left sm:text-right">
+                      <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${n.noticeType === 'leave' ? 'text-amber-600 dark:text-amber-500' : 'text-indigo-600 dark:text-indigo-400'}`}>
                         {n.noticeType === 'leave' ? 'Leave Period:' : 'Start Time:'}
                       </div>
-                      <div className="text-slate-705" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded-xl border border-slate-200/50 dark:border-slate-700/50 inline-block">
                         {n.noticeType === 'leave' 
                           ? `${formatNoticeDate(n.date)} to ${formatNoticeDate(n.endDate)}` 
                           : formatNoticeDateTime(n.date, n.time)}
                       </div>
                     </div>
 
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 items-center w-full sm:w-auto">
                       <button
                         onClick={() => handleEditClick(n)}
-                        className={`text-[11px] font-bold px-2 py-1 rounded-lg border transition-all cursor-pointer ${
+                        className={`flex-1 sm:flex-none text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border transition-all cursor-pointer active:scale-95 shadow-sm ${
                           n.noticeType === 'leave'
-                            ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-100'
-                            : 'text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border-indigo-100'
+                            ? 'text-amber-700 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border-amber-200/50 dark:border-amber-800/50'
+                            : 'text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-indigo-200/50 dark:border-indigo-800/50'
                         }`}
                         title="Edit Notice"
                       >
@@ -415,7 +425,7 @@ export function CompanyShiftNoticesView({
                             }
                           }
                         }}
-                        className="text-[11px] font-bold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-lg border border-rose-100 transition-all cursor-pointer"
+                        className="flex-1 sm:flex-none text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 px-4 py-2 rounded-xl border border-rose-200/50 dark:border-rose-800/50 transition-all cursor-pointer active:scale-95 shadow-sm"
                         title="Delete Notice"
                       >
                         Delete
@@ -425,7 +435,10 @@ export function CompanyShiftNoticesView({
                 </div>
               ))
             ) : (
-              <p className="text-slate-400 text-sm py-8 text-center my-auto">No notices sent yet.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center bg-white/50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 h-full">
+                <span className="text-4xl mb-4 opacity-50">📋</span>
+                <p className="text-slate-400 dark:text-slate-500 text-sm font-black uppercase tracking-widest">No notices sent yet.</p>
+              </div>
             )}
           </div>
         </div>

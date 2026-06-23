@@ -11,6 +11,7 @@ import {
 } from '../services/googleCalendarService.js';
 
 export const getEvents = async (req, res) => {
+  console.log('getEvents called!');
   try {
     const { employeeId, companyId } = req.query;
 

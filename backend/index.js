@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import apiRouter from './routes/api.js';
 import authRoutes from './routes/authRoutes.js';
 import { connectDatabase } from './config/db.js';
@@ -11,7 +13,23 @@ import { ensureUserProfiles } from './scripts/ensureUserProfiles.js';
 
 dotenv.config();
 
+
+
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  }
+});
+
+// Expose io to all requests
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 const PORT = process.env.PORT || 5001;
 
 // ✅ BASE URL (IMPORTANT FOR PRODUCTION)
@@ -29,6 +47,7 @@ app.use(cors({
 }));
 
 
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -38,7 +57,7 @@ app.get('/api/health', (req, res) => {
     message: 'WorkForge Backend Service is running!',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     dataSource: 'MongoDB Atlas',
-    swagger: `${BASE_URL}/api-docs`,
+    swagger: `http://localhost:${PORT}/api-docs`,
     timestamp: new Date(),
   });
 });
@@ -65,10 +84,10 @@ const startServer = async () => {
     await seedIfEmpty();
     await ensureUserProfiles();
 
-    const server = app.listen(PORT, () => {
+    const server = httpServer.listen(PORT, () => {
       console.log(`🚀 WorkForge Server running on port ${PORT}`);
-      console.log(`📚 Swagger UI: ${BASE_URL}/api-docs`);
-      console.log(`🔐 Auth API:  ${BASE_URL}/api/auth/login`);
+      console.log(`📚 Swagger UI: http://localhost:${PORT}/api-docs`);
+      console.log(`🔐 Auth API:  http://localhost:${PORT}/api/auth/login`);
     });
 
     server.on('error', (error) => {

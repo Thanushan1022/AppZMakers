@@ -94,6 +94,33 @@ export const logAttendance = async (req, res) => {
     if (action === 'clock-in') {
       if (todayRecord) return res.status(400).json({ error: 'Already clocked in today' });
 
+      // Validate clock-in time against assigned shift
+      const empShift = emp.shift || 'morning';
+      const allowedStartTimeStr = empShift === 'night' 
+        ? (settings.nightShiftStartTime || '21:00') 
+        : (settings.morningShiftStartTime || '09:00');
+
+      const allowedSecs = getSecsFromTime(allowedStartTimeStr);
+      const attemptSecs = getSecsFromTime(time);
+
+      let isTooEarly = false;
+      if (empShift === 'night') {
+        // For night shift, block check-ins before start time, but only if it's afternoon/evening of the same day.
+        // This allows very late check-ins past midnight (e.g., 01:00 AM) while blocking early check-ins (e.g., 20:00).
+        if (attemptSecs < allowedSecs && attemptSecs > 43200) {
+          isTooEarly = true;
+        }
+      } else {
+        // For morning shift, strictly block anything before the start time.
+        if (attemptSecs < allowedSecs) {
+          isTooEarly = true;
+        }
+      }
+
+      if (isTooEarly) {
+        return res.status(400).json({ error: `You cannot clock in before your assigned ${empShift} shift starts at ${allowedStartTimeStr}` });
+      }
+
       todayRecord = await Attendance.create({
         employeeId: empId,
         date,
@@ -251,6 +278,15 @@ export const logAttendance = async (req, res) => {
       await todayRecord.save();
     }
 
+    if (req.io) {
+      req.io.emit('attendance_update', {
+        employeeId: empId,
+        action,
+        time,
+        date
+      });
+    }
+
     res.json({ message: `Successfully executed ${action}`, record: toAttendanceJSON(todayRecord) });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -275,9 +311,12 @@ export const deleteLeaveRequest = async (req, res) => {
     const leave = await LeaveRequest.findOne({ _id: leaveId, employeeId: id });
     if (!leave) return res.status(404).json({ error: 'Leave request not found' });
     
-    // Soft delete: hide from employee dashboard
     leave.hiddenForEmployee = true;
     await leave.save();
+    
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'leave_deleted', time: new Date().toISOString() });
+    }
     
     res.json({ message: 'Leave request removed from dashboard' });
   } catch (err) {
@@ -312,6 +351,10 @@ export const createLeaveRequest = async (req, res) => {
       status: 'pending',
       appliedOn: new Date().toISOString().split('T')[0],
     });
+
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'leave_requested', time: new Date().toISOString() });
+    }
 
     res.status(201).json({
       message: 'Leave request submitted successfully',
@@ -348,6 +391,25 @@ export const updateClient = async (req, res) => {
     await syncCompanyEmployeeCounts();
 
     res.json({ message: 'Employee client updated successfully', employee: toEmployeeJSON(emp) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateShift = async (req, res) => {
+  try {
+    const emp = await findEmployee(req.params.id);
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    const { shift } = req.body;
+    if (!['morning', 'night'].includes(shift)) {
+      return res.status(400).json({ error: 'Invalid shift value. Must be morning or night.' });
+    }
+
+    emp.shift = shift;
+    await emp.save();
+
+    res.json({ message: 'Employee shift updated successfully', employee: toEmployeeJSON(emp) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

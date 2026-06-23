@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useHRController(hrId, updateAuth) {
   const getLocalDateString = () => {
@@ -60,6 +60,7 @@ export function useHRController(hrId, updateAuth) {
     dateOfBirth: '',
     address: '',
     country: '',
+    shift: '',
   });
 
   const [leaveTabFilter, setLeaveTabFilter] = useState('pending');
@@ -313,6 +314,16 @@ export function useHRController(hrId, updateAuth) {
 
   useEffect(() => {
     fetchData();
+
+    const handleRefresh = () => fetchData();
+    window.addEventListener('refresh_attendance', handleRefresh);
+    
+    const intervalId = setInterval(fetchData, 15000);
+
+    return () => {
+      window.removeEventListener('refresh_attendance', handleRefresh);
+      clearInterval(intervalId);
+    };
   }, [selectedDate]);
 
   useEffect(() => {
@@ -329,6 +340,8 @@ export function useHRController(hrId, updateAuth) {
   useEffect(() => {
     if (selectedEmployeeId) {
       fetchEmployeeDetail(selectedEmployeeId);
+      const intervalId = setInterval(() => fetchEmployeeDetail(selectedEmployeeId), 15000);
+      return () => clearInterval(intervalId);
     } else {
       setSelectedAttendance([]);
       setSelectedBalance(null);
@@ -415,7 +428,11 @@ export function useHRController(hrId, updateAuth) {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || 'Client assignment updated successfully.');
+        setEmployeesList((prev) => prev.map((e) => e.id === employeeId ? { ...e, companyId: clientId, company: clients.find(c => c.id === clientId)?.name || 'General' } : e));
         fetchData();
+        if (selectedEmployeeId === employeeId) {
+          fetchEmployeeDetail(employeeId);
+        }
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to update client assignment.');
@@ -423,6 +440,31 @@ export function useHRController(hrId, updateAuth) {
     } catch (err) {
       console.error(err);
       alert('An error occurred while updating client assignment.');
+    }
+  };
+
+  const handleAssignShift = async (employeeId, shift) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${employeeId}/shift`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shift }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || 'Shift assignment updated successfully.');
+        setEmployeesList((prev) => prev.map((e) => e.id === employeeId ? { ...e, shift } : e));
+        fetchData();
+        if (selectedEmployeeId === employeeId) {
+          fetchEmployeeDetail(employeeId);
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update shift assignment.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while updating shift assignment.');
     }
   };
 
@@ -478,13 +520,14 @@ export function useHRController(hrId, updateAuth) {
           phone: null,
           address: empForm.address,
           country: empForm.country,
+          shift: empForm.shift,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
         alert(data.message || 'Employee created successfully.');
-        setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', dateOfBirth: '', address: '', country: '' });
+        setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', dateOfBirth: '', address: '', country: '', shift: '' });
         setShowModal(false);
         fetchData();
       } else {
@@ -568,6 +611,7 @@ export function useHRController(hrId, updateAuth) {
 
     clients,
     handleAssignClient,
+    handleAssignShift,
     handleUpdateEmployeeStatus,
 
     showModal,

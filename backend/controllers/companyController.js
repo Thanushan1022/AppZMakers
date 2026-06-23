@@ -11,9 +11,12 @@ import {
   getTodayAttendanceForEmployees,
   getWeeklyAttendanceData,
   isEmployeeOnLeave,
+  computeEmployeeStats,
+  computeLeaveTypeData,
+  computeMonthlyTrend
 } from '../utils/helpers.js';
 import { findCompany } from '../utils/entityLookup.js';
-import { toCompanyJSON, toEmployeeJSON, toAttendanceJSON } from '../utils/formatters.js';
+import { toCompanyJSON, toEmployeeJSON, toAttendanceJSON, toLeaveJSON } from '../utils/formatters.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
 import { syncLeaveBalance } from '../services/leaveService.js';
 
@@ -32,16 +35,18 @@ export const getDashboard = async (req, res) => {
 
     const attendanceRecords = await Attendance.find({ employeeId: { $in: employeeIds } });
     const attJson = attendanceRecords.map(toAttendanceJSON);
-    const todayRecs = getTodayAttendanceForEmployees(employeesJson, attJson, today);
+    const allLeaves = await LeaveRequest.find();
+    const leavesJson = allLeaves.map((l) => l.toObject());
+    
+    const todayRecs = getTodayAttendanceForEmployees(employeesJson, attJson, today, leavesJson);
 
     const presentCount = todayRecs.filter((r) => r.status === 'present' || r.status === 'late').length;
     const absentCount = todayRecs.filter((r) => r.status === 'absent').length;
     const leaves = await LeaveRequest.find({ employeeId: { $in: employeeIds }, status: 'pending' });
     const pendingLeaves = leaves.length;
     const totalHours = attJson.reduce((sum, r) => sum + (r.totalHours || 0), 0);
-    const allLeaves = await LeaveRequest.find();
     const onLeaveCount = employeesJson.filter((e) =>
-      isEmployeeOnLeave(e.id, allLeaves.map((l) => l.toObject()), today)
+      isEmployeeOnLeave(e.id, leavesJson, today)
     ).length;
 
     res.json({
@@ -49,7 +54,7 @@ export const getDashboard = async (req, res) => {
       employees: employeesJson,
       todayRecs,
       attendanceHistory: attJson,
-      weeklyData: getWeeklyAttendanceData(attJson, employeeIds),
+      weeklyData: getWeeklyAttendanceData(attJson, employeeIds, new Date(), leavesJson),
       stats: {
         presentCount,
         absentCount,
@@ -57,6 +62,77 @@ export const getDashboard = async (req, res) => {
         totalHours,
         onLeaveCount,
       },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getReports = async (req, res) => {
+  try {
+    const comp = await findCompany(req.params.id);
+    if (!comp) return res.status(404).json({ error: 'Company not found' });
+    const legacyId = comp.legacyId || comp._id.toString();
+
+    const { startDate, endDate } = req.query;
+
+    const employees = await Employee.find({ assignedClient: legacyId });
+    const employeesJson = employees.map(toEmployeeJSON);
+    const activeEmployees = employeesJson.filter((e) => e.status === 'active');
+    const employeeIds = activeEmployees.map((e) => e.id);
+    const today = getTodayString();
+
+    let attendanceFilter = { employeeId: { $in: employeeIds } };
+    if (startDate && endDate) {
+      attendanceFilter.date = { $gte: startDate, $lte: endDate };
+    }
+    const attendanceRecords = await Attendance.find(attendanceFilter);
+    const attJson = attendanceRecords.map(toAttendanceJSON);
+
+    let leaveFilter = { employeeId: { $in: employeeIds } };
+    if (startDate && endDate) {
+      leaveFilter.$or = [
+        { startDate: { $gte: startDate, $lte: endDate } },
+        { endDate: { $gte: startDate, $lte: endDate } },
+        { startDate: { $lte: startDate }, endDate: { $gte: endDate } }
+      ];
+    }
+    const leaveRequests = await LeaveRequest.find(leaveFilter);
+    const leavesJson = leaveRequests.map(toLeaveJSON);
+
+    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
+    const employeeStats = {};
+    activeEmployees.forEach((emp) => {
+      employeeStats[emp.id] = computeEmployeeStats(emp.id, attJson);
+    });
+
+    const allStats = Object.values(employeeStats);
+    const avgAttendance =
+      allStats.length > 0
+        ? Math.round(allStats.reduce((sum, s) => sum + s.pct, 0) / allStats.length)
+        : 0;
+    const totalHours = allStats.reduce((sum, s) => sum + s.hours, 0);
+
+    const referenceDateObj = endDate ? new Date(endDate) : new Date();
+
+    res.json({
+      employees: employeesJson,
+      leaves: leavesJson,
+      todayAttendance,
+      weeklyAttendanceData: getWeeklyAttendanceData(attJson, employeeIds, referenceDateObj, leavesJson),
+      leaveTypeData: computeLeaveTypeData(leavesJson),
+      monthlyTrend: computeMonthlyTrend(attJson, employeeIds),
+      employeeStats,
+      summary: {
+        totalEmployees: employeesJson.length,
+        activeEmployees: activeEmployees.length,
+        avgAttendance,
+        totalHours,
+        leaveDaysUsed: leavesJson
+          .filter((l) => l.status === 'approved')
+          .reduce((s, l) => s + l.days, 0),
+      },
+      attendanceData: attJson,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -208,6 +284,10 @@ export const createShiftNotice = async (req, res) => {
       }
     }
 
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'shift_notice_created', time: new Date().toISOString() });
+    }
+
     res.status(201).json({
       message: noticeType === 'leave' ? 'Shift start notice & leave request sent successfully' : 'Shift start notice sent successfully',
       notice,
@@ -347,6 +427,10 @@ export const updateShiftNotice = async (req, res) => {
       }
     }
 
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'shift_notice_updated', time: new Date().toISOString() });
+    }
+
     res.json({ message: 'Shift notice updated successfully', notice });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -381,6 +465,11 @@ export const deleteShiftNotice = async (req, res) => {
     }
 
     await ShiftNotice.findByIdAndDelete(noticeId);
+    
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'shift_notice_deleted', time: new Date().toISOString() });
+    }
+    
     res.json({ message: 'Shift notice deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

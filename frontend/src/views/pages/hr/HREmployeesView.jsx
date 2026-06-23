@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Users, Mail, Phone, Calendar, Plus, FileText, Download } from 'lucide-react';
+import { Search, Users, Mail, Phone, Calendar, Plus, FileText, Download, X } from 'lucide-react';
 
 export function HREmployeesView({
   search,
@@ -82,7 +82,7 @@ export function HREmployeesView({
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-border p-4 flex flex-col sm:flex-row gap-3">
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-5 flex flex-col sm:flex-row gap-4 shadow-xl shadow-slate-200/40 dark:shadow-none">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -114,9 +114,10 @@ export function HREmployeesView({
       <div className={`grid gap-6 ${selectedEmployee ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
         {/* Employee list */}
         <div className={selectedEmployee ? 'lg:col-span-2' : ''}>
-          <div className="bg-white rounded-2xl border border-border overflow-hidden">
-            <div className="p-4 border-b border-border">
-              <span className="text-slate-500 text-sm">{filteredEmployees.length} employee{filteredEmployees.length !== 1 ? 's' : ''} found</span>
+          <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/80 dark:border-slate-700 overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none relative group">
+            <div className="absolute -left-20 -top-20 w-64 h-64 bg-indigo-300/20 dark:bg-indigo-900/20 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-400/30 transition-colors duration-700"></div>
+            <div className="p-5 border-b border-white/50 dark:border-slate-800 relative z-10">
+              <span className="text-slate-500 dark:text-slate-400 text-base font-medium">{filteredEmployees.length} employee{filteredEmployees.length !== 1 ? 's' : ''} found</span>
             </div>
             <div className="divide-y divide-border overflow-y-auto max-h-[600px] custom-scrollbar">
               {filteredEmployees.map(emp => {
@@ -126,9 +127,9 @@ export function HREmployeesView({
                   <div
                     key={emp.id}
                     onClick={() => setSelectedEmployeeId(isSelected ? null : emp.id)}
-                    className={`flex items-center gap-4 p-4 cursor-pointer transition-colors ${isSelected ? 'bg-indigo-50' : 'hover:bg-slate-50'}`}
+                    className={`flex items-center gap-4 p-4 cursor-pointer transition-all relative z-10 ${isSelected ? 'bg-indigo-50/80 dark:bg-indigo-900/20 backdrop-blur-sm' : 'hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold overflow-hidden flex-shrink-0 ${emp.status === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black overflow-hidden flex-shrink-0 shadow-sm border ${emp.status === 'active' ? 'bg-white/80 text-indigo-600 border-indigo-100 backdrop-blur-sm' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
                       {emp.avatar && emp.avatar.startsWith('data:image/') ? (
                         <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
                       ) : (
@@ -136,15 +137,15 @@ export function HREmployeesView({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <div className="text-slate-700 font-medium whitespace-nowrap"><FormatMultilineName name={emp.name} /></div>
-                        <span className={`px-1.5 py-0.5 rounded-full text-xs ${emp.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{emp.status}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="text-slate-800 dark:text-slate-100 font-bold text-lg whitespace-nowrap"><FormatMultilineName name={emp.name} /></div>
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold shadow-sm ${emp.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50' : 'bg-slate-100 text-slate-500 border border-slate-200/50'}`}>{emp.status}</span>
                       </div>
-                      <div className="text-slate-400 text-xs mt-0.5">{emp.position} · {emp.department}</div>
+                      <div className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">{emp.position} · {emp.department}</div>
                     </div>
-                    <div className="hidden sm:flex items-center gap-4 text-xs text-slate-400">
+                    <div className="hidden sm:flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 font-medium">
                       <div className="text-right">
-                        <div className="font-medium text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.pct}%</div>
+                        <div className="font-bold text-base text-slate-700 dark:text-slate-200" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.pct}%</div>
                         <div>attendance</div>
                       </div>
                     </div>
@@ -170,148 +171,177 @@ export function HREmployeesView({
           });
           const recentRecs = filteredAttendance.slice(0, 5);
           return (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Profile card */}
-              <div className="bg-white rounded-2xl border border-border p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold overflow-hidden">
-                    {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
-                      <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
-                    ) : (
-                      selectedEmployee.avatar
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-800"><FormatMultilineName name={selectedEmployee.name} /></div>
-                    <div className="text-slate-400 text-xs">{selectedEmployee.position}</div>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  {[
-                    { icon: Mail, value: selectedEmployee.email },
-                    { icon: Phone, value: selectedEmployee.phone || 'N/A' },
-                    { icon: Calendar, value: `Joined: ${selectedEmployee.joinDate || 'N/A'}` },
-                    { icon: Calendar, value: `DOB: ${selectedEmployee.dateOfBirth || 'N/A'}` },
-                  ].map(({ icon: Icon, value }) => (
-                    <div key={value} className="flex items-center gap-2 text-slate-500">
-                      <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
-                      <span className="truncate text-xs">{value}</span>
+              <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/80 dark:border-slate-700 p-8 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
+                <div className="absolute -right-12 -top-12 w-48 h-48 bg-indigo-300/40 dark:bg-indigo-900/40 rounded-full blur-3xl group-hover:bg-indigo-400/50 transition-colors duration-700 ease-out pointer-events-none"></div>
+                <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-fuchsia-300/30 dark:bg-fuchsia-900/30 rounded-full blur-3xl group-hover:bg-fuchsia-400/40 transition-colors duration-700 ease-out pointer-events-none"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-5 mb-6">
+                    <div className="w-16 h-16 bg-white/80 backdrop-blur-sm border border-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-2xl overflow-hidden shadow-sm">
+                      {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
+                        <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                      ) : (
+                        selectedEmployee.avatar
+                      )}
                     </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'active')}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'active'
-                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500 shadow-sm shadow-emerald-500/10'
-                          : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:text-[#5b4cf5]'
-                        }`}
-                    >
-                      Active
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'inactive')}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'inactive'
-                          ? 'bg-red-500 hover:bg-red-600 text-white border-red-500 shadow-sm shadow-red-500/10'
-                          : 'bg-white hover:bg-slate-50 text-slate-650 border-slate-200 hover:text-red-500'
-                        }`}
-                    >
-                      Deactivate
-                    </button>
+                    <div>
+                      <div className="font-black text-xl text-slate-800"><FormatMultilineName name={selectedEmployee.name} /></div>
+                      <div className="text-slate-500 text-sm mt-1">{selectedEmployee.position}</div>
+                    </div>
                   </div>
-                </div>
+                  <div className="space-y-3 text-sm">
+                    {[
+                      { icon: Mail, value: selectedEmployee.email },
+                      { icon: Phone, value: selectedEmployee.phone || 'N/A' },
+                      { icon: Calendar, value: `Joined: ${selectedEmployee.joinDate || 'N/A'}` },
+                      { icon: Calendar, value: `DOB: ${selectedEmployee.dateOfBirth || 'N/A'}` },
+                    ].map(({ icon: Icon, value }) => (
+                      <div key={value} className="flex items-center gap-2 text-slate-500">
+                        <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+                        <span className="truncate text-xs">{value}</span>
+                      </div>
+                    ))}
+                  </div>
 
-                {/* CV section */}
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <div className="text-xs text-slate-400 font-medium mb-2">CV / Resume</div>
-                  {selectedEmployee.cvName && selectedEmployee.cvData ? (
-                    <div className="flex items-center justify-between gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
+                    <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => {
-                          try {
-                            const base64Parts = selectedEmployee.cvData.split(',');
-                            const byteString = atob(base64Parts[1]);
-                            const mimeString = base64Parts[0].split(':')[1].split(';')[0];
-                            const ab = new ArrayBuffer(byteString.length);
-                            const ia = new Uint8Array(ab);
-                            for (let i = 0; i < byteString.length; i++) {
-                              ia[i] = byteString.charCodeAt(i);
-                            }
-                            const blob = new Blob([ab], { type: mimeString });
-                            const blobUrl = URL.createObjectURL(blob);
-                            window.open(blobUrl, '_blank');
-                          } catch (e) {
-                            const newWindow = window.open();
-                            newWindow.document.write(`<iframe src="${selectedEmployee.cvData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-                          }
-                        }}
-                        className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer group"
+                        onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'active')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'active'
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500 shadow-sm shadow-emerald-500/10'
+                          : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:text-[#5b4cf5]'
+                          }`}
                       >
-                        <div className="w-8 h-8 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-rose-100 transition-colors">
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-slate-700 font-semibold text-xs truncate group-hover:text-indigo-600 transition-colors" title={selectedEmployee.cvName}>
-                            {selectedEmployee.cvName}
-                          </div>
-                          <div className="text-[10px] text-slate-400 font-medium">Click to view</div>
-                        </div>
+                        Active
                       </button>
-                      <a
-                        href={selectedEmployee.cvData}
-                        download={selectedEmployee.cvName}
-                        title="Download CV"
-                        className="w-8 h-8 bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors shadow-sm cursor-pointer"
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'inactive')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'inactive'
+                          ? 'bg-red-500 hover:bg-red-600 text-white border-red-500 shadow-sm shadow-red-500/10'
+                          : 'bg-white hover:bg-slate-50 text-slate-650 border-slate-200 hover:text-red-500'
+                          }`}
                       >
-                        <Download className="w-4 h-4" />
-                      </a>
+                        Deactivate
+                      </button>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-slate-400 text-xs py-1">
-                      <FileText className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
-                      <span>No CV uploaded</span>
+                  </div>
+
+                  {/* CV section */}
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <div className="text-xs text-slate-400 font-medium mb-2">CV / Resume</div>
+                    {selectedEmployee.cvName && selectedEmployee.cvData ? (
+                      <div className="flex items-center justify-between gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              const base64Parts = selectedEmployee.cvData.split(',');
+                              const byteString = atob(base64Parts[1]);
+                              const mimeString = base64Parts[0].split(':')[1].split(';')[0];
+                              const ab = new ArrayBuffer(byteString.length);
+                              const ia = new Uint8Array(ab);
+                              for (let i = 0; i < byteString.length; i++) {
+                                ia[i] = byteString.charCodeAt(i);
+                              }
+                              const blob = new Blob([ab], { type: mimeString });
+                              const blobUrl = URL.createObjectURL(blob);
+                              window.open(blobUrl, '_blank');
+                            } catch (e) {
+                              const newWindow = window.open();
+                              newWindow.document.write(`<iframe src="${selectedEmployee.cvData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+                            }
+                          }}
+                          className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer group"
+                        >
+                          <div className="w-8 h-8 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-rose-100 transition-colors">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-slate-700 font-semibold text-xs truncate group-hover:text-indigo-600 transition-colors" title={selectedEmployee.cvName}>
+                              {selectedEmployee.cvName}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-medium">Click to view</div>
+                          </div>
+                        </button>
+                        <a
+                          href={selectedEmployee.cvData}
+                          download={selectedEmployee.cvName}
+                          title="Download CV"
+                          className="w-8 h-8 bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors shadow-sm cursor-pointer"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-slate-400 text-xs py-1">
+                        <FileText className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+                        <span>No CV uploaded</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Work Assignment Card */}
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                  <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
+                    💼 Client Assignment
+                  </h4>
+                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
+                    <div>
+                      <div className="text-xs text-slate-400 font-medium">Current Client</div>
+                      <div className="text-slate-800 font-semibold text-sm mt-1">{selectedEmployee.company || 'General (Our Company)'}</div>
                     </div>
-                  )}
+
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client</label>
+                      <select
+                        value={selectedEmployee.companyId || 'unassigned'}
+                        onChange={(e) => handleAssignClient(selectedEmployee.id, e.target.value)}
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
+                      >
+                        <option value="unassigned">General (Our Company)</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Work Assignment Card */}
-              <div className="bg-white rounded-2xl border border-border p-5">
-                <h4 className="text-slate-700 font-medium mb-3 text-sm flex items-center gap-1.5">
-                  💼 Client Assignment
+              {/* Shift Assignment Card */}
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
+                  🌙 Shift Assignment
                 </h4>
                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
                   <div>
-                    <div className="text-xs text-slate-400 font-medium">Current Client</div>
-                    <div className="text-slate-800 font-semibold text-sm mt-1">{selectedEmployee.company || 'General (Our Company)'}</div>
+                    <div className="text-xs text-slate-400 font-medium">Current Shift</div>
+                    <div className="text-slate-800 font-semibold text-sm mt-1 capitalize">{selectedEmployee.shift || 'morning'} Shift</div>
                   </div>
 
                   <div className="pt-2 border-t border-slate-200/50">
-                    <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client</label>
+                    <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Shift</label>
                     <select
-                      value={selectedEmployee.companyId || 'unassigned'}
-                      onChange={(e) => handleAssignClient(selectedEmployee.id, e.target.value)}
+                      value={selectedEmployee.shift || 'morning'}
+                      onChange={(e) => handleAssignShift(selectedEmployee.id, e.target.value)}
                       className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
                     >
-                      <option value="unassigned">General (Our Company)</option>
-                      {clients.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
+                      <option value="morning">Morning Shift</option>
+                      <option value="night">Night Shift</option>
                     </select>
                   </div>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className="bg-white rounded-2xl border border-border p-5">
-                <h4 className="text-slate-700 font-medium mb-3 text-sm">Performance</h4>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm">Performance</h4>
+                <div className="grid grid-cols-2 gap-4">
                   {[
                     { label: 'Attendance', value: `${stats.pct}%`, color: 'text-emerald-600' },
                     { label: 'Hours', value: `${stats.hours.toFixed(1)}h`, color: 'text-indigo-600' },
@@ -330,9 +360,9 @@ export function HREmployeesView({
 
               {/* Leave balance */}
               {selectedBalance && (
-                <div className="bg-white rounded-2xl border border-border p-5">
-                  <h4 className="text-slate-700 font-medium mb-3 text-sm flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-violet-400" />Leave Balance</h4>
-                  <div className="space-y-2.5">
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                  <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2"><Calendar className="w-4 h-4 text-violet-500" />Leave Balance</h4>
+                  <div className="space-y-4">
                     {[
                       { label: 'Annual', data: selectedBalance.annual, color: 'bg-indigo-400' },
                       { label: 'Casual', data: selectedBalance.casual, color: 'bg-sky-400' },
@@ -356,9 +386,9 @@ export function HREmployeesView({
               )}
 
               {/* Recent attendance */}
-              <div className="bg-white rounded-2xl border border-border p-5">
-                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                  <h4 className="text-slate-700 font-medium text-sm">Recent Attendance</h4>
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                  <h4 className="text-slate-800 dark:text-slate-100 font-bold text-sm">Recent Attendance</h4>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -405,7 +435,7 @@ export function HREmployeesView({
                       <div key={rec.id} className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100/70">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-slate-500 font-semibold">{new Date(rec.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${s[rec.status] || 'bg-slate-100 text-slate-700'} capitalize`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${s[rec.status] || (rec.status.startsWith('on leave') ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-700')}`}>
                             {rec.status}
                           </span>
                         </div>
@@ -474,13 +504,33 @@ export function HREmployeesView({
         })()}
       </div>
 
-      {/* Add Employee Modal */}
+      {/* Add Employee Modal - Liquid Glass */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 my-8">
-            <h3 className="text-slate-800 font-semibold mb-5">Add New Employee</h3>
-            <form onSubmit={handleAddEmployee} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            {/* Subtle liquid glow inside */}
+            <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
+            
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">Add New Employee</h3>
+                  <p className="text-white/70 font-bold text-sm mt-0.5">Enter employee details to onboard them</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-10 h-10 flex items-center justify-center bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddEmployee} className="p-8 space-y-6 relative z-10">
+              <div className="grid grid-cols-2 gap-5">
                 {[
                   { key: 'name', label: 'Full Name', placeholder: 'Jane Smith' },
                   { key: 'email', label: 'Email', placeholder: 'jane@company.com' },
@@ -489,8 +539,8 @@ export function HREmployeesView({
                   { key: 'joinDate', label: 'Join Date', placeholder: '' },
                   { key: 'dateOfBirth', label: 'Date of Birth', placeholder: '' },
                 ].map(f => (
-                  <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
-                    <label className="block text-slate-600 text-sm mb-1.5">{f.label}</label>
+                  <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
                     <input
                       type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
                       value={empForm[f.key] || ''}
@@ -499,7 +549,7 @@ export function HREmployeesView({
                       required={f.key !== 'dateOfBirth'}
                       max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
                       minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 20 : undefined}
+                      maxLength={['name', 'position', 'department'].includes(f.key) ? 30 : undefined}
                       pattern={
                         f.key === 'name'
                           ? "^[a-zA-Z\\s.\\-]+$"
@@ -518,13 +568,14 @@ export function HREmployeesView({
                               ? "Please enter a valid email address."
                               : undefined
                       }
-                      className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
                     />
                   </div>
                 ))}
 
                 <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Address</label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Address</label>
                   <input
                     type="text"
                     value={empForm.address || ''}
@@ -534,12 +585,12 @@ export function HREmployeesView({
                     minLength={5}
                     maxLength={50}
                     pattern="^(?!\s*$).+"
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Working Location (Country)</label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Working Location (Country)</label>
                   <select
                     required
                     value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) ? (empForm.country || '') : 'other'}
@@ -551,7 +602,7 @@ export function HREmployeesView({
                         setEmpForm(p => ({ ...p, country: val }));
                       }
                     }}
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
                   >
                     <option value="" disabled>Choose Location...</option>
                     <option value="Sri Lanka">Sri Lanka</option>
@@ -568,14 +619,15 @@ export function HREmployeesView({
                       value={empForm.country || ''}
                       onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
                       required
-                      className="w-full mt-2 border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                      className="w-full mt-3 px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                     />
                   )}
                 </div>
+
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors">Add Employee</button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
+                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
+                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">Add Employee</button>
               </div>
             </form>
           </div>

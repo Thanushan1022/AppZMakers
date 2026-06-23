@@ -5,6 +5,7 @@ import LeaveRequest from '../models/LeaveRequest.js';
 import LeaveBalance from '../models/LeaveBalance.js';
 import Attendance from '../models/Attendance.js';
 import User from '../models/User.js';
+import ShiftNotice from '../models/ShiftNotice.js';
 import bcrypt from 'bcryptjs';
 import {
   getTodayString,
@@ -45,7 +46,7 @@ export const getDashboard = async (req, res) => {
     const leaveRequests = await LeaveRequest.find();
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
-    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today);
+    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
     const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
     const absent = todayAttendance.filter((a) => a.status === 'absent').length;
     const late = todayAttendance.filter((a) => a.status === 'late').length;
@@ -63,7 +64,8 @@ export const getDashboard = async (req, res) => {
       weeklyAttendanceData: getWeeklyAttendanceData(
         attJson,
         activeEmployees.map((e) => e.id),
-        targetDateObj
+        targetDateObj,
+        leavesJson
       ),
       deptData: getDeptAttendanceData(activeEmployees, todayAttendance),
       stats: {
@@ -120,6 +122,10 @@ export const reviewLeave = async (req, res) => {
       if (emp) {
         await syncLeaveBalance(leave.employeeId, emp.joinDate);
       }
+    }
+
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'leave_reviewed', time: new Date().toISOString() });
     }
 
     res.json({ message: `Leave request ${status} successfully`, leave: toLeaveJSON(leave) });
@@ -443,7 +449,14 @@ export const updateEmployee = async (req, res) => {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
-    const { name, email, position, department, joinDate, dateOfBirth, address, country, teaBreakAllowed } = req.body;
+    const { name, email, position, department, joinDate, dateOfBirth, address, country, teaBreakAllowed, shift } = req.body;
+
+    if (shift !== undefined) {
+      if (!['morning', 'night'].includes(shift)) {
+        return res.status(400).json({ error: 'Shift must be either morning or night.' });
+      }
+      emp.shift = shift;
+    }
 
     if (name !== undefined) {
       if (name.trim().length < 2 || name.trim().length > 30) {
@@ -481,7 +494,7 @@ export const updateEmployee = async (req, res) => {
       if (position.trim().length < 2 || position.trim().length > 20) {
         return res.status(400).json({ error: 'Position must be between 2 and 20 characters long.' });
       }
-      if (!/^[a-zA-Z\s.\-()&]+$/.test(position)) {
+      if (!/^[a-zA-Z\s.\-()&/,]+$/.test(position)) {
         return res.status(400).json({ error: 'Position contains invalid characters.' });
       }
       emp.position = position;
@@ -490,7 +503,7 @@ export const updateEmployee = async (req, res) => {
       if (department.trim().length < 2 || department.trim().length > 20) {
         return res.status(400).json({ error: 'Department must be between 2 and 20 characters long.' });
       }
-      if (!/^[a-zA-Z\s.\-()&]+$/.test(department)) {
+      if (!/^[a-zA-Z\s.\-()&/,]+$/.test(department)) {
         return res.status(400).json({ error: 'Department contains invalid characters.' });
       }
       emp.department = department;

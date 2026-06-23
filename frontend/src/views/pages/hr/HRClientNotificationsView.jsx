@@ -89,8 +89,11 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
         <p className="text-slate-500 text-sm mt-0.5">Telemetry log of shift start messages and leave assignments sent from clients to employees</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-border p-6 flex flex-col">
-        <h3 className="text-slate-800 font-semibold mb-4 flex items-center gap-2">
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-8 flex flex-col shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-100 dark:bg-emerald-900/30 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-48 h-48 bg-indigo-100 dark:bg-indigo-900/30 rounded-full blur-2xl opacity-50"></div>
+        
+        <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-6 flex items-center gap-2 relative z-10">
           <Bell className="w-5 h-5 text-emerald-600" />
           All Client Messages & Leaves ({sortedNotices.length})
         </h3>
@@ -112,32 +115,33 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
               // Unread Leave: border-amber-300 bg-amber-50/15
               // Read Leave: border-amber-100 bg-amber-50/5
               // Read Shift (Urgent): border-rose-200 bg-rose-50/40
+              // Read Shift (Urgent): border-rose-200 bg-rose-50/40
               // Read Shift (Normal): border-border bg-slate-50/30
-              let cardStyle = 'border-border bg-slate-50/30';
-              let iconStyle = 'bg-slate-100 text-slate-500';
+              let cardStyle = 'border-white/50 dark:border-slate-800 bg-white/50 dark:bg-slate-800/50';
+              let iconStyle = 'bg-white/80 dark:bg-slate-700 text-slate-500';
               
               if (isUnread) {
                 if (isLeave) {
-                  cardStyle = 'border-amber-300 bg-amber-50/15 shadow-amber-100/30';
-                  iconStyle = 'bg-amber-100 text-amber-600';
+                  cardStyle = 'border-amber-300/50 bg-amber-50/40 dark:bg-amber-900/20 shadow-amber-100/30';
+                  iconStyle = 'bg-amber-100/80 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400';
                 } else {
-                  cardStyle = 'border-emerald-300 bg-emerald-50/15 shadow-emerald-100/30';
-                  iconStyle = 'bg-emerald-100 text-emerald-600';
+                  cardStyle = 'border-emerald-300/50 bg-emerald-50/40 dark:bg-emerald-900/20 shadow-emerald-100/30';
+                  iconStyle = 'bg-emerald-100/80 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400';
                 }
               } else {
                 if (isLeave) {
-                  cardStyle = 'border-amber-100 bg-amber-50/5';
-                  iconStyle = 'bg-amber-50 text-amber-500';
+                  cardStyle = 'border-amber-100/50 bg-amber-50/20 dark:bg-amber-900/10';
+                  iconStyle = 'bg-amber-50/80 dark:bg-amber-900/30 text-amber-500 dark:text-amber-500';
                 } else if (notice.informHR) {
-                  cardStyle = 'border-rose-200 bg-rose-50/40';
-                  iconStyle = 'bg-rose-100 text-rose-600';
+                  cardStyle = 'border-rose-200/50 bg-rose-50/50 dark:bg-rose-900/20';
+                  iconStyle = 'bg-rose-100/80 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400';
                 }
               }
 
               return (
                 <div
                   key={notice._id || idx}
-                  className={`border rounded-2xl p-5 hover:bg-slate-50/50 transition-all shadow-sm relative ${cardStyle}`}
+                  className={`border backdrop-blur-md rounded-2xl p-6 hover:shadow-lg transition-all shadow-sm relative z-10 ${cardStyle}`}
                 >
                   <div className="flex items-start gap-4">
                     <div className={`p-2.5 rounded-xl ${iconStyle} flex-shrink-0`}>
@@ -213,8 +217,8 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
                         )}
                       </h4>
 
-                      <div className={`text-sm text-slate-600 leading-relaxed mt-3 bg-white border p-3.5 rounded-xl italic ${
-                        isLeave ? 'border-amber-100/50' : 'border-slate-100'
+                      <div className={`text-sm text-slate-600 dark:text-slate-300 leading-relaxed mt-3 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border p-4 rounded-xl italic ${
+                        isLeave ? 'border-amber-100/50 dark:border-amber-800/30' : 'border-white/50 dark:border-slate-700/50'
                       }`}>
                         &ldquo;{notice.reason}&rdquo;
                       </div>

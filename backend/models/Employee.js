@@ -20,9 +20,15 @@ const employeeSchema = new mongoose.Schema(
     cvData: { type: String, default: '' },
     country: { type: String, default: 'Sri Lanka' },
     office: { type: String, default: 'Colombo' },
+    shift: { type: String, enum: ['morning', 'night'], default: 'morning' },
     teaBreakAllowed: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
+
+employeeSchema.index({ email: 1 });
+employeeSchema.index({ companyId: 1 });
+employeeSchema.index({ status: 1 });
+employeeSchema.index({ userId: 1 });
 
 export default mongoose.model('Employee', employeeSchema);

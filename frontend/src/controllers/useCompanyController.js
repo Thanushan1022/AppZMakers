@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useCompanyController(companyId, updateAuth) {
   const [company, setCompany] = useState({
@@ -24,6 +24,95 @@ export function useCompanyController(companyId, updateAuth) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [shiftNotices, setShiftNotices] = useState([]);
+  
+  const getLocalDateString = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const [reportType, setReportType] = useState('attendance');
+  const [reportsFilterType, setReportsFilterType] = useState('monthly');
+  const [reportsSelectedYear, setReportsSelectedYear] = useState(() => String(new Date().getFullYear()));
+  const [reportsSelectedMonthNum, setReportsSelectedMonthNum] = useState(() => String(new Date().getMonth() + 1).padStart(2, '0'));
+  const [reportsSelectedWeekDate, setReportsSelectedWeekDate] = useState(getLocalDateString());
+  const [reportsCustomStartDate, setReportsCustomStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [reportsCustomEndDate, setReportsCustomEndDate] = useState(getLocalDateString());
+
+  const getReportsWeekRange = (dateString) => {
+    const d = new Date(dateString);
+    const day = d.getDay();
+    const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.getFullYear(), d.getMonth(), diffToMon);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const format = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return { mondayStr: format(monday), sundayStr: format(sunday) };
+  };
+
+  const getReportsCompanyMonthRange = (yearStr, monthNumStr) => {
+    const yr = Number(yearStr);
+    const mo = Number(monthNumStr);
+    let prevYr = yr;
+    let prevMo = mo - 1;
+    if (prevMo === 0) {
+      prevMo = 12;
+      prevYr -= 1;
+    }
+    const startStr = `${prevYr}-${String(prevMo).padStart(2, '0')}-28`;
+    const endStr = `${yr}-${String(mo).padStart(2, '0')}-27`;
+    return { startStr, endStr };
+  };
+
+  const [reportsData, setReportsData] = useState({});
+  const [reportsLoading, setReportsLoading] = useState(false);
+
+  const fetchReports = async () => {
+    if (!companyId) return;
+    setReportsLoading(true);
+    try {
+      let url = `${BACKEND_URL}/companies/${companyId}/reports`;
+      const queryParams = [];
+      if (reportsFilterType === 'monthly') {
+        const { startStr, endStr } = getReportsCompanyMonthRange(reportsSelectedYear, reportsSelectedMonthNum);
+        queryParams.push(`startDate=${startStr}`);
+        queryParams.push(`endDate=${endStr}`);
+      } else if (reportsFilterType === 'weekly') {
+        const { mondayStr, sundayStr } = getReportsWeekRange(reportsSelectedWeekDate);
+        queryParams.push(`startDate=${mondayStr}`);
+        queryParams.push(`endDate=${sundayStr}`);
+      } else if (reportsFilterType === 'custom') {
+        queryParams.push(`startDate=${reportsCustomStartDate}`);
+        queryParams.push(`endDate=${reportsCustomEndDate}`);
+      }
+      if (queryParams.length > 0) {
+        url += `?${queryParams.join('&')}`;
+      }
+      const res = await fetch(url);
+      if (res.ok) {
+        setReportsData(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, [
+    reportsFilterType,
+    reportsSelectedYear,
+    reportsSelectedMonthNum,
+    reportsSelectedWeekDate,
+    reportsCustomStartDate,
+    reportsCustomEndDate,
+    companyId
+  ]);
 
   const fetchShiftNotices = async () => {
     if (!companyId) return;
@@ -122,6 +211,8 @@ export function useCompanyController(companyId, updateAuth) {
 
   useEffect(() => {
     fetchData();
+    const intervalId = setInterval(fetchData, 15000);
+    return () => clearInterval(intervalId);
   }, [companyId]);
 
   const filteredEmployees = myEmployees.filter((emp) => {
@@ -183,5 +274,27 @@ export function useCompanyController(companyId, updateAuth) {
     handleUpdateShiftNotice,
     handleDeleteShiftNotice,
     fetchShiftNotices,
+    reportsData,
+    reportsLoading,
+    fetchReports,
+    
+    reportType, setReportType,
+    reportsFilterType, setReportsFilterType,
+    reportsSelectedYear, setReportsSelectedYear,
+    reportsSelectedMonthNum, setReportsSelectedMonthNum,
+    reportsSelectedWeekDate, setReportsSelectedWeekDate,
+    reportsCustomStartDate, setReportsCustomStartDate,
+    reportsCustomEndDate, setReportsCustomEndDate,
+    getReportsWeekRange, getReportsCompanyMonthRange,
+
+    employeesList: reportsData?.employees || [],
+    leavesList: reportsData?.leaves || [],
+    todayAttendance: reportsData?.todayAttendance || [],
+    weeklyAttendanceData: reportsData?.weeklyAttendanceData || [],
+    leaveTypeData: reportsData?.leaveTypeData || [],
+    monthlyTrend: reportsData?.monthlyTrend || [],
+    reportsSummary: reportsData?.summary || {},
+    reportsAttendanceData: reportsData?.attendanceData || [],
+    getEmployeeStats: (id) => reportsData?.employeeStats?.[id] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 },
   };
 }

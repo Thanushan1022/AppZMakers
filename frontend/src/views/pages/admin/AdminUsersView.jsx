@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User, X } from 'lucide-react';
 
 export function AdminUsersView({
   employees,
@@ -37,6 +37,7 @@ export function AdminUsersView({
   handleAdjustAttendance,
   handleCreateManualAttendance,
   getEmployeeStats,
+  handleAssignShift,
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
 
@@ -130,49 +131,50 @@ export function AdminUsersView({
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
         <div>
-          <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>User Management</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Manage all employees, HR managers, and clients in the platform</p>
+          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>User Management</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage all employees, HR managers, and clients in the platform</p>
         </div>
         <button
           onClick={handleAddClick}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 shadow-indigo-500/25 cursor-pointer"
         >
-          <Plus className="w-4 h-4" />Add {activeTab === 'employees' ? 'Employee' : activeTab === 'hr' ? 'HR Manager' : 'Client'}
+          <Plus className="w-5 h-5" />Add {activeTab === 'employees' ? 'Employee' : activeTab === 'hr' ? 'HR Manager' : 'Client'}
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl border border-border p-4 flex flex-col sm:flex-row gap-3">
-        <div className="flex w-full sm:w-auto items-center gap-1 bg-slate-100 rounded-xl p-1">
+      {/* Tabs */}
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-3 shadow-lg shadow-slate-200/40 dark:shadow-none flex flex-col sm:flex-row gap-4 relative z-10">
+        <div className="flex w-full sm:w-auto items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-[1.5rem] p-1.5 border border-slate-200/50 dark:border-slate-700/50">
           {tabs.map(({ id, label, icon: Icon, count }) => (
             <button
               key={id}
               onClick={() => { setActiveTab(id); setSearchQuery(''); }}
-              className={`flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${activeTab === id ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${activeTab === id ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
             >
-              <Icon className="w-3.5 h-3.5 flex-shrink-0" />{label} <span className="text-slate-400">({count})</span>
+              <Icon className="w-4 h-4 flex-shrink-0" />{label} <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] ${activeTab === id ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>{count}</span>
             </button>
           ))}
         </div>
         <div className="flex-1 relative min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
           <input
             type="text"
             placeholder={`Search ${activeTab}...`}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-border rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+            className="w-full pl-11 pr-5 py-3.5 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
       </div>
 
       {/* Employees table */}
       {activeTab === 'employees' && (
-        <div className={`grid gap-6 ${selectedEmployee ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
+        <div className={`grid gap-6 ${selectedEmployee ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} relative z-10`}>
           <div className={selectedEmployee ? 'lg:col-span-2' : ''}>
-            <div className="bg-white rounded-2xl border border-border overflow-hidden">
+            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none">
               <div
                 ref={containerRef}
                 onMouseDown={handleMouseDown}
@@ -251,8 +253,9 @@ export function AdminUsersView({
             return (
               <div className="lg:col-span-1 space-y-4">
                 {/* Profile card */}
-                <div className="bg-white rounded-2xl border border-border p-5">
-                  <div className="flex items-center gap-3 mb-4">
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-colors duration-500"></div>
+                  <div className="flex items-center gap-4 mb-5 relative z-10">
                     <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold overflow-hidden flex-shrink-0">
                       {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
                         <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
@@ -341,9 +344,9 @@ export function AdminUsersView({
                 </div>
 
                 {/* Work Assignment Card */}
-                <div className="bg-white rounded-2xl border border-border p-5">
-                  <h4 className="text-slate-700 font-medium mb-3 text-sm flex items-center gap-1.5">
-                    💼 Client Assignment
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                  <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">💼</span> Client Assignment
                   </h4>
                   <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
                     <div>
@@ -367,9 +370,34 @@ export function AdminUsersView({
                   </div>
                 </div>
 
+                {/* Shift Assignment Card */}
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                  <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">🌙</span> Shift Assignment
+                  </h4>
+                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
+                    <div>
+                      <div className="text-xs text-slate-400 font-medium">Current Shift</div>
+                      <div className="text-slate-800 font-semibold text-sm mt-1 capitalize">{selectedEmployee.shift || 'morning'} Shift</div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Shift</label>
+                      <select
+                        value={selectedEmployee.shift || 'morning'}
+                        onChange={(e) => handleAssignShift(selectedEmployee.id, e.target.value)}
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
+                      >
+                        <option value="morning">Morning Shift</option>
+                        <option value="night">Night Shift</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Stats */}
-                <div className="bg-white rounded-2xl border border-border p-5">
-                  <h4 className="text-slate-700 font-medium mb-3 text-sm">Performance</h4>
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                  <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm">Performance</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: 'Attendance', value: `${stats.pct}%`, color: 'text-emerald-600' },
@@ -389,8 +417,13 @@ export function AdminUsersView({
 
                 {/* Leave balance */}
                 {selectedBalance && (
-                  <div className="bg-white rounded-2xl border border-border p-5">
-                    <h4 className="text-slate-700 font-medium mb-3 text-sm flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-violet-400" />Leave Balance</h4>
+                  <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                    <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">
+                        <Calendar className="w-4 h-4" />
+                      </span>
+                      Leave Balance
+                    </h4>
                     <div className="space-y-2.5">
                       {[
                         { label: 'Annual', data: selectedBalance.annual, color: 'bg-indigo-400' },
@@ -415,9 +448,9 @@ export function AdminUsersView({
                 )}
 
                 {/* Recent attendance */}
-                <div className="bg-white rounded-2xl border border-border p-5">
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <h4 className="text-slate-700 font-medium text-sm">Recent Attendance</h4>
+                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <h4 className="text-slate-800 dark:text-slate-100 font-bold text-sm">Recent Attendance</h4>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -518,7 +551,7 @@ export function AdminUsersView({
 
       {/* HR table */}
       {activeTab === 'hr' && (
-        <div className="bg-white rounded-2xl border border-border overflow-hidden">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
           <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
             <table className="w-full text-sm min-w-[650px]">
               <thead className="z-10">
@@ -569,7 +602,7 @@ export function AdminUsersView({
 
       {/* Clients table */}
       {activeTab === 'companies' && (
-        <div className="bg-white rounded-2xl border border-border overflow-hidden">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
           <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
             <table className="w-full text-sm min-w-[800px]">
               <thead className="z-10">
@@ -625,13 +658,33 @@ export function AdminUsersView({
         </div>
       )}
 
-      {/* Add/Edit Employee Modal */}
+      {/* Add/Edit Employee Modal - Liquid Glass */}
       {showModal && activeTab === 'employees' && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 my-8">
-            <h3 className="text-slate-800 font-semibold mb-5">{editingItem ? 'Edit Employee' : 'Add New Employee'}</h3>
-            <form onSubmit={handleAddEmployee} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            {/* Subtle liquid glow inside */}
+            <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
+            
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                  {editingItem ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-6 h-6" />}
+                </div>
+                <div>
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">{editingItem ? 'Edit Employee' : 'Add New Employee'}</h3>
+                  <p className="text-white/70 font-bold text-sm mt-0.5">{editingItem ? 'Update employee details' : 'Enter employee details to onboard them'}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-10 h-10 flex items-center justify-center bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddEmployee} className="p-8 space-y-6 relative z-10">
+              <div className="grid grid-cols-2 gap-5">
                 {[
                   { key: 'name', label: 'Full Name', placeholder: 'Jane Smith' },
                   { key: 'email', label: 'Email', placeholder: 'jane@company.com' },
@@ -640,8 +693,8 @@ export function AdminUsersView({
                   { key: 'joinDate', label: 'Join Date', placeholder: '' },
                   { key: 'dateOfBirth', label: 'Date of Birth', placeholder: '' },
                 ].map(f => (
-                  <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
-                    <label className="block text-slate-600 text-sm mb-1.5">{f.label}</label>
+                  <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
                     <input
                       type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
                       value={empForm[f.key] || ''}
@@ -650,7 +703,7 @@ export function AdminUsersView({
                       required={f.key !== 'dateOfBirth'}
                       max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
                       minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={f.key === 'name' ? 30 : f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 20 : undefined}
+                      maxLength={['name', 'position', 'department'].includes(f.key) ? 30 : undefined}
                       pattern={
                         f.key === 'name'
                           ? "^[a-zA-Z\\s.\\-]+$"
@@ -669,13 +722,14 @@ export function AdminUsersView({
                               ? "Please enter a valid email address."
                               : undefined
                       }
-                      className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
                     />
                   </div>
                 ))}
 
                 <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Address</label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Address</label>
                   <input
                     type="text"
                     value={empForm.address || ''}
@@ -684,13 +738,13 @@ export function AdminUsersView({
                     required
                     minLength={5}
                     maxLength={50}
-                    pattern="^(?!\\s*$).+"
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    pattern="^(?!\s*$).+"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Working Location (Country)</label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Working Location (Country)</label>
                   <select
                     required
                     value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) ? (empForm.country || '') : 'other'}
@@ -702,7 +756,7 @@ export function AdminUsersView({
                         setEmpForm(p => ({ ...p, country: val }));
                       }
                     }}
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
                   >
                     <option value="" disabled>Choose Location...</option>
                     <option value="Sri Lanka">Sri Lanka</option>
@@ -719,16 +773,17 @@ export function AdminUsersView({
                       value={empForm.country || ''}
                       onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
                       required
-                      className="w-full mt-2 border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                      className="w-full mt-3 px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                     />
                   )}
                 </div>
+
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors">
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
+                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
+                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
                   {editingItem ? 'Update Employee' : 'Add Employee'}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
               </div>
             </form>
           </div>
@@ -736,80 +791,79 @@ export function AdminUsersView({
       )}
 
       {showModal && activeTab === 'hr' && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 my-8">
-            <h3 className="text-slate-800 font-semibold mb-5">{editingItem ? 'Edit HR Manager' : 'Add New HR Manager'}</h3>
-            <form onSubmit={handleAddHR} className="space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    value={hrForm.name || ''}
-                    onChange={e => setHrForm(p => ({ ...p, name: e.target.value }))}
-                    placeholder="Amanda Foster"
-                    required
-                    minLength={2}
-                    maxLength={40}
-                    pattern="^[a-zA-Z\s.\-]+$"
-                    title="Only letters, spaces, dots, and hyphens are allowed."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            {/* Subtle liquid glow inside */}
+            <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
+            
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                  {editingItem ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-6 h-6" />}
                 </div>
                 <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    value={hrForm.email || ''}
-                    onChange={e => setHrForm(p => ({ ...p, email: e.target.value }))}
-                    placeholder="amanda@company.com"
-                    required
-                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-                    title="Please enter a valid email address."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Department</label>
-                  <input
-                    type="text"
-                    value={hrForm.department || 'Human Resources'}
-                    onChange={e => setHrForm(p => ({ ...p, department: e.target.value }))}
-                    placeholder="Human Resources"
-                    minLength={2}
-                    maxLength={40}
-                    pattern="^[a-zA-Z\s.\-()&]+$"
-                    title="Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Join Date</label>
-                  <input
-                    type="date"
-                    value={hrForm.joinDate || ''}
-                    onChange={e => setHrForm(p => ({ ...p, joinDate: e.target.value }))}
-                    max={new Date().toISOString().split('T')[0]}
-                    required
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Date of Birth</label>
-                  <input
-                    type="date"
-                    value={hrForm.dateOfBirth || ''}
-                    onChange={e => setHrForm(p => ({ ...p, dateOfBirth: e.target.value }))}
-                    max={new Date().toISOString().split('T')[0]}
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">{editingItem ? 'Edit HR Manager' : 'Add New HR Manager'}</h3>
+                  <p className="text-white/70 font-bold text-sm mt-0.5">{editingItem ? 'Update manager details' : 'Enter details to onboard new manager'}</p>
                 </div>
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors">
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-10 h-10 flex items-center justify-center bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddHR} className="p-8 space-y-6 relative z-10">
+              <div className="grid grid-cols-2 gap-5">
+                {[
+                  { key: 'name', label: 'Full Name', placeholder: 'Amanda Foster', type: 'text' },
+                  { key: 'email', label: 'Email', placeholder: 'amanda@company.com', type: 'email' },
+                  { key: 'department', label: 'Department', placeholder: 'Human Resources', type: 'text' },
+                  { key: 'joinDate', label: 'Join Date', placeholder: '', type: 'date' },
+                  { key: 'dateOfBirth', label: 'Date of Birth', placeholder: '', type: 'date' },
+                ].map(f => (
+                  <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
+                    <input
+                      type={f.type}
+                      value={hrForm[f.key] || (f.key === 'department' && !hrForm[f.key] ? 'Human Resources' : '')}
+                      onChange={e => setHrForm(p => ({ ...p, [f.key]: e.target.value }))}
+                      placeholder={f.placeholder}
+                      required={f.key !== 'dateOfBirth' && f.key !== 'department'}
+                      max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
+                      minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
+                      maxLength={['name', 'department'].includes(f.key) ? 40 : undefined}
+                      pattern={
+                        f.key === 'name'
+                          ? "^[a-zA-Z\\s.\\-]+$"
+                          : f.key === 'department'
+                            ? "^[a-zA-Z\\s.\\-()&]+$"
+                            : f.key === 'email'
+                              ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                              : undefined
+                      }
+                      title={
+                        f.key === 'name'
+                          ? "Only letters, spaces, dots, and hyphens are allowed."
+                          : f.key === 'department'
+                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                            : f.key === 'email'
+                              ? "Please enter a valid email address."
+                              : undefined
+                      }
+                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
+                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
+                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
                   {editingItem ? 'Update HR Manager' : 'Add HR Manager'}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
               </div>
             </form>
           </div>
@@ -817,94 +871,87 @@ export function AdminUsersView({
       )}
 
       {showModal && activeTab === 'companies' && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 my-8">
-            <h3 className="text-slate-800 font-semibold mb-5">{editingItem ? 'Edit Client Company' : 'Add New Client Company'}</h3>
-            <form onSubmit={handleAddCompany} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            {/* Subtle emerald liquid glow for companies */}
+            <div className="absolute -inset-24 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
+            
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                  {editingItem ? <Edit2 className="w-5 h-5" /> : <Building2 className="w-6 h-6" />}
+                </div>
+                <div>
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">{editingItem ? 'Edit Client Company' : 'Add New Client Company'}</h3>
+                  <p className="text-white/70 font-bold text-sm mt-0.5">{editingItem ? 'Update company details' : 'Enter details to add new client'}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-10 h-10 flex items-center justify-center bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCompany} className="p-8 space-y-6 relative z-10">
+              <div className="grid grid-cols-2 gap-5">
+                {[
+                  { key: 'name', label: 'Company Name', placeholder: 'TechVentures Ltd', type: 'text' },
+                  { key: 'industry', label: 'Industry', placeholder: 'Technology', type: 'text' },
+                  { key: 'contact', label: 'Contact Person', placeholder: 'Mark Reynolds', type: 'text' },
+                  { key: 'email', label: 'Email', placeholder: 'mark@techventures.com', type: 'email' },
+                  { key: 'phone', label: 'Phone Number', placeholder: '+1 (555) 100-2000', type: 'text' },
+                  { key: 'joinedDate', label: 'Joined Date', placeholder: '', type: 'date' },
+                ].map(f => (
+                  <div key={f.key} className={f.key === 'name' || f.key === 'email' ? 'col-span-2' : ''}>
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
+                    <input
+                      type={f.type}
+                      value={coForm[f.key] || ''}
+                      onChange={e => setCoForm(p => ({
+                        ...p,
+                        [f.key]: f.key === 'phone' ? e.target.value.replace(/[^0-9+\s\-()]/g, '') : e.target.value
+                      }))}
+                      placeholder={f.placeholder}
+                      required={f.key !== 'phone'}
+                      max={f.key === 'joinedDate' ? new Date().toISOString().split('T')[0] : undefined}
+                      minLength={['name', 'industry', 'contact'].includes(f.key) ? 2 : undefined}
+                      maxLength={['name', 'industry', 'contact'].includes(f.key) ? 40 : undefined}
+                      pattern={
+                        f.key === 'name'
+                          ? "^[a-zA-Z0-9\\s.\\-()&]+$"
+                          : f.key === 'industry'
+                            ? "^[a-zA-Z\\s.\\-()&]+$"
+                            : f.key === 'contact'
+                              ? "^[a-zA-Z\\s.\\-]+$"
+                              : f.key === 'email'
+                                ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                                : f.key === 'phone'
+                                  ? "^\\+?[0-9\\s\\-()]{7,20}$"
+                                  : undefined
+                      }
+                      title={
+                        f.key === 'name'
+                          ? "Only letters, numbers, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                          : f.key === 'industry'
+                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                            : f.key === 'contact'
+                              ? "Only letters, spaces, dots, and hyphens are allowed."
+                              : f.key === 'email'
+                                ? "Please enter a valid email address."
+                                : f.key === 'phone'
+                                  ? "Please enter a valid phone number (7-20 digits)."
+                                  : undefined
+                      }
+                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      style={f.key === 'joinedDate' ? { colorScheme: 'dark' } : {}}
+                    />
+                  </div>
+                ))}
+
                 <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Company Name</label>
-                  <input
-                    type="text"
-                    value={coForm.name || ''}
-                    onChange={e => setCoForm(p => ({ ...p, name: e.target.value }))}
-                    placeholder="TechVentures Ltd"
-                    required
-                    minLength={2}
-                    maxLength={40}
-                    pattern="^[a-zA-Z0-9\s.\-()&]+$"
-                    title="Only letters, numbers, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Industry</label>
-                  <input
-                    type="text"
-                    value={coForm.industry || ''}
-                    onChange={e => setCoForm(p => ({ ...p, industry: e.target.value }))}
-                    placeholder="Technology"
-                    required
-                    minLength={2}
-                    maxLength={40}
-                    pattern="^[a-zA-Z\s.\-()&]+$"
-                    title="Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Contact Person</label>
-                  <input
-                    type="text"
-                    value={coForm.contact || ''}
-                    onChange={e => setCoForm(p => ({ ...p, contact: e.target.value }))}
-                    placeholder="Mark Reynolds"
-                    required
-                    minLength={2}
-                    maxLength={40}
-                    pattern="^[a-zA-Z\s.\-]+$"
-                    title="Only letters, spaces, dots, and hyphens are allowed."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    value={coForm.email || ''}
-                    onChange={e => setCoForm(p => ({ ...p, email: e.target.value }))}
-                    placeholder="mark@techventures.com"
-                    required
-                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-                    title="Please enter a valid email address."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Phone Number</label>
-                  <input
-                    type="text"
-                    value={coForm.phone || ''}
-                    onChange={e => setCoForm(p => ({ ...p, phone: e.target.value.replace(/[^0-9+\s\-()]/g, '') }))}
-                    placeholder="+1 (555) 100-2000"
-                    pattern="^\+?[0-9\s\-()]{7,20}$"
-                    title="Please enter a valid phone number (7-20 digits)."
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-sm mb-1.5">Joined Date</label>
-                  <input
-                    type="date"
-                    value={coForm.joinedDate || ''}
-                    onChange={e => setCoForm(p => ({ ...p, joinedDate: e.target.value }))}
-                    required
-                    max={new Date().toISOString().split('T')[0]}
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Address</label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Address</label>
                   <input
                     type="text"
                     value={coForm.address || ''}
@@ -913,12 +960,13 @@ export function AdminUsersView({
                     required
                     minLength={5}
                     maxLength={40}
-                    pattern="^(?!\\s*$).+"
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    pattern="^(?!\s*$).+"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                   />
                 </div>
+
                 <div className="col-span-2">
-                  <label className="block text-slate-600 text-sm mb-1.5">Country</label>
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Country</label>
                   <select
                     required
                     value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(coForm.country) ? (coForm.country || '') : 'other'}
@@ -930,7 +978,7 @@ export function AdminUsersView({
                         setCoForm(p => ({ ...p, country: val }));
                       }
                     }}
-                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
                   >
                     <option value="" disabled>Choose Location...</option>
                     <option value="Sri Lanka">Sri Lanka</option>
@@ -947,16 +995,17 @@ export function AdminUsersView({
                       value={coForm.country || ''}
                       onChange={e => setCoForm(p => ({ ...p, country: e.target.value }))}
                       required
-                      className="w-full mt-2 border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                      className="w-full mt-3 px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                     />
                   )}
                 </div>
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors">
+
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
+                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
+                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
                   {editingItem ? 'Update Client' : 'Add Client'}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
               </div>
             </form>
           </div>

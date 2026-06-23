@@ -8,6 +8,8 @@ const systemSettingsSchema = new mongoose.Schema(
     lateThreshold: { type: String, default: '15 minutes' },
     overtimeRate: { type: String, default: '1.5x' },
     sessionTimeout: { type: String, default: '30 minutes' },
+    morningShiftStartTime: { type: String, default: '09:00' },
+    nightShiftStartTime: { type: String, default: '21:00' },
     backupSchedule: { type: String, default: 'Daily at 2 AM' },
     leaveAllocations: {
       medical: { type: Number, default: 10 },

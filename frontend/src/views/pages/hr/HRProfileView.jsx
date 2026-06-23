@@ -8,7 +8,6 @@ export function HRProfileView({
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [department, setDepartment] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -60,14 +59,6 @@ export function HRProfileView({
       showToast('error', 'Please enter a valid email address.');
       return;
     }
-    if (!department || department.trim().length < 2 || department.trim().length > 20) {
-      showToast('error', 'Department must be between 2 and 20 characters long.');
-      return;
-    }
-    if (!/^[a-zA-Z\s.\-()&]+$/.test(department)) {
-      showToast('error', 'Department contains invalid characters.');
-      return;
-    }
     if (password || confirmPassword) {
       if (!password || !confirmPassword) {
         showToast('error', 'Please fill in both password fields to change your password');
@@ -77,14 +68,15 @@ export function HRProfileView({
         showToast('error', 'Passwords do not match');
         return;
       }
-      if (password.length < 6) {
-        showToast('error', 'Password must be at least 6 characters long');
+      const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!strongRegex.test(password)) {
+        showToast('error', 'Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters');
         return;
       }
     }
 
     setIsSaving(true);
-    const updateData = { name, email, department };
+    const updateData = { name, email };
     if (password) {
       updateData.password = password;
     }
@@ -142,9 +134,10 @@ export function HRProfileView({
       {/* Unique Bento Box Profile Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main ID Card */}
-        <div className="lg:col-span-1 relative rounded-[2rem] overflow-hidden shadow-sm group border border-slate-200 bg-white">
-           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-sky-500 to-fuchsia-500 bg-[length:200%_200%] animate-gradient opacity-10"></div>
-           <div className="relative p-8 flex flex-col items-center text-center bg-white/40 backdrop-blur-xl h-full">
+        <div className="lg:col-span-1 relative rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none group border border-white dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg transition-transform duration-300 hover:-translate-y-2">
+           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-sky-500 to-fuchsia-500 bg-[length:200%_200%] animate-gradient opacity-10 dark:opacity-20"></div>
+           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-sky-200 dark:bg-sky-900/30 rounded-full blur-3xl opacity-50 group-hover:scale-125 transition-transform duration-700"></div>
+           <div className="relative p-8 flex flex-col items-center text-center h-full z-10">
               
               <div className="relative w-32 h-32 mb-6 group/avatar">
                  <div className="absolute inset-0 bg-gradient-to-tr from-sky-400 to-indigo-500 rounded-3xl rotate-6 group-hover/avatar:rotate-12 transition-transform duration-500 blur-md opacity-60"></div>
@@ -173,7 +166,6 @@ export function HRProfileView({
                 onClick={() => {
                   setName(hrProfile.name || '');
                   setEmail(hrProfile.email || '');
-                  setDepartment(hrProfile.department || '');
                   setPassword('');
                   setConfirmPassword('');
                   setIsEditing(true);
@@ -188,8 +180,9 @@ export function HRProfileView({
 
         {/* Info Tiles Grid */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-           <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white dark:border-slate-800 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-sky-100 dark:bg-sky-900/30 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out"></div>
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500 z-0">
                 <Building2 className="w-32 h-32 text-sky-600" />
               </div>
               <div className="w-12 h-12 bg-white text-sky-600 rounded-2xl flex items-center justify-center mb-6 border border-sky-100 shadow-sm">
@@ -199,8 +192,9 @@ export function HRProfileView({
               <p className="text-slate-800 font-bold text-lg">{hrProfile.department || 'Human Resources'}</p>
            </div>
 
-           <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white dark:border-slate-800 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-100 dark:bg-indigo-900/30 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out"></div>
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500 z-0">
                 <Mail className="w-32 h-32 text-indigo-600" />
               </div>
               <div className="w-12 h-12 bg-white text-indigo-600 rounded-2xl flex items-center justify-center mb-6 border border-indigo-100 shadow-sm">
@@ -210,8 +204,9 @@ export function HRProfileView({
               <p className="text-slate-800 font-bold text-lg truncate">{hrProfile.email}</p>
            </div>
 
-           <div className="bg-gradient-to-br from-fuchsia-50 to-white border border-fuchsia-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white dark:border-slate-800 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-fuchsia-100 dark:bg-fuchsia-900/30 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out"></div>
+              <div className="absolute -top-6 -right-6 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500 z-0">
                 <Calendar className="w-32 h-32 text-fuchsia-600" />
               </div>
               <div className="w-12 h-12 bg-white text-fuchsia-600 rounded-2xl flex items-center justify-center mb-6 border border-fuchsia-100 shadow-sm">
@@ -221,8 +216,9 @@ export function HRProfileView({
               <p className="text-slate-800 font-bold text-lg">{hrProfile.joinDate || 'N/A'}</p>
            </div>
 
-           <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-center items-center group">
-              <div className="text-center transform transition-transform group-hover:scale-105 duration-300">
+           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white dark:border-slate-800 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden flex flex-col justify-center items-center group">
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-emerald-100 dark:bg-emerald-900/30 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out"></div>
+              <div className="text-center transform transition-transform group-hover:scale-105 duration-300 relative z-10">
                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white border border-emerald-100 mb-4 relative shadow-sm">
                     <div className="absolute inset-0 border-2 border-emerald-400 rounded-full animate-ping opacity-20"></div>
                     <CheckCircle2 className="w-8 h-8 text-emerald-500" />
@@ -234,38 +230,48 @@ export function HRProfileView({
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile Modal - Glassmorphism */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-2xl border border-border shadow-2xl overflow-hidden transform scale-100 transition-all">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-slate-50">
-              <div>
-                <h3 className="text-slate-800 font-semibold text-lg">Update Profile Information</h3>
-                <p className="text-slate-400 text-xs mt-0.5">Edit your contact details or change your password</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            {/* Subtle liquid glow inside */}
+            <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
+            
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                  <Edit2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">Update Profile</h3>
+                  <p className="text-white/70 font-bold text-sm mt-0.5">Edit your contact details or password</p>
+                </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsEditing(false)}
-                className="p-2 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-xl transition-colors"
+                className="w-10 h-10 flex items-center justify-center bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-8 space-y-6 relative z-10">
               {toast && toast.type === 'error' && (
-                <div className="flex items-center gap-2.5 p-3.5 text-sm font-medium text-rose-800 bg-rose-50 border border-rose-100 rounded-xl animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center gap-3 p-4 text-sm font-bold text-rose-800 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800/50 rounded-2xl animate-in slide-in-from-top-2 duration-200 shadow-sm">
                   <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
                   <span>{toast.text}</span>
                 </div>
               )}
               
-              <div className="space-y-4">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Personal Info</h4>
+              <div className="space-y-5">
+                <h4 className="text-[10px] font-black text-white/70 uppercase tracking-widest flex items-center gap-2 drop-shadow-md">
+                  <span className="w-8 h-px bg-white/20"></span> Personal Info
+                </h4>
                 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="name">Full Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm" htmlFor="name">Full Name</label>
+                  <div className="relative group/input">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
                     <input
                       id="name"
                       type="text"
@@ -273,15 +279,15 @@ export function HRProfileView({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Amanda Foster"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="email">Email Address</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm" htmlFor="email">Email Address</label>
+                  <div className="relative group/input">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
                     <input
                       id="email"
                       type="email"
@@ -289,85 +295,93 @@ export function HRProfileView({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="amanda@company.com"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="department">Department</label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      id="department"
-                      type="text"
-                      required
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      placeholder="Human Resources"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-border space-y-4">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-sky-500" />
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Change Password (Optional)</h4>
-                </div>
+              <div className="pt-4 border-t border-white/10 space-y-5">
+                <h4 className="text-[10px] font-black text-white/70 uppercase tracking-widest flex items-center gap-2 drop-shadow-md">
+                  <span className="w-8 h-px bg-white/20"></span> Change Password (Optional)
+                </h4>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700" htmlFor="password">New Password</label>
-                    <input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm" htmlFor="password">New Password</label>
+                    <div className="relative group/input">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      />
+                    </div>
+                    {password && (
+                      <div className="text-[10px] space-y-1 mt-2 pl-1 font-bold">
+                        <div className={`flex items-center gap-1.5 transition-colors ${password.length >= 8 ? 'text-emerald-400' : 'text-white/40'}`}>
+                           <CheckCircle2 className="w-3.5 h-3.5" /> At least 8 characters
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${/[A-Z]/.test(password) ? 'text-emerald-400' : 'text-white/40'}`}>
+                           <CheckCircle2 className="w-3.5 h-3.5" /> Uppercase letter
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${/[a-z]/.test(password) ? 'text-emerald-400' : 'text-white/40'}`}>
+                           <CheckCircle2 className="w-3.5 h-3.5" /> Lowercase letter
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${/\d/.test(password) ? 'text-emerald-400' : 'text-white/40'}`}>
+                           <CheckCircle2 className="w-3.5 h-3.5" /> Number
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${/[@$!%*?&]/.test(password) ? 'text-emerald-400' : 'text-white/40'}`}>
+                           <CheckCircle2 className="w-3.5 h-3.5" /> Special character (@$!%*?&)
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700" htmlFor="confirmPassword">Confirm Password</label>
-                    <input
-                      id="confirmPassword"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                    />
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm" htmlFor="confirmPassword">Confirm Password</label>
+                    <div className="relative group/input">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                      <input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      />
+                    </div>
                   </div>
                 </div>
-                <p className="text-slate-400 text-xs">Leave password fields blank if you do not want to change your password.</p>
+                <p className="text-white/50 text-xs font-bold drop-shadow-sm">Leave password fields blank if you do not want to change your password.</p>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
                   disabled={isSaving}
-                  className="px-4 py-2.5 text-slate-500 hover:bg-slate-100 rounded-xl text-sm font-medium transition-colors"
+                  className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-medium shadow-md shadow-sky-600/10 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving...
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      SAVING...
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      Save Changes
+                      <Save className="w-5 h-5" />
+                      SAVE CHANGES
                     </>
                   )}
                 </button>

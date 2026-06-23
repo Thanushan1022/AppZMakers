@@ -47,7 +47,7 @@ const FormatMultilineName = ({ name }) => {
   );
 };
 
-export function HRReportsView({
+export function CompanyReportsView({
   reportType,
   setReportType,
   employeesList,

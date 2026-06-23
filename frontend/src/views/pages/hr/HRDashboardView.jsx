@@ -79,9 +79,13 @@ export function HRDashboardView({
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div>
-        <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>HR Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Workforce overview for today, {todayLabel || 'today'}</p>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 p-8 text-white shadow-xl shadow-indigo-500/20 group">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000"></div>
+        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-48 h-48 bg-purple-400 opacity-20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-1000"></div>
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black mb-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-indigo-100">HR Dashboard</h1>
+          <p className="text-indigo-100 font-medium text-lg">Workforce overview for today, {todayLabel || 'today'}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -93,21 +97,24 @@ export function HRDashboardView({
         ].map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="bg-white rounded-2xl border border-border p-5">
-              <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center mb-3`}>
-                <Icon className={`w-5 h-5 ${s.color}`} />
+            <div key={s.label} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-none relative overflow-hidden group">
+              <div className={`absolute -right-6 -top-6 w-24 h-24 ${s.bg} rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out`}></div>
+              <div className="relative z-10">
+                <div className={`w-12 h-12 ${s.bg} border border-white/50 dark:border-slate-800 rounded-2xl flex items-center justify-center mb-4 shadow-sm`}>
+                  <Icon className={`w-6 h-6 ${s.color}`} />
+                </div>
+                <div className="text-slate-800 dark:text-slate-100 mb-1" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '1.75rem' }}>{s.value}</div>
+                <div className="text-slate-700 dark:text-slate-300 text-sm font-bold">{s.label}</div>
+                <div className="text-slate-400 dark:text-slate-500 text-xs mt-1 font-medium">{s.sub}</div>
               </div>
-              <div className="text-slate-800 mb-0.5" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: '1.5rem' }}>{s.value}</div>
-              <div className="text-slate-800 text-sm font-medium">{s.label}</div>
-              <div className="text-slate-400 text-xs mt-0.5">{s.sub}</div>
             </div>
           );
         })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6">
-          <h3 className="text-slate-800 font-semibold mb-4">Weekly Attendance Overview</h3>
+        <div className="lg:col-span-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 lg:p-8">
+          <h3 className="text-slate-800 dark:text-slate-100 text-lg font-black tracking-tight mb-4">Weekly Attendance Overview</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weeklyAttendanceData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -121,8 +128,8 @@ export function HRDashboardView({
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl border border-border p-6">
-          <h3 className="text-slate-800 font-semibold mb-4">Today's Breakdown</h3>
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 lg:p-8">
+          <h3 className="text-slate-800 dark:text-slate-100 text-lg font-black tracking-tight mb-4">Today's Breakdown</h3>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value">
@@ -146,8 +153,8 @@ export function HRDashboardView({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-border p-6">
-          <h3 className="text-slate-800 font-semibold mb-4">Attendance by Department</h3>
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 lg:p-8">
+          <h3 className="text-slate-800 dark:text-slate-100 text-lg font-black tracking-tight mb-4">Attendance by Department</h3>
           <div className="space-y-4">
             {deptData.map((d) => (
               <div key={d.name}>
@@ -166,8 +173,8 @@ export function HRDashboardView({
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-border p-6 flex flex-col items-center justify-between">
-          <h3 className="text-slate-800 font-semibold mb-2 self-start">Department Distribution</h3>
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 lg:p-8 flex flex-col items-center justify-between">
+          <h3 className="text-slate-800 dark:text-slate-100 text-lg font-black tracking-tight mb-2 self-start">Department Distribution</h3>
           {departmentData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={240}>

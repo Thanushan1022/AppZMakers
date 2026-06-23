@@ -28,6 +28,11 @@ export function AdminSettingsView({
   }, [settings]);
 
   const handleLocalChange = (key, val) => {
+    // Prevent negative numbers for numeric settings
+    const numericKeys = ['breakTime', 'workHours', 'mealBreaksMax', 'teaBreaksMax', 'teaBreakDuration', 'teaBreakGap', 'sessionTimeout'];
+    if (numericKeys.includes(key) && val !== '' && Number(val) < 0) {
+      return;
+    }
     setLocalSettings(prev => ({
       ...prev,
       [key]: val
@@ -35,6 +40,7 @@ export function AdminSettingsView({
   };
 
   const handleLeaveChange = (key, val) => {
+    if (val !== '' && Number(val) < 0) return;
     setLocalSettings(prev => ({
       ...prev,
       leaveAllocations: {
@@ -59,19 +65,23 @@ export function AdminSettingsView({
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div>
-        <h1 className="text-slate-800 font-bold" style={{ fontSize: '1.375rem' }}>System Settings</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Configure system-wide preferences, working times, and leave balance parameters</p>
+      <div className="relative z-10">
+        <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>System Settings</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Configure system-wide preferences, working times, and leave balance parameters</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Time Configurations Card */}
-        <div className="bg-white rounded-2xl border border-border p-6 space-y-6">
-          <h2 className="text-slate-800 font-semibold flex items-center gap-2 border-b border-border pb-3">
-            <Clock className="w-5 h-5 text-indigo-500" /> Working Times & Hours
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors duration-700"></div>
+          <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 border-b border-white/50 dark:border-slate-800/50 pb-4 text-lg relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
+              <Clock className="w-5 h-5 text-indigo-500" />
+            </div>
+            Working Times & Hours
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             {/* Break Time */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Daily Standard Meal Break Time (Hours)</label>
@@ -79,6 +89,7 @@ export function AdminSettingsView({
                 <input
                   type="number"
                   step="any"
+                  min="0"
                   value={localSettings.breakTime || ''}
                   onChange={e => handleLocalChange('breakTime', e.target.value)}
                   className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
@@ -118,6 +129,50 @@ export function AdminSettingsView({
               <span className="text-slate-400 text-xs">Maximum number of times an employee can start a meal break during their shift</span>
             </div>
 
+            {/* Morning Shift Start Time */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-slate-700 text-sm font-medium">Morning Shift Start Time</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="HH:MM (24-hour)"
+                  pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                  value={localSettings.morningShiftStartTime || '09:00'}
+                  onChange={e => handleLocalChange('morningShiftStartTime', e.target.value)}
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                />
+                <button
+                  onClick={() => saveKey('morningShiftStartTime', localSettings.morningShiftStartTime)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 min-w-[80px] justify-center"
+                >
+                  {saveStatus.morningShiftStartTime === 'saving' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> :
+                   saveStatus.morningShiftStartTime === 'saved' ? <Check className="w-3.5 h-3.5" /> : 'Save'}
+                </button>
+              </div>
+            </div>
+
+            {/* Night Shift Start Time */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-slate-700 text-sm font-medium">Night Shift Start Time</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="HH:MM (24-hour)"
+                  pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                  value={localSettings.nightShiftStartTime || '21:00'}
+                  onChange={e => handleLocalChange('nightShiftStartTime', e.target.value)}
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                />
+                <button
+                  onClick={() => saveKey('nightShiftStartTime', localSettings.nightShiftStartTime)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 min-w-[80px] justify-center"
+                >
+                  {saveStatus.nightShiftStartTime === 'saving' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> :
+                   saveStatus.nightShiftStartTime === 'saved' ? <Check className="w-3.5 h-3.5" /> : 'Save'}
+                </button>
+              </div>
+            </div>
+
             {/* Work Hours */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Standard Daily Work Hours</label>
@@ -125,6 +180,7 @@ export function AdminSettingsView({
                 <input
                   type="number"
                   step="any"
+                  min="0"
                   value={localSettings.workHours || ''}
                   onChange={e => handleLocalChange('workHours', e.target.value)}
                   className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
@@ -144,12 +200,16 @@ export function AdminSettingsView({
         </div>
 
         {/* Tea Break Configurations Card */}
-        <div className="bg-white rounded-2xl border border-border p-6 space-y-6">
-          <h2 className="text-slate-800 font-semibold flex items-center gap-2 border-b border-border pb-3">
-            <Coffee className="w-5 h-5 text-amber-500" /> Tea Break Settings
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-colors duration-700"></div>
+          <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 border-b border-white/50 dark:border-slate-800/50 pb-4 text-lg relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center border border-amber-100 dark:border-amber-800/50">
+              <Coffee className="w-5 h-5 text-amber-500" />
+            </div>
+            Tea Break Settings
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             {/* Enable/Disable Tea Break */}
             <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-border">
               <div>
@@ -243,18 +303,23 @@ export function AdminSettingsView({
         </div>
 
         {/* Leave Allocations Card */}
-        <div className="bg-white rounded-2xl border border-border p-6 space-y-6">
-          <h2 className="text-slate-800 font-semibold flex items-center gap-2 border-b border-border pb-3">
-            <CalendarDays className="w-5 h-5 text-emerald-500" /> Leave Balance Allocations
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors duration-700"></div>
+          <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 border-b border-white/50 dark:border-slate-800/50 pb-4 text-lg relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50">
+              <CalendarDays className="w-5 h-5 text-emerald-500" />
+            </div>
+            Leave Balance Allocations
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-10">
             {/* Medical Leaves */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Medical Leave Allocation (Days)</label>
               <div className="flex gap-2">
                 <input
                   type="number"
+                  min="0"
                   value={localSettings.leaveAllocations?.medical || 0}
                   onChange={e => handleLeaveChange('medical', parseInt(e.target.value) || 0)}
                   className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
@@ -273,17 +338,22 @@ export function AdminSettingsView({
         </div>
 
         {/* Security & System preferences Card */}
-        <div className="bg-white rounded-2xl border border-border p-6 space-y-6 lg:col-span-2">
-          <h2 className="text-slate-800 font-semibold flex items-center gap-2 border-b border-border pb-3">
-            <Shield className="w-5 h-5 text-violet-500" /> Platform & Telemetry
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6 lg:col-span-2">
+          <div className="absolute -top-16 -right-16 w-96 h-96 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl group-hover:bg-violet-500/20 transition-colors duration-700"></div>
+          <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 border-b border-white/50 dark:border-slate-800/50 pb-4 text-lg relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center border border-violet-100 dark:border-violet-800/50">
+              <Shield className="w-5 h-5 text-violet-500" />
+            </div>
+            Platform & Telemetry
           </h2>
 
-          <div className="max-w-md">
+          <div className="max-w-md relative z-10">
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Session Timeout Duration</label>
               <div className="flex gap-2">
                 <input
-                  type="text"
+                  type="number"
+                  min="1"
                   value={localSettings.sessionTimeout || ''}
                   onChange={e => handleLocalChange('sessionTimeout', e.target.value)}
                   className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
@@ -303,13 +373,17 @@ export function AdminSettingsView({
 
       {/* Client & Employee Tea Break Allocation Rules Card */}
       {settings.teaBreakEnabled !== false && (
-        <div className="bg-white rounded-2xl border border-border p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6">
+          <div className="absolute -top-16 -left-16 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors duration-700"></div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/50 dark:border-slate-800/50 pb-6 relative z-10">
             <div>
-              <h2 className="text-slate-800 font-semibold flex items-center gap-2">
-                <Coffee className="w-5 h-5 text-indigo-500" /> Tea Break Access Control
+              <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 text-lg">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
+                  <Coffee className="w-5 h-5 text-indigo-500" />
+                </div>
+                Tea Break Access Control
               </h2>
-              <p className="text-slate-500 text-xs mt-1">Selectively assign tea break privileges to companies or individual employees</p>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-2">Selectively assign tea break privileges to companies or individual employees</p>
             </div>
             
             <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-border">

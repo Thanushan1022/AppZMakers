@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useAdminController(adminId, updateAuth) {
   const [employees, setEmployees] = useState([]);
@@ -114,6 +114,7 @@ export function useAdminController(adminId, updateAuth) {
     dateOfBirth: '',
     address: '',
     country: '',
+    shift: '',
   });
 
   const [hrForm, setHrForm] = useState({
@@ -252,6 +253,16 @@ export function useAdminController(adminId, updateAuth) {
 
   useEffect(() => {
     fetchData();
+
+    const handleRefresh = () => fetchData();
+    window.addEventListener('refresh_attendance', handleRefresh);
+    
+    const intervalId = setInterval(fetchData, 15000);
+
+    return () => {
+      window.removeEventListener('refresh_attendance', handleRefresh);
+      clearInterval(intervalId);
+    };
   }, [selectedDate]);
 
   useEffect(() => {
@@ -298,6 +309,8 @@ export function useAdminController(adminId, updateAuth) {
   useEffect(() => {
     if (selectedEmployeeId) {
       fetchEmployeeDetail(selectedEmployeeId);
+      const intervalId = setInterval(() => fetchEmployeeDetail(selectedEmployeeId), 15000);
+      return () => clearInterval(intervalId);
     } else {
       setSelectedAttendance([]);
       setSelectedBalance(null);
@@ -445,6 +458,7 @@ export function useAdminController(adminId, updateAuth) {
         dateOfBirth: empForm.dateOfBirth || null,
         address: empForm.address,
         country: empForm.country,
+        shift: empForm.shift,
       };
       if (!isEdit) {
         bodyPayload.companyId = null;
@@ -459,7 +473,7 @@ export function useAdminController(adminId, updateAuth) {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || (isEdit ? 'Employee updated successfully.' : 'Employee created successfully.'));
-        setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '' });
+        setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '', shift: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
@@ -574,6 +588,7 @@ export function useAdminController(adminId, updateAuth) {
         dateOfBirth: item.dateOfBirth ? item.dateOfBirth.split('T')[0] : '',
         address: item.address || '',
         country: item.country || '',
+        shift: item.shift || '',
       });
     } else if (type === 'hr') {
       setHrForm({
@@ -600,7 +615,7 @@ export function useAdminController(adminId, updateAuth) {
 
   const handleAddClick = () => {
     setEditingItem(null);
-    setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '' });
+    setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '', shift: 'morning' });
     setHrForm({ name: '', email: '', department: 'Human Resources', joinDate: '', dateOfBirth: '' });
     setCoForm({ name: '', industry: '', contact: '', email: '', phone: '', joinedDate: '', address: '', country: '' });
     setShowModal(true);
@@ -665,7 +680,11 @@ export function useAdminController(adminId, updateAuth) {
       if (res.ok) {
         const data = await res.json();
         alert(data.message || 'Client assignment updated successfully.');
+        setEmployees((prev) => prev.map((e) => e.id === employeeId ? { ...e, companyId: clientId, company: companies.find(c => c.id === clientId)?.name || 'General' } : e));
         fetchData();
+        if (selectedEmployeeId === employeeId) {
+          fetchEmployeeDetail(employeeId);
+        }
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to update client assignment.');
@@ -673,6 +692,31 @@ export function useAdminController(adminId, updateAuth) {
     } catch (err) {
       console.error(err);
       alert('An error occurred while updating client assignment.');
+    }
+  };
+
+  const handleAssignShift = async (employeeId, shift) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${employeeId}/shift`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shift }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || 'Shift assignment updated successfully.');
+        setEmployees((prev) => prev.map((e) => e.id === employeeId ? { ...e, shift } : e));
+        fetchData();
+        if (selectedEmployeeId === employeeId) {
+          fetchEmployeeDetail(employeeId);
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update shift assignment.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while updating shift assignment.');
     }
   };
 
@@ -761,6 +805,7 @@ export function useAdminController(adminId, updateAuth) {
     handleAddCompany,
     handleUpdateSetting,
     handleAssignClient,
+    handleAssignShift,
     handleToggleEmployeeTeaBreak,
     handleToggleCompanyTeaBreak,
 

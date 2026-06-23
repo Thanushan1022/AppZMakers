@@ -22,6 +22,7 @@ export const toEmployeeJSON = (doc) => {
     office: o.office,
     teaBreakAllowed: o.teaBreakAllowed,
     dateOfBirth: o.dateOfBirth,
+    shift: o.shift,
   };
 };
 

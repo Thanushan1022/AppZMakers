@@ -55,6 +55,10 @@ export const reviewLeave = async (req, res) => {
       }
     }
 
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'leave_reviewed', time: new Date().toISOString() });
+    }
+
     res.json({ message: `Leave request ${status} successfully`, leave: toLeaveJSON(leave) });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -94,7 +98,7 @@ export const getEmployeeDetail = async (req, res) => {
 
 export const createEmployee = async (req, res) => {
   try {
-    const { name, email, position, department, companyId, phone, address, country, joinDate, dateOfBirth } = req.body;
+    const { name, email, position, department, companyId, phone, address, country, joinDate, dateOfBirth, shift } = req.body;
 
     if (!name || name.trim().length < 2 || name.trim().length > 30) {
       return res.status(400).json({ error: 'Name must be between 2 and 30 characters long.' });
@@ -110,14 +114,14 @@ export const createEmployee = async (req, res) => {
     if (!position || position.trim().length < 2 || position.trim().length > 20) {
       return res.status(400).json({ error: 'Position must be between 2 and 20 characters long.' });
     }
-    if (!/^[a-zA-Z\s.\-()&]+$/.test(position)) {
+    if (!/^[a-zA-Z\s.\-()&/,]+$/.test(position)) {
       return res.status(400).json({ error: 'Position contains invalid characters.' });
     }
 
     if (!department || department.trim().length < 2 || department.trim().length > 20) {
       return res.status(400).json({ error: 'Department must be between 2 and 20 characters long.' });
     }
-    if (!/^[a-zA-Z\s.\-()&]+$/.test(department)) {
+    if (!/^[a-zA-Z\s.\-()&/,]+$/.test(department)) {
       return res.status(400).json({ error: 'Department contains invalid characters.' });
     }
 
@@ -194,6 +198,7 @@ export const createEmployee = async (req, res) => {
       status: 'active',
       joinDate: joinDate,
       dateOfBirth: dateOfBirth || null,
+      shift: shift && ['morning', 'night'].includes(shift) ? shift : 'morning',
       userId: newUser._id,
     });
 
@@ -283,7 +288,7 @@ export const getDashboard = async (req, res) => {
     const leaveRequests = await LeaveRequest.find();
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
-    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today);
+    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
     const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
     const absent = todayAttendance.filter((a) => a.status === 'absent').length;
     const late = todayAttendance.filter((a) => a.status === 'late').length;
@@ -300,7 +305,8 @@ export const getDashboard = async (req, res) => {
       weeklyAttendanceData: getWeeklyAttendanceData(
         attJson,
         activeEmployees.map((e) => e.id),
-        targetDateObj
+        targetDateObj,
+        leavesJson
       ),
       deptData: getDeptAttendanceData(activeEmployees, todayAttendance),
       leaveCounts: {
@@ -351,7 +357,7 @@ export const getReports = async (req, res) => {
     const leaveRequests = await LeaveRequest.find(leaveFilter);
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
-    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today);
+    const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
     const employeeStats = {};
     activeEmployees.forEach((emp) => {
       employeeStats[emp.id] = computeEmployeeStats(emp.id, attJson);
@@ -371,7 +377,7 @@ export const getReports = async (req, res) => {
       employees: employeesJson,
       leaves: leavesJson,
       todayAttendance,
-      weeklyAttendanceData: getWeeklyAttendanceData(attJson, employeeIds, referenceDateObj),
+      weeklyAttendanceData: getWeeklyAttendanceData(attJson, employeeIds, referenceDateObj, leavesJson),
       leaveTypeData: computeLeaveTypeData(leavesJson),
       monthlyTrend: computeMonthlyTrend(attJson, employeeIds),
       employeeStats,

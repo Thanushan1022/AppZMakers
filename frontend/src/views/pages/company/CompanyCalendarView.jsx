@@ -333,10 +333,10 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
         <div>
-          <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Company Calendar</h1>
-          <p className="text-slate-500 text-sm mt-0.5">
+          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Company Calendar</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">
             {canManageEvents
               ? 'Manage company events'
               : 'View company holidays, team events, and meetings'
@@ -344,11 +344,11 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
           </p>
         </div>
         {canManageEvents && (
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {role === 'superadmin' && (
               <button
                 onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer border border-border shadow-sm"
+                className="flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 backdrop-blur-md"
               >
                 <Globe className="w-4 h-4 text-indigo-500" />
                 Import Holidays
@@ -369,7 +369,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 setEditingEventId(null);
                 setShowEventModal(true);
               }}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer shadow-md shadow-indigo-600/10"
+              className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white px-5 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-indigo-500/30 active:scale-95"
             >
               <Plus className="w-4 h-4" />
               Add Event
@@ -379,32 +379,34 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       </div>
 
       {/* Calendar Grid Container */}
-      <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden">
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-slate-50/50">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20">
           <div className="flex items-center gap-3">
-            <CalendarIcon className="w-5 h-5 text-indigo-500" />
-            <span className="text-slate-800 font-bold text-lg">
+            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center shadow-sm">
+              <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <span className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight">
               {monthNames[month]} {year}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={prevMonth}
-              className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-xl transition-colors cursor-pointer"
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all cursor-pointer active:scale-95"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="px-3 py-1.5 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
             >
               Today
             </button>
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-xl transition-colors cursor-pointer"
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all cursor-pointer active:scale-95"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -412,19 +414,19 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 border-b border-border text-center bg-slate-50/30 text-slate-400 text-xs font-semibold py-2.5">
+        <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800/50 text-center bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.02)] relative z-20">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
             <div key={d}>{d}</div>
           ))}
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-3" />
-            <span className="text-sm text-slate-500 font-medium">Loading calendar...</span>
+          <div className="flex flex-col items-center justify-center py-32 bg-slate-50/30 dark:bg-slate-900/30">
+            <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
+            <span className="text-sm text-slate-500 dark:text-slate-400 font-bold tracking-wider uppercase">Loading calendar...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-7 grid-rows-5 bg-slate-100 gap-[1px]">
+          <div className="grid grid-cols-7 grid-rows-5 bg-slate-100 dark:bg-slate-800 gap-[1px]">
             {calendarDays.map((day, idx) => {
               const dayEvents = getEventsForDay(day);
               const isToday = day &&
@@ -440,14 +442,14 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 <div
                   key={idx}
                   onClick={() => day && handleDayClick(day)}
-                  className={`min-h-[135px] p-2 flex flex-col justify-between transition-colors relative ${day ? 'cursor-pointer' : ''} ${isWeekend ? 'bg-slate-50/70 hover:bg-slate-100/60' : 'bg-white hover:bg-slate-50/50'} ${!day ? 'bg-slate-50/20' : ''}`}
+                  className={`min-h-[140px] p-3 flex flex-col justify-between transition-all duration-300 relative ${day ? 'cursor-pointer' : ''} ${isWeekend ? 'bg-slate-50/90 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-800/80' : 'bg-white dark:bg-slate-900/90 hover:bg-slate-50 dark:hover:bg-slate-800'} ${!day ? 'bg-slate-50/30 dark:bg-slate-900/30' : ''} group`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-bold ${isToday ? 'w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center' : isSunday ? 'text-rose-600' : isSaturday ? 'text-slate-400' : 'text-slate-700'}`}>
+                    <span className={`text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${isToday ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-110' : isSunday ? 'text-rose-600 dark:text-rose-400 group-hover:bg-rose-50 dark:group-hover:bg-rose-900/30' : isSaturday ? 'text-slate-400 dark:text-slate-500 group-hover:bg-slate-100 dark:group-hover:bg-slate-800' : 'text-slate-700 dark:text-slate-200 group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
                       {day}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
                         {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}
                       </span>
                     )}
@@ -496,149 +498,146 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
 
       {/* Add / Edit Event Modal */}
       {showEventModal && (
-        <div className="fixed inset-0 bg-black/45 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-slate-800 font-semibold">
-                {editingEventId ? 'Edit Calendar Event' : 'Add New Event'}
-              </h3>
-              {editingEventId && canEditOrDelete && (
-                <button
-                  onClick={(e) => handleDelete(editingEventId, e)}
-                  className="p-2 hover:bg-rose-50 text-rose-500 rounded-xl transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-4.5 h-4.5" />
-                </button>
-              )}
-            </div>
-
-            <form onSubmit={handleSubmitEvent} className="space-y-4">
-              {validationError && (
-                <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs font-semibold">
-                  {validationError}
-                </div>
-              )}
-              <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Title</label>
-                <input
-                  type="text"
-                  value={eventForm.title}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const wordsCount = val.trim().split(/\s+/).filter(Boolean).length;
-                    if (wordsCount <= 20) {
-                      setEventForm((p) => ({ ...p, title: val }));
-                    }
-                  }}
-                  required
-                  placeholder="e.g. Sinhala & Tamil New Year"
-                  className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
-                />
-                <div className="flex justify-between items-center mt-1 px-1">
-                  <span className={`text-[10px] ${titleWordsCount > 20 ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
-                    {titleWordsCount}/20 words
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Description</label>
-                <textarea
-                  value={eventForm.description}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const wordsCount = val.trim().split(/\s+/).filter(Boolean).length;
-                    if (wordsCount <= 50) {
-                      setEventForm((p) => ({ ...p, description: val }));
-                    }
-                  }}
-                  placeholder="Details about the event"
-                  rows={2}
-                  className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 resize-none"
-                />
-                <div className="flex justify-between items-center mt-1 px-1">
-                  <span className={`text-[10px] ${descWordsCount > 50 ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
-                    {descWordsCount}/50 words
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-600 text-xs font-semibold mb-1.5">Start Date</label>
-                  <input
-                    type="date"
-                    value={eventForm.start}
-                    min={!editingEventId ? todayStr : undefined}
-                    onChange={(e) => setEventForm((p) => ({ ...p, start: e.target.value }))}
-                    required
-                    className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 text-xs font-semibold mb-1.5">End Date</label>
-                  <input
-                    type="date"
-                    value={eventForm.end}
-                    min={eventForm.start || (!editingEventId ? todayStr : undefined)}
-                    onChange={(e) => setEventForm((p) => ({ ...p, end: e.target.value }))}
-                    required
-                    className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none bg-slate-50"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-slate-600 text-xs font-semibold mb-1.5">Event Type</label>
-                  <select
-                    value={eventForm.type}
-                    onChange={(e) => setEventForm((p) => ({ ...p, type: e.target.value }))}
-                    className="w-full border border-border rounded-xl px-3 py-2 text-sm text-slate-605 focus:outline-none bg-slate-50"
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="text-slate-800 dark:text-slate-100 font-black text-lg tracking-tight">
+                  {editingEventId ? 'Edit Calendar Event' : 'Add New Event'}
+                </h3>
+                {editingEventId && canEditOrDelete && (
+                  <button
+                    onClick={(e) => handleDelete(editingEventId, e)}
+                    className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-500 rounded-xl transition-colors cursor-pointer"
                   >
-                    <option value="">Select Event Type</option>
-                    <option value="holiday">Public Holiday</option>
-                    <option value="bank-holiday">Bank Holiday</option>
-                    <option value="festival">Festival Day</option>
-                    <option value="company-holiday">Company Holiday</option>
-                    <option value="team-event">Team Event</option>
-                    <option value="meeting">Meeting</option>
-                    <option value="training">Training Session</option>
-                    <option value="day-off">Employee Day-Off</option>
-                    <option value="special">Special Event</option>
-                  </select>
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmitEvent} className="space-y-5">
+                {validationError && (
+                  <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800/50 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest">
+                    {validationError}
+                  </div>
+                )}
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Title</label>
+                  <input
+                    type="text"
+                    value={eventForm.title}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const wordsCount = val.trim().split(/\s+/).filter(Boolean).length;
+                      if (wordsCount <= 20) {
+                        setEventForm((p) => ({ ...p, title: val }));
+                      }
+                    }}
+                    required
+                    placeholder="e.g. Sinhala & Tamil New Year"
+                    className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-medium transition-all"
+                  />
+                  <div className="flex justify-between items-center mt-1 px-1">
+                    <span className={`text-[10px] uppercase font-black tracking-widest ${titleWordsCount > 20 ? 'text-rose-500' : 'text-slate-400'}`}>
+                      {titleWordsCount}/20 words
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Target Location Removed */}
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Description</label>
+                  <textarea
+                    value={eventForm.description}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const wordsCount = val.trim().split(/\s+/).filter(Boolean).length;
+                      if (wordsCount <= 50) {
+                        setEventForm((p) => ({ ...p, description: val }));
+                      }
+                    }}
+                    placeholder="Details about the event"
+                    rows={2}
+                    className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-medium transition-all resize-none"
+                  />
+                  <div className="flex justify-between items-center mt-1 px-1">
+                    <span className={`text-[10px] uppercase font-black tracking-widest ${descWordsCount > 50 ? 'text-rose-500' : 'text-slate-400'}`}>
+                      {descWordsCount}/50 words
+                    </span>
+                  </div>
+                </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer"
-                >
-                  {editingEventId ? 'Save Changes' : 'Create Event'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEventModal(false)}
-                  className="flex-1 border border-border py-2 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Start Date</label>
+                    <input
+                      type="date"
+                      value={eventForm.start}
+                      min={!editingEventId ? todayStr : undefined}
+                      onChange={(e) => setEventForm((p) => ({ ...p, start: e.target.value }))}
+                      required
+                      className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">End Date</label>
+                    <input
+                      type="date"
+                      value={eventForm.end}
+                      min={eventForm.start || (!editingEventId ? todayStr : undefined)}
+                      onChange={(e) => setEventForm((p) => ({ ...p, end: e.target.value }))}
+                      required
+                      className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Event Type</label>
+                    <select
+                      value={eventForm.type}
+                      onChange={(e) => setEventForm((p) => ({ ...p, type: e.target.value }))}
+                      className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="">Select Event Type</option>
+                      <option value="company-holiday">Company Holiday</option>
+                      <option value="team-event">Team Event</option>
+                      <option value="meeting">Meeting</option>
+                      <option value="training">Training Session</option>
+                      <option value="day-off">Employee Day-Off</option>
+                      <option value="special">Special Event</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-indigo-500/30 active:scale-95"
+                  >
+                    {editingEventId ? 'Save Changes' : 'Create Event'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEventModal(false)}
+                    className="flex-1 border border-slate-200 dark:border-slate-700 py-3 rounded-2xl text-sm font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Details Display Modal (Employee View/Read Only click) */}
       {selectedEvent && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className={`w-3 h-3 rounded-full ${EVENT_TYPE_DOTS[selectedEvent.type] || 'bg-slate-400'}`} />
-              <h3 className="text-slate-800 font-bold text-lg flex items-center gap-1.5">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <span className={`w-3 h-3 rounded-full shadow-sm ${EVENT_TYPE_DOTS[selectedEvent.type] || 'bg-slate-400'}`} />
+              <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight flex items-center gap-2">
                 {(() => {
                   const style = getEventStyle(selectedEvent);
                   if (style.code) {
@@ -646,15 +645,15 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                       <img
                         src={`https://flagcdn.com/16x12/${style.code}.png`}
                         alt=""
-                        className="w-4 h-3 object-cover rounded-sm inline-block"
+                        className="w-5 h-3.5 object-cover rounded shadow-sm inline-block"
                       />
                     );
                   }
                   if (style.flag) {
-                    return <span className="text-xl">{style.flag}</span>;
+                    return <span className="text-2xl drop-shadow-sm">{style.flag}</span>;
                   }
                   if (selectedEvent.type === 'holiday' || selectedEvent.type === 'bank-holiday' || selectedEvent.type === 'festival') {
-                    return <span>🌐</span>;
+                    return <span className="drop-shadow-sm">🌐</span>;
                   }
                   return null;
                 })()}
@@ -662,36 +661,40 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
               </h3>
             </div>
 
-            <p className="text-slate-600 text-sm mb-4 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 font-medium">
               {selectedEvent.description || 'No description provided.'}
             </p>
 
-            <div className="space-y-2.5 text-xs text-slate-500 border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-slate-400" />
+            <div className="space-y-3 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-5 font-black uppercase tracking-widest">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                  <CalendarIcon className="w-4 h-4 text-indigo-500" />
+                </div>
                 <span>Date: {selectedEvent.start} {selectedEvent.end !== selectedEvent.start && `to ${selectedEvent.end}`}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-slate-400" />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                  <Info className="w-4 h-4 text-indigo-500" />
+                </div>
                 <span className="capitalize">Type: {selectedEvent.type.replace('-', ' ')}</span>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-5">
+            <div className="flex gap-4 pt-8">
               {canEditOrDelete && !isEventHoliday(selectedEvent) && (
                 <button
                   type="button"
                   onClick={(e) => handleDelete(selectedEvent._id || selectedEvent.id, e)}
-                  className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-rose-200"
+                  className="flex-1 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-500 dark:hover:bg-rose-600 text-rose-600 dark:text-rose-400 hover:text-white py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-sm"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete Event
+                  Delete
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => setSelectedEvent(null)}
-                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer"
+                className="flex-1 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95"
               >
                 Close
               </button>
@@ -701,10 +704,10 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       )}
       {/* Import Holidays Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/45 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in duration-200">
-            <h3 className="text-slate-800 font-semibold mb-2">Import Public Holidays</h3>
-            <p className="text-xs text-slate-400 mb-4">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-2 tracking-tight">Import Public Holidays</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
               Fetch and import official public holidays from Google's calendar service.
             </p>
 
@@ -716,10 +719,10 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                   setShowImportModal(false);
                 }
               }}
-              className="space-y-4"
+              className="space-y-5"
             >
-              <div className="flex flex-col gap-1.5">
-                <label className="text-slate-700 text-xs font-semibold">Select Country</label>
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest">Select Country</label>
                 <select
                   value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(importCountry) ? importCountry : 'other'}
                   onChange={e => {
@@ -730,7 +733,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                       setImportCountry(val);
                     }
                   }}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-650 focus:outline-none bg-slate-50 cursor-pointer"
+                  className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer"
                 >
                   <option value="Sri Lanka">Sri Lanka</option>
                   <option value="USA">USA (United States)</option>
@@ -747,30 +750,30 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                     value={importCountry}
                     onChange={e => setImportCountry(e.target.value)}
                     required
-                    className="w-full mt-2 border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                    className="w-full mt-3 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all"
                   />
                 )}
               </div>
 
-              <div className="flex gap-3 pt-3">
+              <div className="flex gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="submit"
                   disabled={importing}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 disabled:opacity-50 text-white py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 active:scale-95"
                 >
                   {importing ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                       Importing...
                     </>
                   ) : (
-                    'Import Holidays'
+                    'Import'
                   )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowImportModal(false)}
-                  className="flex-1 border border-border py-2 rounded-xl text-sm text-slate-505 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 border border-slate-200 dark:border-slate-700 py-3 rounded-2xl text-sm font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer active:scale-95"
                 >
                   Cancel
                 </button>
@@ -782,26 +785,26 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
 
       {/* Day Events Modal */}
       {selectedDayEvents && (
-        <div className="fixed inset-0 bg-black/45 z-40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="text-slate-800 font-bold text-base">
+                <h3 className="text-slate-800 dark:text-slate-100 font-black text-lg tracking-tight">
                   Events on {monthNames[month]} {selectedDayEvents.day}, {year}
                 </h3>
-                <span className="text-[11px] text-slate-400 font-medium">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest mt-1 block">
                   {selectedDayEvents.events.length} event{selectedDayEvents.events.length !== 1 ? 's' : ''} listed
                 </span>
               </div>
               <button
                 onClick={() => setSelectedDayEvents(null)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-sm font-black p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 bg-slate-50 dark:bg-slate-800/50"
               >
-                Close
+                ✕
               </button>
             </div>
 
-            <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+            <div className="space-y-4 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
               {selectedDayEvents.events.map((event) => {
                 const style = getEventStyle(event);
                 return (
@@ -811,26 +814,26 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                       setSelectedDayEvents(null);
                       openEditEvent(event, e);
                     }}
-                    className={`p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all hover:translate-x-0.5 ${style.color}`}
+                    className={`p-4 rounded-2xl border text-sm font-bold cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md relative group ${style.color}`}
                   >
-                    <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="flex items-center gap-3 mb-2">
                       {style.code ? (
                         <img
                           src={`https://flagcdn.com/16x12/${style.code}.png`}
                           alt=""
-                          className="w-3.5 h-2.5 object-cover rounded-sm inline-block"
+                          className="w-5 h-3.5 object-cover rounded shadow-sm inline-block"
                         />
                       ) : style.flag ? (
-                        <span className="mr-1">{style.flag}</span>
+                        <span className="text-lg drop-shadow-sm">{style.flag}</span>
                       ) : (
                         (event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival') && (
-                          <span>🌐</span>
+                          <span className="text-lg drop-shadow-sm">🌐</span>
                         )
                       )}
-                      <span className="font-bold">{event.title}</span>
+                      <span className="font-black text-base tracking-tight">{event.title}</span>
                     </div>
                     {event.description && (
-                      <p className="text-[11px] font-normal opacity-90 line-clamp-2">
+                      <p className="text-xs font-medium opacity-80 leading-relaxed bg-white/50 dark:bg-black/10 p-2.5 rounded-xl border border-white/20 dark:border-black/20">
                         {event.description}
                       </p>
                     )}
@@ -838,23 +841,23 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 );
               })}
               {selectedDayEvents.events.length === 0 && (
-                <div className="text-center py-8 text-slate-400 text-xs font-medium bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm font-bold bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
                   No events scheduled for this day.
                 </div>
               )}
             </div>
 
             {canManageEvents && (
-              <div className="mt-4 pt-3 border-t border-slate-100">
+              <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   onClick={() => {
                     const day = selectedDayEvents.day;
                     setSelectedDayEvents(null);
                     openAddEvent(day);
                   }}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                  className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 active:scale-95"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-5 h-5" />
                   Add New Event
                 </button>
               </div>

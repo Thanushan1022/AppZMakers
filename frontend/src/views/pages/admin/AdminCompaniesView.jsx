@@ -28,16 +28,16 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div>
-        <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Clients & Teams</h1>
-        <p className="text-slate-500 text-sm mt-0.5">View client companies and the employees assigned to them</p>
+      <div className="relative z-10">
+        <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>Clients & Teams</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">View client companies and the employees assigned to them</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Column: Companies List */}
         <div className="md:col-span-1 space-y-3">
-          <div className="bg-white rounded-2xl border border-border p-4">
-            <h3 className="text-slate-800 font-semibold text-sm mb-3">Client Companies</h3>
+          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
+            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-base mb-4">Client Companies</h3>
             <div className="max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               <div className="space-y-2">
                 {companies.map(co => {
@@ -87,8 +87,9 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
           {selectedCompany ? (
             <>
               {/* Company Details Card */}
-              <div className="bg-white rounded-2xl border border-border p-6">
-                <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors duration-700"></div>
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-6 relative z-10">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center font-bold text-lg">
                       {selectedCompany.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
@@ -125,9 +126,11 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
               </div>
 
               {/* Assigned Employees */}
-              <div className="bg-white rounded-2xl border border-border p-6">
-                <h3 className="text-slate-800 font-semibold mb-4 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-500" />
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
+                <h3 className="text-slate-800 dark:text-slate-100 font-bold mb-6 flex items-center gap-3 text-base">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
+                    <Users className="w-4 h-4 text-indigo-500" />
+                  </div>
                   Assigned Employees ({companyEmployees.length})
                 </h3>
                 <div className="max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
@@ -163,8 +166,8 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
               </div>
             </>
           ) : (
-            <div className="bg-white rounded-2xl border border-border p-12 text-center text-slate-400">
-              <Building2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-dashed border-slate-300 dark:border-slate-700 p-16 text-center text-slate-400 relative z-10">
+              <Building2 className="w-12 h-12 mx-auto mb-4 opacity-40 text-slate-400" />
               <p className="text-sm">Select a company from the list to view details</p>
             </div>
           )}
@@ -173,11 +176,11 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
 
       {/* Employee Details Modal */}
       {selectedEmployee && (
-        <div className="fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2rem] border border-white dark:border-slate-800 shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95">
             <button
               onClick={() => setSelectedEmployee(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-lg"
+              className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full font-bold text-lg cursor-pointer transition-colors"
             >
               &times;
             </button>

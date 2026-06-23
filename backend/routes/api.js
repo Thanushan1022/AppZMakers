@@ -17,6 +17,7 @@ router.get('/employees/:id/leaves', employeeController.getLeaves);
 router.post('/employees/:id/leaves', employeeController.createLeaveRequest);
 router.delete('/employees/:id/leaves/:leaveId', employeeController.deleteLeaveRequest);
 router.put('/employees/:id/client', employeeController.updateClient);
+router.put('/employees/:id/shift', employeeController.updateShift);
 router.put('/employees/:id/profile', employeeController.updateProfile);
 router.get('/employees/:id/shift-notices', employeeController.getEmployeeShiftNotices);
 
@@ -41,6 +42,7 @@ router.get('/hr/shift-notices', hrController.getHRShiftNotices);
 // HIRING COMPANY ROUTES
 // ==========================================
 router.get('/companies/:id/dashboard', companyController.getDashboard);
+router.get('/companies/:id/reports', companyController.getReports);
 router.get('/companies/:id/profile', companyController.getProfile);
 router.put('/companies/:id/profile', companyController.updateProfile);
 router.get('/companies/:id/shift-notices', companyController.getCompanyShiftNotices);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 const parseBreakSeconds = (breakTimeSetting) => {
   let allowedBreakMin = 60;
@@ -193,6 +193,15 @@ export function useEmployeeController(userId, updateAuth) {
 
   useEffect(() => {
     fetchData();
+
+    const handleRefresh = () => {
+      fetchData();
+    };
+
+    window.addEventListener('refresh_attendance', handleRefresh);
+    return () => {
+      window.removeEventListener('refresh_attendance', handleRefresh);
+    };
   }, [userId]);
 
   // Sync timers dynamically relative to absolute check-in time and actual breaks
@@ -284,16 +293,18 @@ export function useEmployeeController(userId, updateAuth) {
       const completedTeaCount = teaBreaksList.filter(b => b.end).length;
 
       if (teaBreaksList.length > 0 && teaBreaksList.length < teaBreaksMax && !onTeaBreak) {
-        // Find the last tea break start time
+        // Find the last tea break end time
         const lastTea = teaBreaksList[teaBreaksList.length - 1];
-        if (lastTea && lastTea.start) {
-          const parts = lastTea.start.split(':').map(Number);
-          const lastStartSecs = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+        if (lastTea && lastTea.end) {
+          const parts = lastTea.end.split(':').map(Number);
+          const lastEndSecs = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
 
           const now = new Date();
           const nowSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
-          const elapsedSecs = nowSecs - lastStartSecs;
+          let elapsedSecs = nowSecs - lastEndSecs;
+          if (elapsedSecs < 0) elapsedSecs += 86400; // Handle midnight crossover
+          
           const requiredGapSecs = teaBreakGap * 60;
           const remaining = Math.max(0, requiredGapSecs - elapsedSecs);
           setTeaBreakGapRemainingSecs(remaining);
@@ -317,12 +328,36 @@ export function useEmployeeController(userId, updateAuth) {
 
   // Auto-end Tea Break when duration is reached
   useEffect(() => {
-    const teaBreakDuration = settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 20; // in minutes
-    const limitSecs = teaBreakDuration * 60;
-    if (onTeaBreak && teaBreakSecs >= limitSecs) {
-      handleTeaBreak();
+    const duration = settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15; // in minutes
+    const limitSecs = duration * 60;
+    if (onTeaBreak) {
+      // Find the current active tea break
+      const activeTeaBreak = breaks.find(b => b.type === 'tea' && !b.end);
+      if (activeTeaBreak && activeTeaBreak.start) {
+        const parts = activeTeaBreak.start.split(':').map(Number);
+        const startSecsRaw = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+        
+        // Need to know checkInSecs to adjust if start time is past midnight
+        const getSecsFromTime = (tStr) => {
+          if (!tStr) return 0;
+          const p = tStr.split(':').map(Number);
+          return (p[0] || 0) * 3600 + (p[1] || 0) * 60 + (p[2] || 0);
+        };
+        const checkInSecs = getSecsFromTime(checkInTime);
+        const startSecs = startSecsRaw < checkInSecs ? startSecsRaw + 86400 : startSecsRaw;
+
+        const now = new Date();
+        const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const nowSecs = nowSecsRaw < checkInSecs ? nowSecsRaw + 86400 : nowSecsRaw;
+        
+        const currentBreakDurationSecs = nowSecs - startSecs;
+        
+        if (currentBreakDurationSecs >= limitSecs) {
+          handleTeaBreak();
+        }
+      }
     }
-  }, [onTeaBreak, teaBreakSecs, settings]);
+  }, [onTeaBreak, breaks, checkInTime, settings]);
 
   // Helpers
   const formatDuration = (secs) => {
@@ -389,7 +424,14 @@ export function useEmployeeController(userId, updateAuth) {
       setShowTaskWarning(true);
       return;
     }
-    setShowCheckoutConfirm(true);
+    
+    // If employee is currently on a break, skip the "Take a break" confirmation modal
+    // and instantly proceed with checking out (which automatically ends active breaks).
+    if (onBreak || onTeaBreak) {
+      confirmCheckOut();
+    } else {
+      setShowCheckoutConfirm(true);
+    }
   };
 
   const confirmCheckOut = async () => {
@@ -774,6 +816,7 @@ export function useEmployeeController(userId, updateAuth) {
     teaBreakLimitReached: (breaks.filter(b => b.type === 'tea' && b.end).length >= (settings.teaBreaksMax !== undefined ? settings.teaBreaksMax : 2)) && !onTeaBreak,
     teaBreakGapRemainingSecs,
     teaBreakDuration: settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15,
+    isTeaBreakOver: teaBreakSecs >= (((settings.teaBreaksMax !== undefined ? settings.teaBreaksMax : 2) * (settings.teaBreakDuration !== undefined ? settings.teaBreakDuration : 15)) * 60),
 
     // Meal break helpers
     mealBreakCount: breaks.filter(b => b.type === 'meal').length,

@@ -129,22 +129,26 @@ export function Login({
       <div className="flex-1 p-6 sm:p-12 lg:p-16 flex items-center justify-center h-screen z-10 bg-transparent overflow-y-auto">
 
         {/* Blurred Login Box Container */}
-        <div className="w-full max-w-lg bg-white/90 backdrop-blur-xl border border-slate-200/50 shadow-2xl rounded-[24px] p-8 sm:p-10 space-y-8 my-auto">
+        <div className="w-full max-w-lg bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[32px] p-8 sm:p-10 space-y-8 my-auto relative overflow-hidden group">
+          {/* Subtle liquid glow inside */}
+          <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-1000 -z-10" />
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
           {/* Logo on Mobile */}
           <div className="lg:hidden flex justify-center mb-8">
-            <div className="w-24 h-24 bg-[#0f0c2e] rounded-[16px] flex items-center justify-center shadow-md border border-[#2e2880]">
+            <div className="w-24 h-24 bg-white/5 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] border border-white/20">
               <img src={logoImg} alt="AppzMaker Logo" className="w-20 h-20 object-contain" />
             </div>
           </div>
 
           {/* Header */}
           <div className="space-y-2">
-            <span className="text-[#5b4cf5] text-[0px] font-extrabold uppercase tracking-widest block">Welcome back</span>
-            <h2 className="text-slate-900 text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap">
+            <span className="text-[#a59bfb] text-[10px] font-extrabold uppercase tracking-widest block">Welcome back</span>
+            <h2 className="text-white text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-md">
               {isForgot ? 'Reset Password' : 'Sign in to your AppZ Makers'}
             </h2>
-            <p className="text-slate-500 text-sm">
+            <p className="text-white/70 text-sm">
               {isForgot ? 'Enter your email address to get a password reset link' : 'Select your role and sign in to continue'}
             </p>
           </div>
@@ -152,8 +156,8 @@ export function Login({
           {/* Role selector */}
           {!isForgot && (
             <div className="space-y-2.5">
-              <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Choose Portal Role</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-200/50 rounded-[14px] p-1 gap-1 border border-slate-200/30">
+              <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Choose Portal Role</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 bg-white/5 backdrop-blur-md rounded-[14px] p-1 gap-1 border border-white/10 shadow-inner">
                 {roles.map((role) => {
                   const Icon = role.icon;
                   const isSelected = selectedRole === role.id;
@@ -162,9 +166,9 @@ export function Login({
                       key={role.id}
                       type="button"
                       onClick={() => setSelectedRole(role.id)}
-                      className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-[11px] text-[11px] font-extrabold transition-all duration-150 ${isSelected
-                        ? 'bg-[#5b4cf5] text-white shadow-sm'
-                        : 'bg-[#5b4cf5]/5 hover:bg-[#5b4cf5]/10 text-indigo-950/70 hover:text-[#5b4cf5]'
+                      className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-[11px] text-[11px] font-extrabold transition-all duration-300 ${isSelected
+                        ? 'bg-gradient-to-r from-indigo-500/80 to-purple-500/80 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-white/20'
+                        : 'bg-transparent hover:bg-white/10 text-white/60 hover:text-white border border-transparent'
                         }`}
                     >
                       <Icon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -177,13 +181,13 @@ export function Login({
           )}
 
           {error && (
-            <div className="p-3.5 rounded-[12px] bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+            <div className="p-3.5 rounded-[14px] bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-200 text-sm font-medium shadow-inner">
               {error}
             </div>
           )}
 
           {successMessage && (
-            <div className="p-3.5 rounded-[12px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+            <div className="p-3.5 rounded-[14px] bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 text-emerald-200 text-sm font-medium shadow-inner">
               {successMessage}
             </div>
           )}
@@ -192,15 +196,15 @@ export function Login({
           {isForgot ? (
             <form onSubmit={handleForgotSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
+                <div className="relative group/input">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
                   <input
                     type="email"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     required
-                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
                     placeholder="you@domain.com"
                   />
                 </div>
@@ -209,7 +213,7 @@ export function Login({
               <button
                 type="submit"
                 disabled={forgotLoading}
-                className="w-full bg-[#5b4cf5] hover:bg-[#4a3de0] disabled:opacity-60 text-white py-3.5 rounded-[12px] flex items-center justify-center gap-2 transition-all font-bold text-sm shadow-sm"
+                className="w-full bg-gradient-to-r from-indigo-500/80 to-purple-500/80 hover:from-indigo-400/90 hover:to-purple-400/90 disabled:opacity-60 text-white py-3.5 rounded-[14px] flex items-center justify-center gap-2 transition-all duration-300 font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] border border-white/20 hover:-translate-y-0.5"
               >
                 {forgotLoading ? 'Sending...' : 'Send Reset Link'}
                 <LogIn className="w-4 h-4" />
@@ -223,7 +227,7 @@ export function Login({
                     setError('');
                     setSuccessMessage('');
                   }}
-                  className="text-indigo-600 hover:text-indigo-800 text-xs font-bold transition-colors"
+                  className="text-indigo-300 hover:text-white text-xs font-bold transition-colors drop-shadow-sm"
                 >
                   Back to Sign In
                 </button>
@@ -233,50 +237,50 @@ export function Login({
             <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
               {isSignup && (
                 <div className="space-y-1.5">
-                  <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Full Name</label>
+                  <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Full Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] px-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
                     placeholder="Your full name"
                   />
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
+                <div className="relative group/input">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
                     placeholder="you@domain.com"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Password</label>
+                <div className="relative group/input">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
                   <input
                     type={showPass ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full bg-[#fafafa]/90 border border-[#e8e8f0] rounded-[11px] pl-11 pr-12 py-3.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-[#5b4cf5] focus:ring-2 focus:ring-[#5b4cf5]/15 transition-all font-medium"
+                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-12 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
                   >
                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -292,7 +296,7 @@ export function Login({
                     setError('');
                     setSuccessMessage('');
                   }}
-                  className="text-[#5b4cf5] hover:text-[#4a3de0] font-bold"
+                  className="text-indigo-300 hover:text-white font-bold transition-colors drop-shadow-sm"
                 >
                   Forgot password?
                 </button>
@@ -301,7 +305,7 @@ export function Login({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#5b4cf5] hover:bg-[#4a3de0] disabled:opacity-60 text-white py-3.5 rounded-[12px] flex items-center justify-center gap-2 transition-all font-bold text-sm shadow-sm"
+                className="w-full bg-gradient-to-r from-indigo-500/80 to-purple-500/80 hover:from-indigo-400/90 hover:to-purple-400/90 disabled:opacity-60 text-white py-3.5 rounded-[14px] flex items-center justify-center gap-2 transition-all duration-300 font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] border border-white/20 hover:-translate-y-0.5"
               >
                 {loading ? 'Please wait...' : isSignup ? 'Register Portal' : 'Sign In to Workspace'}
                 <LogIn className="w-4 h-4" />

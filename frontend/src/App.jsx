@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router';
+import { io } from 'socket.io-client';
 import { useAuthController } from './controllers/useAuthController';
 import { useEmployeeController } from './controllers/useEmployeeController';
 import { useHRController } from './controllers/useHRController';
@@ -35,6 +36,7 @@ import { CompanyProfileView } from './views/pages/company/CompanyProfileView';
 import { CompanyAttendanceView } from './views/pages/company/CompanyAttendanceView';
 import { CompanyCalendarView } from './views/pages/company/CompanyCalendarView';
 import { CompanyShiftNoticesView } from './views/pages/company/CompanyShiftNoticesView';
+import { CompanyReportsView } from './views/pages/company/CompanyReportsView';
 
 // Admin
 import { AdminDashboardView } from './views/pages/admin/AdminDashboardView';
@@ -56,14 +58,14 @@ export default function App() {
 function TaskWarningModal({ onClose }) {
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-sm w-full overflow-hidden p-6 animate-in fade-in zoom-in-95 duration-200" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xl max-w-sm w-full overflow-hidden p-6 animate-in fade-in zoom-in-95 duration-200" style={{ fontFamily: 'DM Sans, sans-serif' }}>
         <div className="flex flex-col items-center text-center">
-          <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4 border border-amber-100 animate-pulse">
+          <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-4 border border-amber-100 dark:border-amber-800/50 animate-pulse">
             <AlertCircle className="w-6 h-6 text-amber-500" />
           </div>
-          <h3 className="text-slate-800 text-lg font-bold mb-2">Task Log Required</h3>
-          <p className="text-slate-500 text-sm mb-6 leading-relaxed">
-            Please log at least one completed task in your <strong>Today's Work Log</strong> before checking out.
+          <h3 className="text-slate-800 dark:text-slate-100 text-lg font-bold mb-2">Task Log Required</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">
+            Please log at least one completed task in your <strong className="dark:text-slate-200">Today's Work Log</strong> before checking out.
           </p>
           <div className="w-full">
             <button
@@ -144,6 +146,12 @@ function AppRoutes() {
   const [toasts, setToasts] = React.useState([]);
 
   React.useEffect(() => {
+    const socket = io('http://localhost:5001');
+    
+    socket.on('attendance_update', (data) => {
+      window.dispatchEvent(new CustomEvent('refresh_attendance', { detail: data }));
+    });
+
     globalShowToast = (message, type = 'info') => {
       const id = Math.random().toString(36).substring(2, 9);
       setToasts((prev) => [...prev, { id, message, type }]);
@@ -187,7 +195,7 @@ function AppRoutes() {
     };
 
     return () => {
-      // Clean up if needed
+      socket.disconnect();
     };
   }, []);
 
@@ -288,6 +296,7 @@ function CompanyRoutes({ companyId, updateAuth }) {
       <Route path="dashboard" element={<CompanyDashboardView {...controller} />} />
       <Route path="employees" element={<CompanyEmployeesView {...controller} />} />
       <Route path="attendance" element={<CompanyAttendanceView {...controller} />} />
+      <Route path="reports" element={<CompanyReportsView {...controller} />} />
       <Route path="calendar" element={<CompanyCalendarView role="company" companyId={companyId} />} />
       <Route path="shift-notices" element={<CompanyShiftNoticesView {...controller} />} />
       <Route path="profile" element={<CompanyProfileView {...controller} />} />

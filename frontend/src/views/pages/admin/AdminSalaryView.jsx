@@ -29,9 +29,10 @@ export function AdminSalaryView({
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
         <div>
-          <p className="text-slate-500 text-sm mt-0.5">Manage employee payroll and salary structures</p>
+          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>Payroll & Salary</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage employee payroll and salary structures</p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -42,8 +43,8 @@ export function AdminSalaryView({
             <option value="2026-05">May 2026</option>
             <option value="2026-04">April 2026</option>
           </select>
-          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors">
-            <Download className="w-4 h-4" />Export
+          <button type="button" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 shadow-indigo-500/25 cursor-pointer">
+            <Download className="w-5 h-5" />Export
           </button>
         </div>
       </div>
@@ -58,7 +59,7 @@ export function AdminSalaryView({
         ].map(s => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="bg-white rounded-2xl border border-border p-5">
+            <div key={s.label} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white dark:border-slate-800 rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl transition-shadow relative overflow-hidden group">
               <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center mb-3`}>
                 <Icon className={`w-5 h-5 ${s.color}`} />
               </div>
@@ -71,8 +72,8 @@ export function AdminSalaryView({
       </div>
 
       {/* Payroll trend chart */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <h3 className="text-slate-800 font-semibold mb-4">Monthly Payroll Breakdown</h3>
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
+        <h3 className="text-slate-800 dark:text-slate-100 font-bold mb-6 text-base">Monthly Payroll Breakdown</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={monthlyTotals} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -86,9 +87,9 @@ export function AdminSalaryView({
       </div>
 
       {/* Salary records table */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-slate-800 font-semibold">Salary Records — {selectedMonth === '2026-05' ? 'May 2026' : 'April 2026'}</h3>
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-slate-800 dark:text-slate-100 font-bold text-base">Salary Records — {selectedMonth === '2026-05' ? 'May 2026' : 'April 2026'}</h3>
           <span className="text-slate-400 text-sm">{monthRecords.length} records</span>
         </div>
 

@@ -40,4 +40,7 @@ const attendanceSchema = new mongoose.Schema(
 
 attendanceSchema.index({ employeeId: 1, date: 1 }, { unique: true });
 
+attendanceSchema.index({ status: 1 });
+attendanceSchema.index({ checkIn: 1 });
+
 export default mongoose.model('Attendance', attendanceSchema);

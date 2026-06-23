@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-slate-50: var(--background);
@@ -37,44 +38,7 @@ body {
   color: var(--foreground);
 }
 
-/* Base surface overrides */
-.dark .bg-white,
-.dark div.bg-white,
-.dark section.bg-white,
-.dark header.bg-white,
-.dark article.bg-white,
-.dark form.bg-white {
-  background-color: #141c2f !important;
-}
 
-/* Override all common light backgrounds to dark navy/slate */
-.dark .bg-slate-50,
-.dark .bg-slate-100,
-.dark .bg-slate-200,
-.dark .bg-indigo-50,
-.dark .bg-[#fafafa],
-.dark .bg-[#fafafa]\/90,
-.dark .bg-slate-50\/20,
-.dark .bg-slate-50\/30,
-.dark .bg-slate-50\/50,
-.dark .bg-slate-50\/70,
-.dark .bg-slate-100\/60,
-.dark .bg-slate-200\/30,
-.dark .bg-slate-200\/50,
-.dark .bg-indigo-50\/50,
-.dark .bg-indigo-100\/30,
-.dark .bg-indigo-100\/50,
-.dark .bg-indigo-100 {
-  background-color: #1a2336 !important;
-}
-
-.dark .hover\:bg-slate-50\/50:hover,
-.dark .hover\:bg-slate-100\/60:hover,
-.dark .hover\:bg-slate-50:hover,
-.dark .hover\:bg-slate-100:hover,
-.dark .hover\:bg-slate-200:hover {
-  background-color: #242f48 !important;
-}
 
 /* Calendar details override */
 .dark .bg-teal-50,
@@ -255,20 +219,6 @@ body {
   border-color: #f1f5f9 !important;
 }
 
-/* Soft opacity-only entry animation to prevent position:fixed containment trap */
-main {
-  animation: pageEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes pageEntry {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
 
 /* Toast Animations */
 .toast-enter {
@@ -324,13 +274,22 @@ main {
     box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.08) !important;
   }
 }
+
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
+
 .animate-gradient {
   animation: gradient 8s ease infinite;
   background-size: 200% 200%;
 }
-

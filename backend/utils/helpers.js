@@ -8,7 +8,7 @@ export const getTodayString = (date = new Date()) => {
 export const formatDisplayDate = (date = new Date()) =>
   date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-export const getTodayAttendanceForEmployees = (employees, attendanceRecords, date = getTodayString()) =>
+export const getTodayAttendanceForEmployees = (employees, attendanceRecords, date = getTodayString(), allLeaves = []) =>
   employees.map((emp) => {
     const rec = attendanceRecords.find((r) => r.employeeId === emp.id && r.date === date);
     let teaBreakCount = 0;
@@ -29,12 +29,25 @@ export const getTodayAttendanceForEmployees = (employees, attendanceRecords, dat
         }
       });
     }
+
+    let fallbackStatus = 'absent';
+    const activeLeave = allLeaves.find(
+      (l) =>
+        l.employeeId === emp.id &&
+        l.status === 'approved' &&
+        l.startDate <= date &&
+        l.endDate >= date
+    );
+    if (activeLeave) {
+      fallbackStatus = `on leave (${activeLeave.type})`;
+    }
+
     return {
       employeeId: emp.id,
       employeeName: emp.name,
       department: emp.department,
       date,
-      status: rec?.status || 'absent',
+      status: rec?.status || fallbackStatus,
       checkIn: rec?.checkIn || null,
       checkOut: rec?.checkOut || null,
       totalHours: rec?.totalHours || 0,
@@ -93,7 +106,7 @@ export const computeEmployeeStats = (employeeId, attendanceRecords) => {
   };
 };
 
-export const getWeeklyAttendanceData = (attendanceRecords, employeeIds, referenceDate = new Date()) => {
+export const getWeeklyAttendanceData = (attendanceRecords, employeeIds, referenceDate = new Date(), allLeaves = []) => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
   const result = [];
 
@@ -111,12 +124,18 @@ export const getWeeklyAttendanceData = (attendanceRecords, employeeIds, referenc
       (r) => r.date === dateStr && employeeIds.includes(r.employeeId)
     );
 
+    const presentCount = dayRecords.filter((r) => r.status === 'present').length;
+    const lateCount = dayRecords.filter((r) => r.status === 'late').length;
+    const onLeaveCount = employeeIds.filter(empId => isEmployeeOnLeave(empId, allLeaves, dateStr)).length;
+    const absentCount = Math.max(0, employeeIds.length - presentCount - lateCount - onLeaveCount);
+
     result.push({
       day: days[i],
       date: dateStr,
-      present: dayRecords.filter((r) => r.status === 'present').length,
-      late: dayRecords.filter((r) => r.status === 'late').length,
-      absent: employeeIds.length - dayRecords.filter((r) => r.status === 'present' || r.status === 'late').length,
+      present: presentCount,
+      late: lateCount,
+      onLeave: onLeaveCount,
+      absent: absentCount,
     });
   }
 
