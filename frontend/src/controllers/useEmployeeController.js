@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = import.meta.env.DEV ? 'http://localhost:5001/api' : 'https://app-z-makers.vercel.app/api';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
 
 const parseBreakSeconds = (breakTimeSetting) => {
   let allowedBreakMin = 60;
@@ -304,7 +304,7 @@ export function useEmployeeController(userId, updateAuth) {
 
           let elapsedSecs = nowSecs - lastEndSecs;
           if (elapsedSecs < 0) elapsedSecs += 86400; // Handle midnight crossover
-          
+
           const requiredGapSecs = teaBreakGap * 60;
           const remaining = Math.max(0, requiredGapSecs - elapsedSecs);
           setTeaBreakGapRemainingSecs(remaining);
@@ -336,7 +336,7 @@ export function useEmployeeController(userId, updateAuth) {
       if (activeTeaBreak && activeTeaBreak.start) {
         const parts = activeTeaBreak.start.split(':').map(Number);
         const startSecsRaw = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
-        
+
         // Need to know checkInSecs to adjust if start time is past midnight
         const getSecsFromTime = (tStr) => {
           if (!tStr) return 0;
@@ -349,9 +349,9 @@ export function useEmployeeController(userId, updateAuth) {
         const now = new Date();
         const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
         const nowSecs = nowSecsRaw < checkInSecs ? nowSecsRaw + 86400 : nowSecsRaw;
-        
+
         const currentBreakDurationSecs = nowSecs - startSecs;
-        
+
         if (currentBreakDurationSecs >= limitSecs) {
           handleTeaBreak();
         }
@@ -424,7 +424,7 @@ export function useEmployeeController(userId, updateAuth) {
       setShowTaskWarning(true);
       return;
     }
-    
+
     // If employee is currently on a break, skip the "Take a break" confirmation modal
     // and instantly proceed with checking out (which automatically ends active breaks).
     if (onBreak || onTeaBreak) {

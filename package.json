@@ -1,20 +1,21 @@
 {
-  "name": "workforge-monorepo",
+  "name": "appzmaker-main",
   "version": "1.0.0",
-  "type": "module",
+  "description": "This is the development repository for the WorkForge Portal, a modern web application designed to track employee attendance, manage leave requests, and view analytics.",
+  "main": "index.js",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^8.4.1",
-    "socket.io": "^4.8.3",
-    "swagger-jsdoc": "^6.3.0",
-    "swagger-ui-express": "^5.0.1"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thanushan1022/AppzMakers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Thanushan1022/AppzMakers/issues"
+  },
+  "homepage": "https://github.com/Thanushan1022/AppzMakers#readme"
+}
 }

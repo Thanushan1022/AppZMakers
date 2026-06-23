@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = import.meta.env.DEV ? 'http://localhost:5001/api' : 'https://app-z-makers.vercel.app/api';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
 
 export function useCompanyController(companyId, updateAuth) {
   const [company, setCompany] = useState({
@@ -24,7 +24,7 @@ export function useCompanyController(companyId, updateAuth) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [shiftNotices, setShiftNotices] = useState([]);
-  
+
   const getLocalDateString = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -277,7 +277,7 @@ export function useCompanyController(companyId, updateAuth) {
     reportsData,
     reportsLoading,
     fetchReports,
-    
+
     reportType, setReportType,
     reportsFilterType, setReportsFilterType,
     reportsSelectedYear, setReportsSelectedYear,

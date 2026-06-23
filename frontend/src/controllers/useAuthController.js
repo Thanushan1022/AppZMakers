@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const BACKEND_URL = import.meta.env.DEV ? 'http://localhost:5001/api/auth' : 'https://app-z-makers.vercel.app/api/auth';
+const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api/auth';
 
 const defaultPages = {
   employee: 'dashboard',
@@ -69,16 +69,9 @@ export function useAuthController() {
         body: JSON.stringify({ email, password, role: selectedRole }),
       });
 
-      const responseText = await response.text();
-      let data;
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        throw new Error(`Server returned invalid response: ${response.status} ${response.statusText}`);
-      }
-
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.error || data?.message || `HTTP Error ${response.status}: ${response.statusText}`);
+        throw new Error(data.error || data.message || 'Login failed');
       }
 
       persistAuth(data);
@@ -106,16 +99,9 @@ export function useAuthController() {
         }),
       });
 
-      const responseText = await response.text();
-      let data;
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        throw new Error(`Server returned invalid response: ${response.status} ${response.statusText}`);
-      }
-
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.error || data?.message || 'Registration failed');
+        throw new Error(data.error || data.message || 'Registration failed');
       }
 
       const loginRes = await fetch(`${BACKEND_URL}/login`, {
@@ -124,15 +110,8 @@ export function useAuthController() {
         body: JSON.stringify({ email, password, role: selectedRole }),
       });
 
-      const loginText = await loginRes.text();
-      let loginData;
-      try {
-        loginData = loginText ? JSON.parse(loginText) : {};
-      } catch (e) {
-        // Just let it fall through to the non-ok block if invalid
-      }
-
-      if (!loginRes.ok || !loginData) {
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) {
         setMode('login');
         setError('Account created. Please sign in.');
         return;

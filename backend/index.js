@@ -3,8 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 import apiRouter from './routes/api.js';
 import authRoutes from './routes/authRoutes.js';
 import { connectDatabase } from './config/db.js';
@@ -13,23 +11,7 @@ import { ensureUserProfiles } from './scripts/ensureUserProfiles.js';
 
 dotenv.config();
 
-
-
 const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-  }
-});
-
-// Expose io to all requests
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
-
 const PORT = process.env.PORT || 5001;
 
 // ✅ BASE URL (IMPORTANT FOR PRODUCTION)
@@ -46,6 +28,7 @@ app.use(cors({
   credentials: true
 }));
 
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -55,7 +38,7 @@ app.get('/api/health', (req, res) => {
     message: 'WorkForge Backend Service is running!',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     dataSource: 'MongoDB Atlas',
-    swagger: `http://localhost:${PORT}/api-docs`,
+    swagger: `${BASE_URL}/api-docs`,
     timestamp: new Date(),
   });
 });
@@ -82,10 +65,10 @@ const startServer = async () => {
     await seedIfEmpty();
     await ensureUserProfiles();
 
-    const server = httpServer.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 WorkForge Server running on port ${PORT}`);
-      console.log(`📚 Swagger UI: http://localhost:${PORT}/api-docs`);
-      console.log(`🔐 Auth API:  http://localhost:${PORT}/api/auth/login`);
+      console.log(`📚 Swagger UI: ${BASE_URL}/api-docs`);
+      console.log(`🔐 Auth API:  ${BASE_URL}/api/auth/login`);
     });
 
     server.on('error', (error) => {
@@ -102,15 +85,4 @@ const startServer = async () => {
   }
 };
 
-// Start server if not running in a serverless environment like Vercel
-if (process.env.NODE_ENV !== 'production') {
-  startServer();
-} else {
-  // In production (Vercel Serverless), connect to the database
-  // but do not call app.listen()
-  connectDatabase()
-    .then(() => console.log('✅ MongoDB connected in Vercel Serverless'))
-    .catch((err) => console.error('❌ Failed to connect to MongoDB:', err.message));
-}
-
-export default app;
+startServer();
