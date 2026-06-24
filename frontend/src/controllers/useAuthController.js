@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { BACKEND_URL } from '../config';
-const AUTH_URL = `${AUTH_URL}/auth`;
+const AUTH_URL = `${BACKEND_URL}/auth`;
 
 const defaultPages = {
   employee: 'dashboard',

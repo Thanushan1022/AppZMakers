@@ -147,8 +147,9 @@ function AppRoutes() {
   const [toasts, setToasts] = React.useState([]);
 
   React.useEffect(() => {
-    const socket = io(SOCKET_URL);
     
+    const socket = io(SOCKET_URL);
+
     socket.on('attendance_update', (data) => {
       window.dispatchEvent(new CustomEvent('refresh_attendance', { detail: data }));
     });
