@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useHRController(hrId, updateAuth) {
   const getLocalDateString = () => {
@@ -46,6 +46,7 @@ export function useHRController(hrId, updateAuth) {
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [shiftFilter, setShiftFilter] = useState('All');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [selectedAttendance, setSelectedAttendance] = useState([]);
   const [selectedBalance, setSelectedBalance] = useState(null);
@@ -358,7 +359,8 @@ export function useHRController(hrId, updateAuth) {
       e.position.toLowerCase().includes(search.toLowerCase());
     const matchDept = deptFilter === 'All' || e.department === deptFilter;
     const matchStatus = statusFilter === 'All' || e.status === statusFilter;
-    return matchSearch && matchDept && matchStatus;
+    const matchShift = shiftFilter === 'All' || e.shift === shiftFilter;
+    return matchSearch && matchDept && matchStatus && matchShift;
   });
 
   const selectedEmployee = selectedEmployeeId
@@ -562,6 +564,8 @@ export function useHRController(hrId, updateAuth) {
     setDeptFilter,
     statusFilter,
     setStatusFilter,
+    shiftFilter,
+    setShiftFilter,
     selectedEmployeeId,
     setSelectedEmployeeId,
     departments,

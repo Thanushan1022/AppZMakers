@@ -311,6 +311,7 @@ function AdminRoutes({ adminId, updateAuth }) {
     <Routes>
       <Route path="dashboard" element={<AdminDashboardView {...controller} />} />
       <Route path="today-attendance" element={<TodayAttendanceView {...controller} />} />
+      <Route path="leave-approvals" element={<HRLeaveApprovalsView {...controller} />} />
       <Route path="users" element={<AdminUsersView {...controller} />} />
       <Route path="calendar" element={<CompanyCalendarView role="superadmin" />} />
       <Route path="reports" element={<AdminReportsView {...controller} />} />

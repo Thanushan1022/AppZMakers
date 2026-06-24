@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 const parseBreakSeconds = (breakTimeSetting) => {
   let allowedBreakMin = 60;
@@ -65,6 +65,7 @@ export function useEmployeeController(userId, updateAuth) {
     reason: '',
     halfDay: false
   });
+  const [leaveError, setLeaveError] = useState('');
 
   // Attendance history selection state
   const [selectedYear, setSelectedYear] = useState(() => String(new Date().getFullYear()));
@@ -536,11 +537,40 @@ export function useEmployeeController(userId, updateAuth) {
 
   const handleLeaveSubmit = async (e) => {
     if (e) e.preventDefault();
+    setLeaveError('');
     const start = new Date(leaveForm.startDate);
     const end = new Date(leaveForm.endDate);
     let days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000) + 1);
     if (leaveForm.halfDay) {
       days = 0.5;
+    }
+
+    // 1. Balance validation
+    const leaveBal = balance[leaveForm.type];
+    const available = leaveBal ? (leaveBal.total - leaveBal.used) : 0;
+    if (available <= 0) {
+      setLeaveError(`You have 0 ${leaveForm.type} leave balance remaining.`);
+      return;
+    }
+    if (days > available) {
+      setLeaveError(`You cannot apply for ${days} days. You only have ${available} ${leaveForm.type} leave days remaining.`);
+      return;
+    }
+
+    // 2. Duplicate date validation
+    const newStart = start.getTime();
+    const newEnd = end.getTime();
+
+    const hasOverlap = allLeaves.some(l => {
+      if (l.status === 'rejected') return false; // Rejected leaves don't block new ones
+      const existingStart = new Date(l.startDate).getTime();
+      const existingEnd = new Date(l.endDate).getTime();
+      return (newStart <= existingEnd && newEnd >= existingStart);
+    });
+
+    if (hasOverlap) {
+      setLeaveError('You already have a pending or approved leave scheduled for these dates. Please choose different dates.');
+      return;
     }
 
     try {
@@ -562,10 +592,11 @@ export function useEmployeeController(userId, updateAuth) {
         fetchData();
       } else {
         const errData = await res.json();
-        alert(errData.error || 'Failed to submit leave application');
+        setLeaveError(errData.error || 'Failed to submit leave application');
       }
     } catch (err) {
       console.error(err);
+      setLeaveError('Server error while submitting application.');
     }
   };
 
@@ -776,6 +807,8 @@ export function useEmployeeController(userId, updateAuth) {
     setLeaveFilter,
     leaveForm,
     setLeaveForm,
+    leaveError,
+    setLeaveError,
     selectedMonth,
     selectedYear,
     setSelectedYear,

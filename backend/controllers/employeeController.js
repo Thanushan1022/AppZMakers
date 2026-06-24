@@ -10,7 +10,7 @@ import { toEmployeeJSON, toAttendanceJSON, toLeaveJSON, toLeaveBalanceJSON } fro
 import { getSettings } from '../services/settingsService.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
 import { getSecsFromTime, getTimeStringFromSecs, autoEndOverdueTeaBreaks, finalizeClockOut } from '../utils/attendanceMath.js';
-import { syncLeaveBalance } from '../services/leaveService.js';
+import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveService.js';
 
 export const getProfile = async (req, res) => {
   try {
@@ -296,6 +296,9 @@ export const getLeaves = async (req, res) => {
   try {
     const emp = await findEmployee(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    // Auto-reject any pending leaves whose end dates have passed
+    await autoRejectPassedLeaves();
 
     const leaves = await LeaveRequest.find({ employeeId: getEmployeeLegacyId(emp), hiddenForEmployee: { $ne: true } }).sort({ createdAt: -1 });
     res.json(leaves.map(toLeaveJSON));

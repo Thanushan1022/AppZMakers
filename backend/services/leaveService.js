@@ -55,3 +55,28 @@ export async function syncLeaveBalance(employeeId, joinDate) {
   await balance.save();
   return balance;
 }
+
+/**
+ * Automatically rejects pending leaves whose end dates have already passed.
+ * @returns {Promise<boolean>} True if any leaves were updated
+ */
+export async function autoRejectPassedLeaves() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  
+  // Find leaves that are still pending but the end date is in the past
+  const pendingLeaves = await LeaveRequest.find({ 
+    status: 'pending', 
+    endDate: { $lt: todayStr } 
+  });
+  
+  if (pendingLeaves.length > 0) {
+    for (const leave of pendingLeaves) {
+      leave.status = 'rejected';
+      leave.rejectionReason = 'Auto-rejected: Leave date has passed without approval.';
+      await leave.save();
+    }
+    return true;
+  }
+  
+  return false;
+}

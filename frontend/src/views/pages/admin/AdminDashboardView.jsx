@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Building2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, XCircle, ClipboardList } from 'lucide-react';
+import { Users, Building2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, XCircle, ClipboardList, TrendingUp, Activity, FileText } from 'lucide-react';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
 export function AdminDashboardView({
@@ -9,20 +9,8 @@ export function AdminDashboardView({
   dashboardStats,
   pendingLeaves,
   leaveCounts,
-  selectedLeave,
-  setSelectedLeave,
-  rejectReason,
-  setRejectReason,
-  hrNote,
-  setHrNote,
-  leaveAction,
-  setLeaveAction,
-  handleConfirmLeaveAction,
   todayAttendance = [],
-  selectedDate,
-  setSelectedDate,
 }) {
-  const [selectedTasks, setSelectedTasks] = useState(null);
   const activeCount =
     (dashboardStats.activeEmployees ?? employees.filter((e) => e.status === 'active').length) +
     hrUsers.filter((h) => h.status === 'active').length;
@@ -30,160 +18,111 @@ export function AdminDashboardView({
   const pending = pendingLeaves || [];
 
   return (
-    <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div>
-        <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Super Admin Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Control panel for global system aggregates</p>
+    <div className="space-y-8 relative" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      
+      {/* Spectacular Header */}
+      <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-10 shadow-2xl shadow-indigo-900/30">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+          <div className="absolute -top-20 -left-20 w-96 h-96 bg-indigo-500/30 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }}></div>
+          <div className="absolute top-10 -right-20 w-80 h-80 bg-fuchsia-500/30 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '12s' }}></div>
+          <div className="absolute -bottom-32 left-1/2 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }}></div>
+        </div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div>
+            <h1 className="text-white flex items-center gap-3 tracking-tight" style={{ fontWeight: 900, fontSize: '2.5rem' }}>
+              Super Admin Control
+              <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs tracking-widest uppercase font-black text-indigo-200 backdrop-blur-md">Live</span>
+            </h1>
+            <p className="text-indigo-200 text-lg mt-2 font-medium max-w-lg">
+              Welcome to your command center. Monitor real-time aggregates and manage global platform operations instantly.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-3xl shadow-inner">
+            <Activity className="w-8 h-8 text-emerald-400 animate-pulse" />
+            <div>
+              <div className="text-white font-black text-xl leading-none">System Healthy</div>
+              <div className="text-emerald-300/80 text-xs font-bold uppercase tracking-widest mt-1">All services operational</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Primary Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Registered Companies', value: dashboardStats.totalCompanies ?? companies.length, icon: Building2, color: 'text-indigo-600', bg: 'bg-indigo-50', sub: `${dashboardStats.activeCompanies ?? companies.filter((c) => c.status === 'active').length} active clients` },
-          { label: 'System Active Accounts', value: activeCount, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Employees + HR active' },
-          { label: 'HR Managers', value: dashboardStats.totalHR ?? hrUsers.length, icon: ShieldCheck, color: 'text-sky-600', bg: 'bg-sky-50', sub: `${dashboardStats.activeHR ?? hrUsers.filter((h) => h.status === 'active').length} active` },
-          { label: 'Pending Leave Approvals', value: leaveCounts?.pending ?? pending.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Awaiting review' },
-        ].map((s) => {
+          { label: 'Registered Companies', value: dashboardStats.totalCompanies ?? companies.length, icon: Building2, color: 'text-fuchsia-500', bg: 'bg-fuchsia-50', gradient: 'from-fuchsia-500 to-pink-600', sub: `${dashboardStats.activeCompanies ?? companies.filter((c) => c.status === 'active').length} active clients` },
+          { label: 'Active Accounts', value: activeCount, icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-50', gradient: 'from-emerald-400 to-teal-500', sub: 'Employees + HR active' },
+          { label: 'HR Managers', value: dashboardStats.totalHR ?? hrUsers.length, icon: ShieldCheck, color: 'text-sky-500', bg: 'bg-sky-50', gradient: 'from-sky-400 to-blue-600', sub: `${dashboardStats.activeHR ?? hrUsers.filter((h) => h.status === 'active').length} active` },
+          { label: 'Leave Approvals', value: leaveCounts?.pending ?? pending.length, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', gradient: 'from-amber-400 to-orange-500', sub: 'Awaiting review' },
+        ].map((s, idx) => {
           const Icon = s.icon;
-          const blobColors = {
-            'text-indigo-600': 'bg-indigo-300/40 dark:bg-indigo-900/40',
-            'text-emerald-600': 'bg-emerald-300/40 dark:bg-emerald-900/40',
-            'text-sky-600': 'bg-sky-300/40 dark:bg-sky-900/40',
-            'text-amber-600': 'bg-amber-300/40 dark:bg-amber-900/40'
-          };
-          const blobColor = blobColors[s.color] || 'bg-slate-300/40';
-
           return (
-            <div key={s.label} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden group">
-              <div className={`absolute -right-8 -top-8 w-32 h-32 ${blobColor} rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 ease-out`}></div>
-              <div className={`w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4 border border-white dark:border-slate-700 shadow-sm relative z-10`}>
-                <Icon className={`w-6 h-6 ${s.color}`} />
+            <div key={s.label} className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/60 dark:border-slate-700/60 p-8 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden cursor-default">
+              <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-0 group-hover:opacity-5 dark:group-hover:opacity-10 transition-opacity duration-500`}></div>
+              <div className="absolute -right-12 -top-12 w-40 h-40 bg-slate-100 dark:bg-slate-800 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+              
+              <div className="relative z-10 flex justify-between items-start mb-6">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${s.gradient} shadow-lg shadow-${s.color.split('-')[1]}-500/30 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                  <Icon className="w-7 h-7 text-white" />
+                </div>
+                <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
+                  <TrendingUp className={`w-3.5 h-3.5 ${s.color}`} />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Live</span>
+                </div>
               </div>
-              <div className="text-slate-800 dark:text-slate-100 mb-1 relative z-10" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '1.75rem' }}>{s.value}</div>
-              <div className="text-slate-600 dark:text-slate-300 text-sm font-bold relative z-10">{s.label}</div>
-              <div className="text-slate-400 text-xs mt-1 relative z-10">{s.sub}</div>
+              
+              <div className="relative z-10">
+                <div className="text-slate-800 dark:text-slate-100 text-5xl tracking-tight mb-2" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 900 }}>
+                  {s.value}
+                </div>
+                <div className="text-slate-600 dark:text-slate-300 font-bold text-lg leading-tight mb-1">{s.label}</div>
+                <div className="text-slate-400 dark:text-slate-500 text-sm font-medium">{s.sub}</div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none">
-          <h3 className="text-slate-800 dark:text-slate-100 font-bold mb-6 flex items-center gap-3 text-lg">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center border border-amber-100 dark:border-amber-800">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-            </div>
-            Pending Leave Requests ({pending.length})
-          </h3>
-          <div className="space-y-4">
-            {pending.map((leave) => (
-              <div key={leave.id} className="p-5 rounded-3xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-slate-800 dark:text-slate-200 font-bold text-base">{leave.employeeName}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 text-xs font-bold capitalize">{leave.type}</span>
-                      <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{leave.department} · {leave.days} day{leave.days !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div className="text-slate-400 dark:text-slate-500 text-xs mt-2 font-medium bg-white/50 dark:bg-slate-800/50 inline-block px-2 py-1 rounded-md">{leave.startDate} → {leave.endDate}</div>
-                    <div className="text-slate-600 dark:text-slate-300 text-sm mt-2 line-clamp-2 leading-relaxed">{leave.reason}</div>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedLeave(leave); setLeaveAction('approve'); }}
-                      className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
-                      title="Approve"
-                    >
-                      <CheckCircle2 className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedLeave(leave); setLeaveAction('reject'); }}
-                      className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
-                      title="Reject"
-                    >
-                      <XCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {pending.length === 0 && (
-              <div className="p-8 text-center bg-slate-50/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
-                <p className="text-slate-400 dark:text-slate-500 font-medium">No pending leave requests</p>
-              </div>
-            )}
+      {/* Advanced Platform Overview Grid */}
+      <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[3rem] border border-white/80 dark:border-slate-700/50 p-8 lg:p-10 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-indigo-500/10 via-purple-500/5 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="flex items-center justify-between mb-8 relative z-10">
+          <div>
+            <h3 className="text-slate-800 dark:text-slate-100 text-2xl" style={{ fontWeight: 900 }}>Deep Platform Overview</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">A detailed breakdown of all system entities and logs.</p>
+          </div>
+          <div className="hidden sm:flex p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+            <ClipboardList className="w-6 h-6 text-indigo-500" />
           </div>
         </div>
 
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
-          <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors duration-700"></div>
-          <h3 className="text-slate-800 dark:text-slate-100 font-bold mb-6 text-lg relative z-10">Platform Overview</h3>
-          <div className="space-y-4 relative z-10">
-            {[
-              { label: 'Total Employees', value: dashboardStats.totalEmployees ?? employees.length },
-              { label: 'Active Employees', value: dashboardStats.activeEmployees ?? employees.filter((e) => e.status === 'active').length },
-              { label: 'Hiring Companies', value: dashboardStats.totalCompanies ?? companies.length },
-              { label: 'Today Attendance Records', value: dashboardStats.todayAttendanceRecords ?? 0 },
-              { label: 'Approved Leaves', value: leaveCounts?.approved ?? 0 },
-              { label: 'Rejected Leaves', value: leaveCounts?.rejected ?? 0 },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors border border-white/50 dark:border-slate-700 shadow-sm">
-                <span className="text-slate-600 dark:text-slate-300 font-medium">{item.label}</span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-black text-lg bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/50" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{item.value}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
+          {[
+            { label: 'Total Employees Registered', value: dashboardStats.totalEmployees ?? employees.length, color: 'indigo' },
+            { label: 'Currently Active Employees', value: dashboardStats.activeEmployees ?? employees.filter((e) => e.status === 'active').length, color: 'emerald' },
+            { label: 'Total Hiring Companies', value: dashboardStats.totalCompanies ?? companies.length, color: 'fuchsia' },
+            { label: "Today's Attendance Records", value: dashboardStats.todayAttendanceRecords ?? 0, color: 'sky' },
+            { label: 'Total Approved Leaves', value: leaveCounts?.approved ?? 0, color: 'teal' },
+            { label: 'Total Rejected Leaves', value: leaveCounts?.rejected ?? 0, color: 'rose' },
+          ].map((item, i) => (
+            <div key={item.label} className="group bg-white dark:bg-slate-800/80 rounded-[2rem] p-6 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 flex flex-col justify-between">
+              <div className="flex justify-between items-start mb-6">
+                <div className={`w-2 h-2 rounded-full bg-${item.color}-500 shadow-[0_0_10px_rgba(0,0,0,0)] group-hover:shadow-${item.color}-500/50 transition-all duration-300`}></div>
+                <FileText className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors" />
               </div>
-            ))}
-          </div>
+              <div>
+                <div className={`text-${item.color}-600 dark:text-${item.color}-400 text-4xl mb-2`} style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 900 }}>
+                  {item.value}
+                </div>
+                <div className="text-slate-600 dark:text-slate-300 font-bold text-sm leading-tight">{item.label}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-
-      {selectedLeave && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 w-full max-w-md shadow-2xl overflow-hidden p-8 animate-in zoom-in-95">
-            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-xl mb-1">
-              {leaveAction === 'approve' ? 'Approve Leave Request' : 'Reject Leave Request'}
-            </h3>
-            <p className="text-slate-500 dark:text-slate-400 font-medium mb-6 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-              <span className="text-slate-700 dark:text-slate-300 font-bold">{selectedLeave.employeeName}</span> · <span className="capitalize">{selectedLeave.type}</span> · {selectedLeave.days} days
-            </p>
-
-            {leaveAction === 'approve' ? (
-              <textarea
-                placeholder="Optional note for employee..."
-                value={hrNote}
-                onChange={(e) => setHrNote(e.target.value)}
-                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-2xl p-4 text-sm font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 mb-6 min-h-[100px] shadow-sm transition-all"
-              />
-            ) : (
-              <textarea
-                placeholder="Rejection reason (required)..."
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10 rounded-2xl p-4 text-sm font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500/20 mb-6 min-h-[100px] shadow-sm transition-all placeholder:text-red-300 dark:placeholder:text-red-700"
-              />
-            )}
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => { setSelectedLeave(null); setLeaveAction(null); setHrNote(''); setRejectReason(''); }}
-                className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmLeaveAction}
-                disabled={leaveAction === 'reject' && !rejectReason.trim()}
-                className={`px-6 py-2.5 text-sm font-bold text-white rounded-xl transition-all shadow-lg hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed ${leaveAction === 'approve' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25 border border-emerald-400' : 'bg-red-500 hover:bg-red-600 shadow-red-500/25 border border-red-400'}`}
-              >
-                Confirm {leaveAction === 'approve' ? 'Approval' : 'Rejection'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

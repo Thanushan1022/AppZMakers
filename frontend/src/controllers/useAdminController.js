@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function useAdminController(adminId, updateAuth) {
   const [employees, setEmployees] = useState([]);
@@ -140,6 +140,25 @@ export function useAdminController(adminId, updateAuth) {
   const [rejectReason, setRejectReason] = useState('');
   const [hrNote, setHrNote] = useState('');
   const [leaveAction, setLeaveAction] = useState(null);
+
+  const [leaveTabFilter, setLeaveTabFilter] = useState('all');
+  const [leaveSearch, setLeaveSearch] = useState('');
+
+  const leaveCounts = {
+    all: leavesList.length,
+    pending: leavesList.filter((l) => l.status === 'pending').length,
+    approved: leavesList.filter((l) => l.status === 'approved').length,
+    rejected: leavesList.filter((l) => l.status === 'rejected').length,
+  };
+
+  const filteredLeaves = leavesList
+    .filter((l) => leaveTabFilter === 'all' || l.status === leaveTabFilter)
+    .filter(
+      (l) =>
+        leaveSearch === '' ||
+        l.employeeName?.toLowerCase().includes(leaveSearch.toLowerCase()) ||
+        l.department?.toLowerCase().includes(leaveSearch.toLowerCase())
+    );
 
   const [settings, setSettings] = useState({
     workHours: '8 hours',
@@ -378,11 +397,14 @@ export function useAdminController(adminId, updateAuth) {
   const getEmployeeStats = (empId) =>
     employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
 
+  const [shiftFilter, setShiftFilter] = useState('All');
+
   const filteredEmployees = employees.filter(
     (e) =>
-      searchQuery === '' ||
+      (searchQuery === '' ||
       e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.email.toLowerCase().includes(searchQuery.toLowerCase())
+      e.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (shiftFilter === 'All' || e.shift === shiftFilter)
   );
 
   const filteredHR = hrUsers.filter(
@@ -534,6 +556,22 @@ export function useAdminController(adminId, updateAuth) {
 
   const handleAddCompany = async (e) => {
     if (e) e.preventDefault();
+    if (!coForm.name || coForm.name.length > 30) {
+      alert('Company Name must be between 2 and 30 characters long.');
+      return;
+    }
+    if (!coForm.industry || coForm.industry.length > 30) {
+      alert('Industry Sector must be between 2 and 30 characters long.');
+      return;
+    }
+    if (!coForm.contact || coForm.contact.length > 30) {
+      alert('Contact Person must be between 2 and 30 characters long.');
+      return;
+    }
+    if (!coForm.phone || !/^\+?[0-9\s\-()]{7,20}$/.test(coForm.phone)) {
+      alert('Please enter a valid phone number (7-20 digits).');
+      return;
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(coForm.email)) {
       alert('Please enter a valid email address.');
@@ -756,11 +794,7 @@ export function useAdminController(adminId, updateAuth) {
     }
   };
 
-  const leaveCounts = {
-    pending: leavesList.filter((l) => l.status === 'pending').length,
-    approved: leavesList.filter((l) => l.status === 'approved').length,
-    rejected: leavesList.filter((l) => l.status === 'rejected').length,
-  };
+
 
   return {
     adminProfile,
@@ -777,6 +811,8 @@ export function useAdminController(adminId, updateAuth) {
     setActiveTab,
     searchQuery,
     setSearchQuery,
+    shiftFilter,
+    setShiftFilter,
     showModal,
     setShowModal,
     empForm,
@@ -792,6 +828,13 @@ export function useAdminController(adminId, updateAuth) {
     leaveAction,
     setLeaveAction,
     handleConfirmLeaveAction,
+
+    leaveTabFilter,
+    setLeaveTabFilter,
+    leaveSearch,
+    setLeaveSearch,
+    filteredLeaves,
+    leaveCounts,
 
     filteredEmployees,
     filteredHR,

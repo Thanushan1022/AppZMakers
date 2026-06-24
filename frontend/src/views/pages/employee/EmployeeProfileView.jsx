@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Calendar, Briefcase, Building2, DollarSign, TrendingUp, Edit2, X, Lock, Save, Loader2, AlertCircle, CheckCircle2, FileText, UploadCloud, Trash2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Briefcase, Building2, DollarSign, TrendingUp, Edit2, X, Lock, Save, Loader2, AlertCircle, CheckCircle2, FileText, UploadCloud, Trash2, Sun, Moon } from 'lucide-react';
 
 export function EmployeeProfileView({
   employee,
@@ -197,10 +197,16 @@ export function EmployeeProfileView({
               </label>
             </div>
 
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">{employee.name}</h2>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 rounded-full text-sm font-medium border border-indigo-100 dark:border-indigo-800/50 mb-8">
-              <Briefcase className="w-4 h-4" />
-              {employee.position}
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">{employee.name}</h2>
+            <div className="flex items-center justify-center gap-2 flex-wrap mb-8">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 rounded-full text-sm font-medium border border-indigo-100 dark:border-indigo-800/50 shadow-sm">
+                <Briefcase className="w-4 h-4" />
+                {employee.position}
+              </div>
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border shadow-sm transition-colors ${employee.shift === 'night' ? 'bg-slate-800 text-amber-300 border-slate-700' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'}`}>
+                {employee.shift === 'night' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                {employee.shift === 'night' ? 'Night Shift' : 'Morning Shift'}
+              </div>
             </div>
 
             <button

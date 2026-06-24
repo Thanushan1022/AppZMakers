@@ -124,7 +124,7 @@ export function CompanyProfileView({
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border text-sm font-medium transition-all transform translate-y-0 ${
+        <div className={`fixed bottom-6 right-6 z-[99999] flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border text-sm font-medium transition-all transform translate-y-0 ${
           toast.type === 'success' 
             ? 'bg-emerald-50 text-emerald-800 border-emerald-100' 
             : 'bg-rose-50 text-rose-800 border-rose-100'
@@ -314,6 +314,7 @@ export function CompanyProfileView({
                       id="name"
                       type="text"
                       required
+                      maxLength={30}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="My Company LLC"
@@ -330,6 +331,7 @@ export function CompanyProfileView({
                       id="email"
                       type="email"
                       required
+                      maxLength={50}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="partner@company.com"
@@ -346,6 +348,7 @@ export function CompanyProfileView({
                       <input
                         id="industry"
                         type="text"
+                        maxLength={30}
                         value={industry}
                         onChange={(e) => setIndustry(e.target.value)}
                         placeholder="Technology"
@@ -361,6 +364,7 @@ export function CompanyProfileView({
                       <input
                         id="contact"
                         type="text"
+                        maxLength={30}
                         value={contact}
                         onChange={(e) => setContact(e.target.value)}
                         placeholder="John Doe"
@@ -377,6 +381,7 @@ export function CompanyProfileView({
                     <input
                       id="phone"
                       type="text"
+                      maxLength={15}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s\-()]/g, ''))}
                       placeholder="+1 (555) 012-3456"

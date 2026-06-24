@@ -9,6 +9,8 @@ export function AdminUsersView({
   setActiveTab,
   searchQuery,
   setSearchQuery,
+  shiftFilter,
+  setShiftFilter,
   showModal,
   setShowModal,
   empForm,
@@ -168,6 +170,17 @@ export function AdminUsersView({
             className="w-full pl-11 pr-5 py-3.5 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
+        {activeTab === 'employees' && (
+          <select
+            value={shiftFilter}
+            onChange={e => setShiftFilter(e.target.value)}
+            className="border border-slate-200 dark:border-slate-700 rounded-[1.5rem] px-4 py-3.5 text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 transition-all"
+          >
+            <option value="All">All Shifts</option>
+            <option value="morning">Morning Shift</option>
+            <option value="night">Night Shift</option>
+          </select>
+        )}
       </div>
 
       {/* Employees table */}
@@ -189,7 +202,7 @@ export function AdminUsersView({
                       {['Employee', 'Position', 'Department', 'Client', 'Status', 'Actions'].map((h, i) => {
                         const minWidths = ['min-w-[200px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[100px]', 'min-w-[100px]'];
                         return (
-                          <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
+                          <th key={h} className={`sticky top-0 text-left text-slate-600 font-bold py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
                         );
                       })}
                     </tr>
@@ -559,7 +572,7 @@ export function AdminUsersView({
                   {['HR Manager', 'Department', 'Status', 'Actions'].map((h, i) => {
                     const minWidths = ['min-w-[250px]', 'min-w-[200px]', 'min-w-[100px]', 'min-w-[100px]'];
                     return (
-                      <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
+                      <th key={h} className={`sticky top-0 text-left text-slate-600 font-bold py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
                     );
                   })}
                 </tr>
@@ -607,13 +620,13 @@ export function AdminUsersView({
             <table className="w-full text-sm min-w-[800px]">
               <thead className="z-10">
                 <tr className="border-b border-border bg-slate-50">
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[200px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Client</th>
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Industry</th>
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Contact</th>
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Employees</th>
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Joined</th>
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Status</th>
-                  <th className="sticky top-0 text-left text-slate-400 font-medium py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Actions</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[200px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Client</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Industry</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Contact</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Employees</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Joined</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Status</th>
+                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -747,15 +760,8 @@ export function AdminUsersView({
                   <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Working Location (Country)</label>
                   <select
                     required
-                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) ? (empForm.country || '') : 'other'}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val === 'other') {
-                        setEmpForm(p => ({ ...p, country: '' }));
-                      } else {
-                        setEmpForm(p => ({ ...p, country: val }));
-                      }
-                    }}
+                    value={empForm.country || ''}
+                    onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
                     className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
                   >
                     <option value="" disabled>Choose Location...</option>
@@ -764,18 +770,7 @@ export function AdminUsersView({
                     <option value="UK">UK</option>
                     <option value="Canada">Canada</option>
                     <option value="Australia">Australia</option>
-                    <option value="other">Other (Type Custom)...</option>
                   </select>
-                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) && (
-                    <input
-                      type="text"
-                      placeholder="Type custom country name..."
-                      value={empForm.country || ''}
-                      onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
-                      required
-                      className="w-full mt-3 px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                    />
-                  )}
                 </div>
 
               </div>
@@ -894,7 +889,7 @@ export function AdminUsersView({
               </button>
             </div>
 
-            <form onSubmit={handleAddCompany} className="p-8 space-y-6 relative z-10">
+            <form onSubmit={handleAddCompany} noValidate className="p-8 space-y-6 relative z-10">
               <div className="grid grid-cols-2 gap-5">
                 {[
                   { key: 'name', label: 'Company Name', placeholder: 'TechVentures Ltd', type: 'text' },
@@ -914,10 +909,10 @@ export function AdminUsersView({
                         [f.key]: f.key === 'phone' ? e.target.value.replace(/[^0-9+\s\-()]/g, '') : e.target.value
                       }))}
                       placeholder={f.placeholder}
-                      required={f.key !== 'phone'}
+                      required
                       max={f.key === 'joinedDate' ? new Date().toISOString().split('T')[0] : undefined}
                       minLength={['name', 'industry', 'contact'].includes(f.key) ? 2 : undefined}
-                      maxLength={['name', 'industry', 'contact'].includes(f.key) ? 40 : undefined}
+                      maxLength={['name', 'industry', 'contact'].includes(f.key) ? 30 : undefined}
                       pattern={
                         f.key === 'name'
                           ? "^[a-zA-Z0-9\\s.\\-()&]+$"
@@ -969,15 +964,8 @@ export function AdminUsersView({
                   <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Country</label>
                   <select
                     required
-                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(coForm.country) ? (coForm.country || '') : 'other'}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val === 'other') {
-                        setCoForm(p => ({ ...p, country: '' }));
-                      } else {
-                        setCoForm(p => ({ ...p, country: val }));
-                      }
-                    }}
+                    value={coForm.country || ''}
+                    onChange={e => setCoForm(p => ({ ...p, country: e.target.value }))}
                     className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
                   >
                     <option value="" disabled>Choose Location...</option>
@@ -986,18 +974,7 @@ export function AdminUsersView({
                     <option value="UK">UK</option>
                     <option value="Canada">Canada</option>
                     <option value="Australia">Australia</option>
-                    <option value="other">Other (Type Custom)...</option>
                   </select>
-                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(coForm.country) && (
-                    <input
-                      type="text"
-                      placeholder="Type custom country name..."
-                      value={coForm.country || ''}
-                      onChange={e => setCoForm(p => ({ ...p, country: e.target.value }))}
-                      required
-                      className="w-full mt-3 px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                    />
-                  )}
                 </div>
               </div>
 

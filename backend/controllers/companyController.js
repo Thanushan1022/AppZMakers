@@ -76,7 +76,7 @@ export const getReports = async (req, res) => {
 
     const { startDate, endDate } = req.query;
 
-    const employees = await Employee.find({ assignedClient: legacyId });
+    const employees = await Employee.find({ companyId: legacyId });
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);

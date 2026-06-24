@@ -36,6 +36,7 @@ const navByRole = {
   superadmin: [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'today-attendance', label: "Today's Attendance", icon: Clock },
+    { id: 'leave-approvals', label: 'Leave Approvals', icon: CheckSquare },
     { id: 'users', label: 'User Management', icon: Users },
     { id: 'calendar', label: 'Company Calendar', icon: CalendarDays },
     { id: 'reports', label: 'System Reports', icon: FileText },
@@ -80,13 +81,15 @@ const rolePrefixes = {
   superadmin: 'admin',
 };
 
-const BACKEND_URL = 'https://app-z-makers.vercel.app/api';
+const BACKEND_URL = 'http://localhost:5001/api';
 
 export function Layout({ role, onLogout, auth, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [unreadCount, setUnreadCount] = useState(0);
   const [readIds, setReadIds] = useState([]);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
   const themeKey = auth?.userId ? `theme_${auth.userId}` : 'theme';
   const [theme, setTheme] = useState(() => localStorage.getItem(themeKey) || 'light');
@@ -109,6 +112,16 @@ export function Layout({ role, onLogout, auth, children }) {
     window.addEventListener('storage', loadReadIds);
     return () => window.removeEventListener('storage', loadReadIds);
   }, [auth]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (auth && theme === 'dark') {
@@ -163,9 +176,10 @@ export function Layout({ role, onLogout, auth, children }) {
           }
         }
 
-        // Fetch pending leaves count for HR
-        if (role === 'hr') {
-          const res = await fetch(`${BACKEND_URL}/hr/leaves`);
+        // Fetch pending leaves count for HR and Admin
+        if (role === 'hr' || role === 'superadmin') {
+          const endpoint = role === 'superadmin' ? 'admin' : 'hr';
+          const res = await fetch(`${BACKEND_URL}/${endpoint}/leaves`);
           if (res.ok) {
             const leaves = await res.json();
             const pending = leaves.filter(l => l.status === 'pending').length;
@@ -364,11 +378,38 @@ export function Layout({ role, onLogout, auth, children }) {
               </button>
             )}
 
-            <div className={`w-8 h-8 ${badgeColor} rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden`}>
-              {auth?.avatar && auth.avatar.startsWith('data:image/') ? (
-                <img src={auth.avatar} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                displayInitials
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                title="Profile Menu"
+                className={`w-8 h-8 ${badgeColor} rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+              >
+                {auth?.avatar && auth.avatar.startsWith('data:image/') ? (
+                  <img src={auth.avatar} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  displayInitials
+                )}
+              </button>
+
+              {profileMenuOpen && (
+                <div className="absolute right-0 mt-3 w-48 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-3 border-b border-slate-100 dark:border-slate-800">
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{displayName}</p>
+                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{roleLabels[role]}</p>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        onLogout();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all cursor-pointer group"
+                    >
+                      <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </header>

@@ -23,10 +23,11 @@ import { findEmployee, findLeave, getEmployeeLegacyId, getNextEmployeeLegacyId, 
 import { toEmployeeJSON, toLeaveJSON, toLeaveBalanceJSON, toAttendanceJSON, toHRJSON } from '../utils/formatters.js';
 import { getSettings } from '../services/settingsService.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
-import { syncLeaveBalance } from '../services/leaveService.js';
+import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveService.js';
 
 export const getLeaves = async (req, res) => {
   try {
+    await autoRejectPassedLeaves();
     const leaves = await LeaveRequest.find().sort({ createdAt: -1 });
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
@@ -270,6 +271,7 @@ export const createEmployee = async (req, res) => {
 
 export const getDashboard = async (req, res) => {
   try {
+    await autoRejectPassedLeaves();
     let targetDateObj = new Date();
     if (req.query.date) {
       const [year, month, day] = req.query.date.split('-').map(Number);

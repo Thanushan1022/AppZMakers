@@ -724,15 +724,8 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
               <div className="flex flex-col gap-2">
                 <label className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest">Select Country</label>
                 <select
-                  value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(importCountry) ? importCountry : 'other'}
-                  onChange={e => {
-                    const val = e.target.value;
-                    if (val === 'other') {
-                      setImportCountry('');
-                    } else {
-                      setImportCountry(val);
-                    }
-                  }}
+                  value={importCountry}
+                  onChange={e => setImportCountry(e.target.value)}
                   className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer"
                 >
                   <option value="Sri Lanka">Sri Lanka</option>
@@ -740,19 +733,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                   <option value="UK">UK (United Kingdom)</option>
                   <option value="Canada">Canada</option>
                   <option value="Australia">Australia</option>
-                  <option value="other">Other (Type Custom)...</option>
                 </select>
-
-                {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].includes(importCountry) && (
-                  <input
-                    type="text"
-                    placeholder="Type custom country name..."
-                    value={importCountry}
-                    onChange={e => setImportCountry(e.target.value)}
-                    required
-                    className="w-full mt-3 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all"
-                  />
-                )}
               </div>
 
               <div className="flex gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">

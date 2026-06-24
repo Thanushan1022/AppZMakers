@@ -22,10 +22,11 @@ import {
   updateSettings as updateSettingsDoc,
 } from '../services/settingsService.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
-import { syncLeaveBalance } from '../services/leaveService.js';
+import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveService.js';
 
 export const getDashboard = async (req, res) => {
   try {
+    await autoRejectPassedLeaves();
     await syncCompanyEmployeeCounts();
     let targetDateObj = new Date();
     if (req.query.date) {
@@ -96,6 +97,7 @@ export const getDashboard = async (req, res) => {
 
 export const getLeaves = async (req, res) => {
   try {
+    await autoRejectPassedLeaves();
     const leaves = await LeaveRequest.find().sort({ createdAt: -1 });
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
@@ -245,6 +247,9 @@ export const createCompany = async (req, res) => {
     }
     if (!contact || contact.trim().length < 2 || contact.trim().length > 30) {
       return res.status(400).json({ error: 'Contact person must be between 2 and 30 characters long.' });
+    }
+    if (!phone || !/^\+?[0-9\s\-()]{7,20}$/.test(phone)) {
+      return res.status(400).json({ error: 'Please enter a valid phone number (7-20 digits).' });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });

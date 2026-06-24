@@ -114,8 +114,8 @@ export function CompanyReportsView({
       total: formatMin(Math.round(totalSecs / 60)),
       breaks: typeBreaks,
       x: left,
-      yStyle: isFlipped 
-        ? { bottom: window.innerHeight - rect.top + 8 } 
+      yStyle: isFlipped
+        ? { bottom: window.innerHeight - rect.top + 8 }
         : { top: rect.bottom + 8 }
     });
   };
@@ -494,8 +494,8 @@ export function CompanyReportsView({
       <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/80 dark:border-slate-700 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
         <div className="absolute -right-12 -top-12 w-48 h-48 bg-indigo-300/40 dark:bg-indigo-900/40 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-400/50 transition-colors duration-700"></div>
         <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-fuchsia-300/30 dark:bg-fuchsia-900/30 rounded-full blur-3xl pointer-events-none group-hover:bg-fuchsia-400/40 transition-colors duration-700"></div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
+        <div className="flex flex-wrap items-start md:items-center justify-between gap-4 relative z-10 w-full">
+          <div className="grid grid-cols-3 items-center gap-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 border border-slate-200/50 dark:border-slate-700/50">
             {[
               { id: 'attendance', label: 'Attendance', icon: BarChart3 },
               { id: 'leave', label: 'Leave', icon: Calendar },
@@ -505,15 +505,16 @@ export function CompanyReportsView({
                 key={id}
                 type="button"
                 onClick={() => setReportType(id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${reportType === id ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2.5 rounded-lg text-[11px] sm:text-sm font-bold transition-all ${reportType === id ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
               >
-                <Icon className="w-4 h-4" />{label}
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">{label}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="grid grid-cols-3 items-center gap-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 border border-slate-200/50 dark:border-slate-700/50">
               {[
                 { id: 'monthly', label: 'Monthly' },
                 { id: 'weekly', label: 'Weekly' },
@@ -523,9 +524,9 @@ export function CompanyReportsView({
                   key={id}
                   type="button"
                   onClick={() => setReportsFilterType(id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${reportsFilterType === id ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                  className={`flex items-center justify-center px-2 sm:px-4 py-2.5 rounded-lg text-[11px] sm:text-sm font-bold transition-all ${reportsFilterType === id ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
                 >
-                  {label}
+                  <span className="whitespace-nowrap leading-tight sm:leading-normal">{label}</span>
                 </button>
               ))}
             </div>
@@ -743,15 +744,15 @@ export function CompanyReportsView({
                           <td className="py-3 px-4 bg-white dark:bg-slate-900 group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap min-w-[200px]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.date}</td>
                           <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkIn || '—'}</td>
                           <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkOut || '—'}</td>
-                          <td 
-                            className="py-3 px-4 text-amber-600 font-medium cursor-pointer hover:text-amber-700 hover:underline transition-colors" 
+                          <td
+                            className="py-3 px-4 text-amber-600 font-medium cursor-pointer hover:text-amber-700 hover:underline transition-colors"
                             style={{ fontFamily: 'JetBrains Mono, monospace' }}
                             onClick={(e) => handleBreakClick(e, 'meal', a.breaks)}
                           >
                             {formatMin(a.breakMinutes || 0)}
                           </td>
-                          <td 
-                            className="py-3 px-4 text-teal-600 font-medium cursor-pointer hover:text-teal-700 hover:underline transition-colors" 
+                          <td
+                            className="py-3 px-4 text-teal-600 font-medium cursor-pointer hover:text-teal-700 hover:underline transition-colors"
                             style={{ fontFamily: 'JetBrains Mono, monospace' }}
                             onClick={(e) => handleBreakClick(e, 'tea', a.breaks)}
                           >
@@ -1005,15 +1006,15 @@ export function CompanyReportsView({
                       <td className="py-3 px-4 text-slate-800 font-bold whitespace-nowrap">{a.date}</td>
                       <td className="py-3 px-4 text-indigo-600 font-bold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkIn || '—'}</td>
                       <td className="py-3 px-4 text-purple-600 font-bold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkOut || '—'}</td>
-                      <td 
-                        className="py-3 px-4 text-amber-600 font-medium cursor-pointer hover:text-amber-700 hover:underline transition-colors" 
+                      <td
+                        className="py-3 px-4 text-amber-600 font-medium cursor-pointer hover:text-amber-700 hover:underline transition-colors"
                         style={{ fontFamily: 'JetBrains Mono, monospace' }}
                         onClick={(e) => handleBreakClick(e, 'meal', a.breaks)}
                       >
                         {formatMin(a.breakMinutes || 0)}
                       </td>
-                      <td 
-                        className="py-3 px-4 text-teal-600 font-medium cursor-pointer hover:text-teal-700 hover:underline transition-colors" 
+                      <td
+                        className="py-3 px-4 text-teal-600 font-medium cursor-pointer hover:text-teal-700 hover:underline transition-colors"
                         style={{ fontFamily: 'JetBrains Mono, monospace' }}
                         onClick={(e) => handleBreakClick(e, 'tea', a.breaks)}
                       >
@@ -1063,7 +1064,7 @@ export function CompanyReportsView({
       {breakPopover && (
         <>
           <div className="fixed inset-0 z-[100]" onClick={() => setBreakPopover(null)} />
-          <div 
+          <div
             className="fixed z-[110] bg-[#fdf8ec] border border-[#ece0cc] rounded-2xl shadow-xl px-5 pt-5 pb-3 min-w-[240px] animate-in fade-in zoom-in-95 duration-200"
             style={{ left: breakPopover.x, ...breakPopover.yStyle }}
           >
@@ -1071,7 +1072,7 @@ export function CompanyReportsView({
               <Coffee className="w-[14px] h-[14px] stroke-[2.5]" />
               <span>{breakPopover.type === 'meal' ? 'Meal Break' : 'Tea Break'}</span>
             </div>
-            
+
             <div className="text-[#78350f] font-bold text-[19px] mb-4" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               {breakPopover.count}-{breakPopover.total}
             </div>

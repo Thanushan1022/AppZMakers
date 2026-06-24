@@ -8,6 +8,8 @@ export function HREmployeesView({
   setDeptFilter,
   statusFilter,
   setStatusFilter,
+  shiftFilter,
+  setShiftFilter,
   selectedEmployeeId,
   setSelectedEmployeeId,
   departments,
@@ -108,6 +110,15 @@ export function HREmployeesView({
           <option value="All">All Statuses</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
+        </select>
+        <select
+          value={shiftFilter}
+          onChange={e => setShiftFilter(e.target.value)}
+          className="border border-border rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none bg-slate-50"
+        >
+          <option value="All">All Shifts</option>
+          <option value="morning">Morning Shift</option>
+          <option value="night">Night Shift</option>
         </select>
       </div>
 
@@ -593,15 +604,8 @@ export function HREmployeesView({
                   <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Working Location (Country)</label>
                   <select
                     required
-                    value={['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) ? (empForm.country || '') : 'other'}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val === 'other') {
-                        setEmpForm(p => ({ ...p, country: '' }));
-                      } else {
-                        setEmpForm(p => ({ ...p, country: val }));
-                      }
-                    }}
+                    value={empForm.country || ''}
+                    onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
                     className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
                   >
                     <option value="" disabled>Choose Location...</option>
@@ -610,18 +614,7 @@ export function HREmployeesView({
                     <option value="UK">UK</option>
                     <option value="Canada">Canada</option>
                     <option value="Australia">Australia</option>
-                    <option value="other">Other (Type Custom)...</option>
                   </select>
-                  {!['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia', ''].includes(empForm.country) && (
-                    <input
-                      type="text"
-                      placeholder="Type custom country name..."
-                      value={empForm.country || ''}
-                      onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
-                      required
-                      className="w-full mt-3 px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                    />
-                  )}
                 </div>
 
               </div>

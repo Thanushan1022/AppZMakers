@@ -16,6 +16,8 @@ export function EmployeeLeaveView({
   setLeaveFilter,
   leaveForm,
   setLeaveForm,
+  leaveError,
+  setLeaveError,
   filteredLeaves,
   handleLeaveSubmit,
   handleDeleteLeave,
@@ -101,6 +103,18 @@ export function EmployeeLeaveView({
             </div>
             New Leave Application
           </h3>
+
+          {leaveError && (
+            <div className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 px-5 py-4 rounded-2xl text-sm font-bold flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <XCircle className="w-5 h-5 text-red-500" />
+                <span>{leaveError}</span>
+              </div>
+              <button onClick={() => setLeaveError('')} className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors">
+                <XCircle className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           
           <form onSubmit={handleLeaveSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
