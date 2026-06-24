@@ -8,6 +8,8 @@ import authRoutes from './routes/authRoutes.js';
 import { connectDatabase } from './config/db.js';
 import { seedIfEmpty } from './scripts/seedDatabase.js';
 import { ensureUserProfiles } from './scripts/ensureUserProfiles.js';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 dotenv.config();
 
@@ -18,16 +20,32 @@ const PORT = process.env.PORT || 5001;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ✅ CORS (ALLOW YOUR VERCEL FRONTEND)
+const allowedOrigins = [
+  "https://app-z-makers.vercel.app", 
+  "https://app-z-makers-8peo.vercel.app", 
+  "http://localhost:5173", 
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: [
-    "https://app-z-makers.vercel.app", 
-    "https://app-z-makers-8peo.vercel.app", 
-    "http://localhost:5173", 
-    "http://localhost:3000"
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true
+  }
+});
+
+// Attach io to req
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -65,10 +83,11 @@ const startServer = async () => {
     await seedIfEmpty();
     await ensureUserProfiles();
 
-    const server = app.listen(PORT, () => {
+    const server = httpServer.listen(PORT, () => {
       console.log(`🚀 WorkForge Server running on port ${PORT}`);
       console.log(`📚 Swagger UI: ${BASE_URL}/api-docs`);
       console.log(`🔐 Auth API:  ${BASE_URL}/api/auth/login`);
+      console.log(`📡 Socket.io: Enabled and listening for events`);
     });
 
     server.on('error', (error) => {
