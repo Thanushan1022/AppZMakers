@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'http://localhost:5001/api';
+import { BACKEND_URL } from '../config';
 
 export function useCompanyController(companyId, updateAuth) {
   const [company, setCompany] = useState({

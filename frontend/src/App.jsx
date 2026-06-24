@@ -7,6 +7,7 @@ import { useHRController } from './controllers/useHRController';
 import { useCompanyController } from './controllers/useCompanyController';
 import { useAdminController } from './controllers/useAdminController';
 import { AlertCircle, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
+import { SOCKET_URL } from './config';
 
 // Import Layout & Login
 import { Layout } from './views/components/Layout';
@@ -146,8 +147,6 @@ function AppRoutes() {
   const [toasts, setToasts] = React.useState([]);
 
   React.useEffect(() => {
-    const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const SOCKET_URL = IS_LOCAL ? 'http://localhost:5001' : 'https://app-z-makers.vercel.app';
     const socket = io(SOCKET_URL);
     
     socket.on('attendance_update', (data) => {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-const BACKEND_URL = 'http://localhost:5001/api/auth';
+import { BACKEND_URL } from '../config';
+const AUTH_URL = `${AUTH_URL}/auth`;
 
 const defaultPages = {
   employee: 'dashboard',
@@ -63,7 +64,7 @@ export function useAuthController() {
     setError('');
 
     try {
-      const response = await fetch(`${BACKEND_URL}/login`, {
+      const response = await fetch(`${AUTH_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, role: selectedRole }),
@@ -88,7 +89,7 @@ export function useAuthController() {
     setError('');
 
     try {
-      const response = await fetch(`${BACKEND_URL}/register`, {
+      const response = await fetch(`${AUTH_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,7 +105,7 @@ export function useAuthController() {
         throw new Error(data.error || data.message || 'Registration failed');
       }
 
-      const loginRes = await fetch(`${BACKEND_URL}/login`, {
+      const loginRes = await fetch(`${AUTH_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, role: selectedRole }),
@@ -147,7 +148,7 @@ export function useAuthController() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${BACKEND_URL}/forgot-password`, {
+      const response = await fetch(`${AUTH_URL}/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailToReset }),
@@ -169,7 +170,7 @@ export function useAuthController() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${BACKEND_URL}/reset-password`, {
+      const response = await fetch(`${AUTH_URL}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password: newPassword }),

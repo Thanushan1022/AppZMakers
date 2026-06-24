@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const BACKEND_URL = 'http://localhost:5001/api';
+import { BACKEND_URL } from '../config';
 
 const parseBreakSeconds = (breakTimeSetting) => {
   let allowedBreakMin = 60;

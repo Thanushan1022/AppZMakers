@@ -81,7 +81,7 @@ const rolePrefixes = {
   superadmin: 'admin',
 };
 
-const BACKEND_URL = 'http://localhost:5001/api';
+import { BACKEND_URL } from '../../config';
 
 export function Layout({ role, onLogout, auth, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
