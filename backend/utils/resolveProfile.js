@@ -18,23 +18,23 @@ export const resolveProfileId = async (user) => {
   if (!email) return null;
 
   if (role === 'employee') {
-    let emp = await Employee.findOne({ email });
+    let emp = await Employee.findOne({ email }).select('_id legacyId');
     if (emp) return emp.legacyId || emp._id.toString();
     const firstName = user.name?.split(' ')[0]?.toLowerCase();
     if (firstName) {
-      emp = await Employee.findOne({ name: new RegExp(`^${firstName}`, 'i') });
+      emp = await Employee.findOne({ name: new RegExp(`^${firstName}`, 'i') }).select('_id legacyId');
       if (emp) return emp.legacyId || emp._id.toString();
     }
     return null;
   }
 
   if (role === 'hr') {
-    const hr = await HRUser.findOne({ email });
+    const hr = await HRUser.findOne({ email }).select('_id legacyId');
     return hr ? hr.legacyId || hr._id.toString() : null;
   }
 
   if (role === 'company') {
-    const co = await Company.findOne({ email });
+    const co = await Company.findOne({ email }).select('_id legacyId');
     return co ? co.legacyId || co._id.toString() : null;
   }
 

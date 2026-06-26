@@ -48,7 +48,7 @@ const linkProfileOnRegister = async (user, role) => {
   const settings = await getSettings();
 
   if (role === 'employee') {
-    let emp = await Employee.findOne({ email });
+    let emp = await Employee.findOne({ email }).select('_id legacyId');
     if (!emp) {
       const legacyId = await getNextEmployeeLegacyId();
       emp = await Employee.create({
@@ -74,7 +74,7 @@ const linkProfileOnRegister = async (user, role) => {
   }
 
   if (role === 'hr') {
-    let hr = await HRUser.findOne({ email });
+    let hr = await HRUser.findOne({ email }).select('_id legacyId');
     if (!hr) {
       const legacyId = await getNextHRLegacyId();
       hr = await HRUser.create({
@@ -90,7 +90,7 @@ const linkProfileOnRegister = async (user, role) => {
   }
 
   if (role === 'company') {
-    let co = await Company.findOne({ email });
+    let co = await Company.findOne({ email }).select('_id legacyId');
     if (!co) {
       const legacyId = await getNextCompanyLegacyId();
       co = await Company.create({
@@ -223,7 +223,7 @@ export const login = async (req, res) => {
     }
 
     if (accountRole === 'employee') {
-      const emp = await Employee.findOne({ email: user.email.toLowerCase() });
+      const emp = await Employee.findOne({ email: user.email.toLowerCase() }).select('status');
       if (emp && emp.status === 'inactive') {
         return res.status(403).json({
           error: 'Your account has been deactivated. Please contact HR.',
