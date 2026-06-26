@@ -1048,6 +1048,26 @@ export function AdminUsersView({
                   alert('Please enter a reason for this adjustment.');
                   return;
                 }
+
+                const now = new Date();
+                const checkInDate = new Date(`${adjustingRec.date}T${adjustForm.checkIn}`);
+                
+                if (checkInDate > now) {
+                  alert('Check In time cannot be in the future.');
+                  return;
+                }
+                
+                if (adjustForm.checkOut) {
+                  const checkOutDateObj = new Date(`${adjustingRec.date}T${adjustForm.checkOut}`);
+                  if (adjustForm.checkOut < adjustForm.checkIn) {
+                    checkOutDateObj.setDate(checkOutDateObj.getDate() + 1);
+                  }
+                  if (checkOutDateObj > now) {
+                    alert('Check Out time cannot be in the future.');
+                    return;
+                  }
+                }
+
                 const res = await handleAdjustAttendance(adjustingRec.id, adjustForm);
                 if (res && res.success) {
                   setAdjustingRec(null);
@@ -1058,7 +1078,7 @@ export function AdminUsersView({
               className="space-y-4"
             >
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time <span className="text-slate-400 font-normal">(24-hour format)</span></label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
@@ -1073,7 +1093,7 @@ export function AdminUsersView({
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time <span className="text-slate-400 font-normal">(24-hour format)</span></label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
@@ -1150,6 +1170,26 @@ export function AdminUsersView({
                   alert('Please enter a reason for this manual entry.');
                   return;
                 }
+
+                const now = new Date();
+                const checkInDate = new Date(`${createForm.date}T${createForm.checkIn}`);
+                
+                if (checkInDate > now) {
+                  alert('Check In time cannot be in the future.');
+                  return;
+                }
+                
+                if (createForm.checkOut) {
+                  const checkOutDateObj = new Date(`${createForm.date}T${createForm.checkOut}`);
+                  if (createForm.checkOut < createForm.checkIn) {
+                    checkOutDateObj.setDate(checkOutDateObj.getDate() + 1);
+                  }
+                  if (checkOutDateObj > now) {
+                    alert('Check Out time cannot be in the future.');
+                    return;
+                  }
+                }
+
                 const res = await handleCreateManualAttendance(selectedEmployee.id, createForm);
                 if (res && res.success) {
                   setShowCreateModal(false);
@@ -1183,7 +1223,7 @@ export function AdminUsersView({
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time <span className="text-slate-400 font-normal">(24-hour format)</span></label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
@@ -1198,7 +1238,7 @@ export function AdminUsersView({
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time <span className="text-slate-400 font-normal">(24-hour format)</span></label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"

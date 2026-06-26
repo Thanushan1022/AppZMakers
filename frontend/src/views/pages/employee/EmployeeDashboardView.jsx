@@ -1,8 +1,7 @@
-import { Coffee, LogIn, LogOut, TrendingUp, CalendarDays, Timer, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Coffee, Utensils, LogIn, LogOut, TrendingUp, CalendarDays, Timer, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { monthlyHoursData } from '../../../models/mockData';
 import { formatDecimalHours } from '../../../utils/timeFormatter';
-import { CompanyCalendarView } from '../company/CompanyCalendarView';
 import confetti from 'canvas-confetti';
 import { useEffect } from 'react';
 
@@ -260,7 +259,7 @@ export function EmployeeDashboardView({
                 </span>
                 {onBreak && (
                   <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50/80 dark:bg-amber-900/40 backdrop-blur-sm border border-amber-200 dark:border-amber-800/50 rounded-lg text-amber-700 dark:text-amber-400 font-bold animate-pulse">
-                    <Coffee className="w-4 h-4" /> Meal Break: {formatDuration(breakSecs)}
+                    <Utensils className="w-4 h-4" /> Meal Break: {formatDuration(breakSecs)}
                   </span>
                 )}
                 {onTeaBreak && (
@@ -286,7 +285,7 @@ export function EmployeeDashboardView({
                       : 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/50 shadow-blue-100/50 dark:shadow-none hover:bg-blue-50 dark:hover:bg-slate-700 hover:border-blue-300 dark:hover:border-blue-700'
                     }`}
                 >
-                  <Coffee className={`w-5 h-5 ${onBreak ? 'text-amber-600 dark:text-amber-400' : (mealBreakLimitReached || isBreakOver) ? 'text-slate-400 dark:text-slate-500' : 'text-blue-500 dark:text-blue-400'}`} />
+                  <Utensils className={`w-5 h-5 ${onBreak ? 'text-amber-600 dark:text-amber-400' : (mealBreakLimitReached || isBreakOver) ? 'text-slate-400 dark:text-slate-500' : 'text-blue-500 dark:text-blue-400'}`} />
                   {onBreak ? `End Meal Break (${mealBreakCount}-${mealBreakMax})` : (mealBreakLimitReached || isBreakOver) ? `Meal Limit Reached` : `Start Meal Break (${mealBreakCount}-${mealBreakMax})`}
                 </button>
                 {teaBreakEnabled && teaBreakAllowed && (
@@ -469,13 +468,6 @@ export function EmployeeDashboardView({
         </div>
       )}
 
-      {/* Embedded Location-Based Calendar */}
-      {employee && (
-        <div className="pt-6">
-          <CompanyCalendarView role="employee" employeeId={employee.id} />
-        </div>
-      )}
-
       {/* Check-Out Confirmation Modal - Premium Style */}
       {showCheckoutConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -501,7 +493,7 @@ export function EmployeeDashboardView({
                     }}
                     className="w-full flex items-center justify-center gap-3 bg-white hover:bg-amber-50 text-amber-600 font-bold py-4 px-6 rounded-2xl border-2 border-amber-200 transition-all duration-200 text-sm shadow-sm hover:shadow-md active:scale-95"
                   >
-                    <Coffee className="w-5 h-5" />
+                    <Utensils className="w-5 h-5" />
                     Take a Meal Break
                   </button>
                 )}

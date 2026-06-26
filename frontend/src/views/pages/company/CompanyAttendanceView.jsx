@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, Calendar, Clock, ClipboardList, LogIn, LogOut, Coffee } from 'lucide-react';
+import { Search, Calendar, Clock, ClipboardList, LogIn, LogOut, Coffee, Utensils } from 'lucide-react';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
 export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = [] }) {
@@ -368,12 +368,12 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                       {isAbsent ? <span className="text-slate-300 dark:text-slate-600 font-bold font-mono">Null</span> : (
                         rec.breakMinutes > 0 ? (
                           <div className="w-fit text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-2 border border-amber-100 shadow-sm">
-                            <Coffee className="w-3.5 h-3.5" />
+                            <Utensils className="w-3.5 h-3.5" />
                             {formatBreakMinutes(rec.breakMinutes)}
                           </div>
                         ) : (
                           <div className="w-fit text-amber-700/50 bg-amber-50/50 px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-2 border border-amber-100/50 shadow-sm">
-                            <Coffee className="w-3.5 h-3.5" />
+                            <Utensils className="w-3.5 h-3.5" />
                             —
                           </div>
                         )
@@ -546,7 +546,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-amber-50/50 dark:bg-amber-900/20 rounded-3xl p-5 border border-amber-100 dark:border-amber-900/30 shadow-sm">
                   <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500 font-black text-xs uppercase tracking-widest mb-3">
-                    <Coffee className="w-4 h-4" /> Meal Break
+                    <Utensils className="w-4 h-4" /> Meal Break
                   </div>
                   <div className="text-lg font-black text-amber-900 dark:text-amber-100" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                     {selectedRecordDetail.rec.breakMinutes > 0 ? formatBreakMinutes(selectedRecordDetail.rec.breakMinutes) : '—'}

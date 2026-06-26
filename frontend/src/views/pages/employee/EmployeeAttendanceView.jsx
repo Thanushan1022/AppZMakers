@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
-import { LogIn, LogOut, Coffee, Clock, Calendar, ChevronLeft, ChevronRight, AlertCircle, ClipboardList, Plus, ChevronDown, ChevronUp, CheckCircle2, Timer } from 'lucide-react';
+import { LogIn, LogOut, Coffee, Utensils, Clock, Calendar, ChevronLeft, ChevronRight, AlertCircle, ClipboardList, Plus, ChevronDown, ChevronUp, CheckCircle2, Timer } from 'lucide-react';
 import sessionVideo from '../../../assets/Video_Generation_Successful.mp4';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
@@ -395,7 +395,7 @@ export function EmployeeAttendanceView({ mySalary,
                       : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40 shadow-white/5'
                   }`}
                 >
-                  <Coffee className={`w-5 h-5 ${onBreak ? 'text-amber-400' : (mealBreakLimitReached || isBreakOver) ? 'text-slate-500' : 'text-indigo-300'}`} />
+                  <Utensils className={`w-5 h-5 ${onBreak ? 'text-amber-400' : (mealBreakLimitReached || isBreakOver) ? 'text-slate-500' : 'text-indigo-300'}`} />
                   {onBreak ? `End Meal Break (${mealBreakCount}-${mealBreakMax})` : (mealBreakLimitReached || isBreakOver) ? `Meal Limit Reached` : `Start Meal Break (${mealBreakCount}-${mealBreakMax})`}
                 </button>
                 {teaBreakEnabled && teaBreakAllowed && (
@@ -854,7 +854,7 @@ export function EmployeeAttendanceView({ mySalary,
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap">
                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-[11px] border border-amber-100">
-                         <Coffee className="w-3.5 h-3.5 opacity-70" /> {getMealBreakDetails(rec.breaks, rec.breakMinutes, rec.checkOut)}
+                         <Utensils className="w-3.5 h-3.5 opacity-70" /> {getMealBreakDetails(rec.breaks, rec.breakMinutes, rec.checkOut)}
                        </span>
                     </td>
                     {teaBreakEnabled && teaBreakAllowed && (
@@ -967,7 +967,7 @@ export function EmployeeAttendanceView({ mySalary,
                 
                 <div className="col-span-2 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-2xl p-5 shadow-sm dark:shadow-none">
                   <div className="text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Coffee className="w-3.5 h-3.5" /> Meal Break
+                    <Utensils className="w-3.5 h-3.5" /> Meal Break
                   </div>
                   <div className="font-mono text-amber-900 dark:text-amber-100 font-bold text-lg">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes, selectedRecord.checkOut)}</div>
                   {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea').length > 0 && (
@@ -1081,7 +1081,7 @@ export function EmployeeAttendanceView({ mySalary,
                     }}
                     className="w-full flex items-center justify-center gap-3 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 font-bold py-4 px-6 rounded-2xl border border-amber-200 dark:border-amber-800/50 transition-all text-sm cursor-pointer shadow-sm active:scale-95 uppercase tracking-wider"
                   >
-                    <Coffee className="w-5 h-5" />
+                    <Utensils className="w-5 h-5" />
                     TAKE A MEAL BREAK
                   </button>
                 )}

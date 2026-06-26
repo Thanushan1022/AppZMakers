@@ -271,6 +271,7 @@ function EmployeeRoutes({ controller }) {
       <Route path="dashboard" element={<EmployeeDashboardView {...controller} />} />
       <Route path="attendance" element={<EmployeeAttendanceView {...controller} />} />
       <Route path="leave" element={<EmployeeLeaveView {...controller} />} />
+      <Route path="calendar" element={<CompanyCalendarView role="employee" employeeId={controller.employee?.id} />} />
       <Route path="profile" element={<EmployeeProfileView {...controller} />} />
       <Route path="client-notifications" element={<EmployeeClientNotificationsView {...controller} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />

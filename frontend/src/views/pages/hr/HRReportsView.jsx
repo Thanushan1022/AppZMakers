@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { Download, BarChart3, Users, Calendar, Coffee } from 'lucide-react';
+import { Calendar, Download, Users, BarChart3, Clock, Coffee, Utensils } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -1069,7 +1069,11 @@ export function HRReportsView({
             style={{ left: breakPopover.x, ...breakPopover.yStyle }}
           >
             <div className="flex items-center gap-2 text-[#db7706] font-bold uppercase tracking-wider text-[11px] mb-3">
-              <Coffee className="w-[14px] h-[14px] stroke-[2.5]" />
+              {breakPopover.type === 'meal' ? (
+                <Utensils className="w-[14px] h-[14px] stroke-[2.5]" />
+              ) : (
+                <Coffee className="w-[14px] h-[14px] stroke-[2.5]" />
+              )}
               <span>{breakPopover.type === 'meal' ? 'Meal Break' : 'Tea Break'}</span>
             </div>
 

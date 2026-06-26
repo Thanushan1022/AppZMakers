@@ -11,6 +11,7 @@ const navByRole = {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'attendance', label: 'Attendance', icon: Clock },
     { id: 'leave', label: 'Leave Requests', icon: CalendarDays },
+    { id: 'calendar', label: 'Calendar', icon: CalendarDays },
     { id: 'profile', label: 'My Profile', icon: User },
     { id: 'client-notifications', label: 'Client/Lead Notification', icon: Bell },
   ],

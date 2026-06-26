@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Clock, ClipboardList, Calendar, LogIn, LogOut, Coffee } from 'lucide-react';
+import { Clock, ClipboardList, Calendar, LogIn, LogOut, Coffee, Utensils } from 'lucide-react';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
 export function TodayAttendanceView({
@@ -372,7 +372,7 @@ export function TodayAttendanceView({
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-xs border border-amber-100">
-                           <Coffee className="w-3.5 h-3.5 opacity-70" /> {isAbsent || !rec?.checkIn ? '—' : getMealBreakDetails(rec?.breaks, rec?.breakMinutes, rec?.checkOut)}
+                           <Utensils className="w-3.5 h-3.5 opacity-70" /> {isAbsent || !rec?.checkIn ? '—' : getMealBreakDetails(rec?.breaks, rec?.breakMinutes, rec?.checkOut)}
                          </span>
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">

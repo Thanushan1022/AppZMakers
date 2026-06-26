@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCalendarController } from '../../../controllers/useCalendarController';
 import {
   ChevronLeft,
@@ -144,6 +144,16 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   const todayStr = new Date().toISOString().split('T')[0];
 
   const [importCountry, setImportCountry] = useState('Sri Lanka');
+
+  const todayRef = useRef(null);
+
+  useEffect(() => {
+    if (!loading && todayRef.current) {
+      setTimeout(() => {
+        todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [loading, currentDate]);
 
   const prevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -420,12 +430,13 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
           </div>
         </div>
 
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800/50 text-center bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.02)] relative z-20">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d}>{d}</div>
-          ))}
-        </div>
+        {/* Desktop Calendar Grid */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800/50 text-center bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.02)] relative z-20">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+              <div key={d}>{d}</div>
+            ))}
+          </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 bg-slate-50/30 dark:bg-slate-900/30">
@@ -500,6 +511,75 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
             })}
           </div>
         )}
+        </div>
+
+        {/* Mobile Agenda View */}
+        <div className="block md:hidden">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 bg-slate-50/30 dark:bg-slate-900/30">
+              <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-3" />
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wider uppercase">Loading calendar...</span>
+            </div>
+          ) : (
+            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900/90 max-h-[65vh] overflow-y-auto">
+              {calendarDays.filter(day => day).map(day => {
+                const dayEvents = getEventsForDay(day);
+                const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+                const dateObj = new Date(year, month, day);
+                const weekdayStr = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+
+                return (
+                  <div
+                    key={day}
+                    ref={isToday ? todayRef : null}
+                    onClick={() => handleDayClick(day)}
+                    className={`flex gap-4 p-4 transition-colors cursor-pointer ${isToday ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                  >
+                    <div className="flex flex-col items-center w-12 flex-shrink-0">
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>{weekdayStr}</span>
+                      <span className={`w-9 h-9 flex items-center justify-center rounded-full text-base font-black mt-1 transition-all ${isToday ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-110' : 'text-slate-700 dark:text-slate-200'}`}>
+                        {day}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0 pt-1">
+                      {dayEvents.length === 0 ? (
+                        <div className="text-sm text-slate-400 dark:text-slate-500 font-medium italic mt-1.5 opacity-60">No events</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {dayEvents.map(event => {
+                            const style = getEventStyle(event);
+                            return (
+                              <div
+                                key={event._id || event.id}
+                                onClick={(e) => openEditEvent(event, e)}
+                                className={`px-3 py-2.5 rounded-xl border text-xs font-semibold ${style.color} flex items-center gap-2.5 transition-all shadow-sm active:scale-95 cursor-pointer`}
+                              >
+                                {style.code ? (
+                                  <img
+                                    src={`https://flagcdn.com/16x12/${style.code}.png`}
+                                    alt=""
+                                    className="w-4 h-3 object-cover rounded shadow-sm flex-shrink-0"
+                                  />
+                                ) : style.flag ? (
+                                  <span className="flex-shrink-0 text-sm">{style.flag}</span>
+                                ) : (
+                                  (event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival') && (
+                                    <span className="flex-shrink-0 text-sm">🌐</span>
+                                  )
+                                )}
+                                <span className="truncate flex-1">{event.title}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
 
