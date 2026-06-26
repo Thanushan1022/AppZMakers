@@ -68,7 +68,7 @@ export const reviewLeave = async (req, res) => {
 
 export const getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find().sort({ createdAt: -1 });
+    const employees = await Employee.find().select('-cvData -cvName').sort({ createdAt: -1 });
     res.json(employees.map(toEmployeeJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -280,12 +280,13 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const employees = await Employee.find().sort({ createdAt: -1 });
+    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 });
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const settings = await getSettings();
     const attendanceRecords = await Attendance.find();
     await autoEndOverdueTeaBreaks(attendanceRecords, settings);
+    
     const attJson = attendanceRecords.map(toAttendanceJSON);
     const leaveRequests = await LeaveRequest.find();
     const leavesJson = leaveRequests.map(toLeaveJSON);
@@ -335,7 +336,7 @@ export const getDashboard = async (req, res) => {
 export const getReports = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const employees = await Employee.find().sort({ createdAt: -1 });
+    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 });
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);

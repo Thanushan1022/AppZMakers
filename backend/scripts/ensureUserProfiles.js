@@ -19,7 +19,7 @@ export const ensureUserProfiles = async () => {
   const users = await User.find();
   const settings = await getSettings();
 
-  for (const user of users) {
+  await Promise.all(users.map(async (user) => {
     const email = user.email.toLowerCase();
 
     if (user.role === 'employee') {
@@ -43,8 +43,11 @@ export const ensureUserProfiles = async () => {
           medical: { total: settings.leaveAllocations?.medical || 10, used: 0 },
         });
       }
-      user.profileId = getEmployeeLegacyId(emp);
-      await user.save();
+      const newProfileId = getEmployeeLegacyId(emp);
+      if (user.profileId !== newProfileId) {
+        user.profileId = newProfileId;
+        await user.save();
+      }
     }
 
     if (user.role === 'hr') {
@@ -58,8 +61,11 @@ export const ensureUserProfiles = async () => {
           userId: user._id,
         });
       }
-      user.profileId = hr.legacyId || hr._id.toString();
-      await user.save();
+      const newProfileId = hr.legacyId || hr._id.toString();
+      if (user.profileId !== newProfileId) {
+        user.profileId = newProfileId;
+        await user.save();
+      }
     }
 
     if (user.role === 'company') {
@@ -74,8 +80,11 @@ export const ensureUserProfiles = async () => {
           industry: 'General',
         });
       }
-      user.profileId = co.legacyId || co._id.toString();
-      await user.save();
+      const newProfileId = co.legacyId || co._id.toString();
+      if (user.profileId !== newProfileId) {
+        user.profileId = newProfileId;
+        await user.save();
+      }
     }
-  }
+  }));
 };

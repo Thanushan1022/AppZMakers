@@ -36,9 +36,9 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const companies = (await Company.find()).map(toCompanyJSON);
-    const hrUsers = (await HRUser.find()).map(toHRJSON);
-    const employees = (await Employee.find().sort({ createdAt: -1 })).map(toEmployeeJSON);
+    const companies = (await Company.find().select('-avatar').sort({ createdAt: -1 })).map(toCompanyJSON);
+    const hrUsers = (await HRUser.find().select('-avatar').sort({ createdAt: -1 })).map(toHRJSON);
+    const employees = (await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 })).map(toEmployeeJSON);
     const pendingLeaves = (await LeaveRequest.find({ status: 'pending' })).map(toLeaveJSON);
     const activeEmployees = employees.filter((e) => e.status === 'active');
 
@@ -100,6 +100,24 @@ export const getLeaves = async (req, res) => {
     await autoRejectPassedLeaves();
     const leaves = await LeaveRequest.find().sort({ createdAt: -1 });
     res.json(leaves.map(toLeaveJSON));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getCompanies = async (req, res) => {
+  try {
+    const companies = await Company.find().select('-avatar').sort({ createdAt: -1 });
+    res.json(companies.map(toCompanyJSON));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getHRUsers = async (req, res) => {
+  try {
+    const hrs = await HRUser.find().select('-avatar').sort({ createdAt: -1 });
+    res.json(hrs.map(toHRJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

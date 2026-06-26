@@ -13,12 +13,21 @@ const COUNTRY_CALENDARS = {
   'Canada': 'en.canadian#holiday@group.v.calendar.google.com',
 };
 
+const holidayCache = {};
+
 /**
  * Fetch official holidays from public Google Calendars
  */
 export const fetchHolidaysFromGoogle = async (countryName) => {
   const rawCountry = String(countryName || 'Sri Lanka').trim();
   let normalized = rawCountry.toLowerCase();
+
+  const currentYear = new Date().getFullYear();
+  const cacheKey = `${normalized}_${currentYear}`;
+
+  if (holidayCache[cacheKey]) {
+    return holidayCache[cacheKey];
+  }
 
   // Map common aliases
   if (normalized === 'us' || normalized === 'united states of america') {
@@ -46,7 +55,6 @@ export const fetchHolidaysFromGoogle = async (countryName) => {
     throw new Error(`No public holiday calendar mapped for country: ${countryName}`);
   }
 
-  const currentYear = new Date().getFullYear();
   const timeMin = `${currentYear - 1}-01-01T00:00:00Z`;
   const timeMax = `${currentYear + 1}-12-31T23:59:59Z`;
 
@@ -60,7 +68,7 @@ export const fetchHolidaysFromGoogle = async (countryName) => {
   }
 
   const data = await res.json();
-  return (data.items || []).map((item) => {
+  const holidays = (data.items || []).map((item) => {
     const start = item.start?.date || item.start?.dateTime?.split('T')[0];
     let end = item.end?.date || item.end?.dateTime?.split('T')[0];
 
@@ -84,6 +92,9 @@ export const fetchHolidaysFromGoogle = async (countryName) => {
       googleEventId: item.id,
     };
   });
+
+  holidayCache[cacheKey] = holidays;
+  return holidays;
 };
 
 /**
