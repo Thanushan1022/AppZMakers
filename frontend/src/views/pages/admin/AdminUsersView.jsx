@@ -557,8 +557,8 @@ export function AdminUsersView({
             <table className="w-full text-sm min-w-[650px]">
               <thead className="z-10">
                 <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                  {['Manager Name', 'Company Name', 'Status', 'Actions'].map((h, i) => {
-                    const minWidths = ['min-w-[250px]', 'min-w-[200px]', 'min-w-[100px]', 'min-w-[100px]'];
+                  {['Manager Name', 'Status', 'Actions'].map((h, i) => {
+                    const minWidths = ['min-w-[250px]', 'min-w-[100px]', 'min-w-[100px]'];
                     return (
                       <th key={h} className={`sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)] ${minWidths[i]}`}>{h}</th>
                     );
@@ -580,9 +580,6 @@ export function AdminUsersView({
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-slate-500">
-                      <div className="break-all break-words">{mgr.companyName}</div>
-                    </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${mgr.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{mgr.status}</span>
                     </td>
@@ -594,7 +591,7 @@ export function AdminUsersView({
                     </td>
                   </tr>
                 ))}
-                {filteredHR.length === 0 && <tr><td colSpan={4} className="py-8 text-center text-slate-400 text-sm">No HR accounts found</td></tr>}
+                {filteredHR.length === 0 && <tr><td colSpan={3} className="py-8 text-center text-slate-400 text-sm">No HR accounts found</td></tr>}
               </tbody>
             </table>
           </div>

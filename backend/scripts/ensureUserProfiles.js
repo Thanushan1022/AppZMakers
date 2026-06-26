@@ -16,14 +16,14 @@ import {
 } from '../utils/entityLookup.js';
 
 export const ensureUserProfiles = async () => {
-  const users = await User.find();
+  const users = await User.find().select('name email role profileId');
   const settings = await getSettings();
 
   await Promise.all(users.map(async (user) => {
     const email = user.email.toLowerCase();
 
     if (user.role === 'employee') {
-      let emp = await Employee.findOne({ email });
+      let emp = await Employee.findOne({ email }).select('_id legacyId');
       if (!emp) {
         const legacyId = await getNextEmployeeLegacyId();
         emp = await Employee.create({
@@ -51,7 +51,7 @@ export const ensureUserProfiles = async () => {
     }
 
     if (user.role === 'hr') {
-      let hr = await HRUser.findOne({ email });
+      let hr = await HRUser.findOne({ email }).select('_id legacyId');
       if (!hr) {
         const legacyId = await getNextHRLegacyId();
         hr = await HRUser.create({
@@ -69,7 +69,7 @@ export const ensureUserProfiles = async () => {
     }
 
     if (user.role === 'company') {
-      let co = await Company.findOne({ email });
+      let co = await Company.findOne({ email }).select('_id legacyId');
       if (!co) {
         const legacyId = await getNextCompanyLegacyId();
         co = await Company.create({
