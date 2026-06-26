@@ -538,7 +538,7 @@ export function CompanyReportsView({
                   <select
                     value={reportsSelectedYear}
                     onChange={e => setReportsSelectedYear(e.target.value)}
-                    className="text-xs border border-border rounded-xl px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
+                    className="text-xs border border-border dark:border-slate-700 rounded-xl px-2.5 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                   >
                     {availableYears.map(y => (
                       <option key={y} value={String(y)}>{y}</option>
@@ -550,7 +550,7 @@ export function CompanyReportsView({
                   <select
                     value={reportsSelectedMonthNum}
                     onChange={e => setReportsSelectedMonthNum(e.target.value)}
-                    className="text-xs border border-border rounded-xl px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
+                    className="text-xs border border-border dark:border-slate-700 rounded-xl px-2.5 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                   >
                     {months.map(m => (
                       <option key={m.value} value={m.value}>{m.label}</option>
@@ -566,7 +566,7 @@ export function CompanyReportsView({
                   };
                   return (
                     <div className="text-xs text-slate-500 font-semibold bg-indigo-50/50 px-3 py-1.5 rounded-lg border border-indigo-100/30">
-                      🗓️ Period: <strong className="text-indigo-700">{format(startStr)} - {format(endStr)}</strong>
+                      🗓️ Period: <strong className="text-indigo-700 dark:text-indigo-400">{format(startStr)} - {format(endStr)}</strong>
                     </div>
                   );
                 })()}
@@ -581,7 +581,7 @@ export function CompanyReportsView({
                     <button
                       type="button"
                       onClick={handlePrevWeek}
-                      className="px-2 py-1 border border-border rounded-xl bg-white hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-sm text-xs"
+                      className="px-2 py-1 border border-border dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center cursor-pointer shadow-sm text-xs"
                     >
                       ←
                     </button>
@@ -589,12 +589,12 @@ export function CompanyReportsView({
                       type="date"
                       value={reportsSelectedWeekDate}
                       onChange={e => setReportsSelectedWeekDate(e.target.value)}
-                      className="text-xs border border-border rounded-xl px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
+                      className="text-xs border border-border dark:border-slate-700 rounded-xl px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                     />
                     <button
                       type="button"
                       onClick={handleNextWeek}
-                      className="px-2 py-1 border border-border rounded-xl bg-white hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-sm text-xs"
+                      className="px-2 py-1 border border-border dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center cursor-pointer shadow-sm text-xs"
                     >
                       →
                     </button>
@@ -609,7 +609,7 @@ export function CompanyReportsView({
                   };
                   return (
                     <div className="text-xs text-slate-500 font-semibold bg-indigo-50/50 px-3 py-1.5 rounded-lg border border-indigo-100/30">
-                      🗓️ Period: <strong className="text-indigo-700">{format(mondayStr)} - {format(sundayStr)}</strong>
+                      🗓️ Period: <strong className="text-indigo-700 dark:text-indigo-400">{format(mondayStr)} - {format(sundayStr)}</strong>
                     </div>
                   );
                 })()}
@@ -624,17 +624,17 @@ export function CompanyReportsView({
                     type="date"
                     value={reportsCustomStartDate}
                     onChange={e => setReportsCustomStartDate(e.target.value)}
-                    className="text-xs border border-border rounded-xl px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
+                    className="text-xs border border-border dark:border-slate-700 rounded-xl px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                   />
                 </div>
-                <span className="text-slate-300">-</span>
+                <span className="text-slate-300 dark:text-slate-500">-</span>
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs text-slate-500 font-semibold">To</label>
                   <input
                     type="date"
                     value={reportsCustomEndDate}
                     onChange={e => setReportsCustomEndDate(e.target.value)}
-                    className="text-xs border border-border rounded-xl px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
+                    className="text-xs border border-border dark:border-slate-700 rounded-xl px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer"
                   />
                 </div>
               </div>
@@ -646,7 +646,7 @@ export function CompanyReportsView({
               <select
                 value={selectedEmployeeFilter}
                 onChange={e => setSelectedEmployeeFilter(e.target.value)}
-                className="text-xs border border-border rounded-xl px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer max-w-[160px] sm:max-w-[200px] md:max-w-[300px] truncate"
+                className="text-xs border border-border dark:border-slate-700 rounded-xl px-2.5 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium cursor-pointer max-w-[160px] sm:max-w-[200px] md:max-w-[300px] truncate"
               >
                 <option value="all">All Employees</option>
                 {(employeesList || []).map(emp => (

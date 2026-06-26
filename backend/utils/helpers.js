@@ -115,10 +115,24 @@ export const getWeeklyAttendanceData = (attendanceRecords, employeeIds, referenc
   const diffToMon = ref.getDate() - day + (day === 0 ? -6 : 1);
   const monday = new Date(ref.getFullYear(), ref.getMonth(), diffToMon);
 
+  const todayDateStr = getTodayString(new Date());
+
   for (let i = 0; i < 5; i += 1) {
     const currentDay = new Date(monday);
     currentDay.setDate(monday.getDate() + i);
     const dateStr = getTodayString(currentDay);
+
+    if (dateStr > todayDateStr) {
+      result.push({
+        day: days[i],
+        date: dateStr,
+        present: 0,
+        late: 0,
+        onLeave: 0,
+        absent: 0,
+      });
+      continue;
+    }
 
     const dayRecords = attendanceRecords.filter(
       (r) => r.date === dateStr && employeeIds.includes(r.employeeId)

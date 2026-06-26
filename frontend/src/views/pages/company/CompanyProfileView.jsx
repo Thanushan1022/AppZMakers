@@ -140,7 +140,7 @@ export function CompanyProfileView({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>My Client Profile</h1>
+          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>My Client/Lead Profile</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Your business details and partner account settings</p>
         </div>
       </div>
@@ -172,7 +172,7 @@ export function CompanyProfileView({
               <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2 tracking-tight">{company.name}</h2>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50 mb-8">
                  <Building2 className="w-4 h-4" />
-                 Client Partner
+                 Client/Lead Partner
               </div>
 
               <button
@@ -253,7 +253,7 @@ export function CompanyProfileView({
           </h3>
           <div className="space-y-2">
             {[
-              { label: 'Client ID', value: company.id ? company.id.toUpperCase() : 'N/A' },
+              { label: 'Client/Lead ID', value: company.id ? company.id.toUpperCase() : 'N/A' },
               { label: 'Industry Sector', value: company.industry || 'General' },
               { label: 'Primary Contact', value: company.contact || 'N/A' },
               { label: 'Joined Date', value: company.joinedDate ? new Date(company.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' },

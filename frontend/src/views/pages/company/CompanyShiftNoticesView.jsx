@@ -366,7 +366,7 @@ export function CompanyShiftNoticesView({
                       </span>
                       {n.noticeType === 'leave' ? (
                         <span className="text-[10px] text-amber-700 dark:text-amber-500 bg-amber-100/50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 px-3 py-1 rounded-xl font-black uppercase tracking-widest">
-                          🍁 Client Leave
+                          🍁 Client/Lead Leave
                         </span>
                       ) : (
                         <span className="text-[10px] text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200/50 dark:border-indigo-800/50 px-3 py-1 rounded-xl font-black uppercase tracking-widest">

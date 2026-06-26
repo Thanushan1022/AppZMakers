@@ -228,15 +228,19 @@ export const logAttendance = async (req, res) => {
     } else if (action === 'clock-out') {
       if (!todayRecord) return res.status(400).json({ error: 'Not clocked in' });
 
-      if (todayRecord.onBreak) {
-        todayRecord.onBreak = false;
-        const activeBreak = todayRecord.breaks?.find((b) => b.type !== 'tea' && !b.end);
-        if (activeBreak) activeBreak.end = time;
+      let breaksModified = false;
+      todayRecord.onBreak = false;
+      todayRecord.onTeaBreak = false;
+      if (todayRecord.breaks) {
+        todayRecord.breaks.forEach((b) => {
+          if (!b.end) {
+            b.end = time;
+            breaksModified = true;
+          }
+        });
       }
-      if (todayRecord.onTeaBreak) {
-        todayRecord.onTeaBreak = false;
-        const activeTeaBreak = todayRecord.breaks?.find((b) => b.type === 'tea' && !b.end);
-        if (activeTeaBreak) activeTeaBreak.end = time;
+      if (breaksModified) {
+        todayRecord.markModified('breaks');
       }
 
       finalizeClockOut(todayRecord, time, settings);

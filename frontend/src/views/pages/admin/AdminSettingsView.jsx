@@ -371,7 +371,7 @@ export function AdminSettingsView({
         </div>
       </div>
 
-      {/* Client & Employee Tea Break Allocation Rules Card */}
+      {/* Client/Lead & Employee Tea Break Allocation Rules Card */}
       {settings.teaBreakEnabled !== false && (
         <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6">
           <div className="absolute -top-16 -left-16 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors duration-700"></div>
@@ -395,7 +395,7 @@ export function AdminSettingsView({
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Client Companies
+                Client/Lead Companies
               </button>
               <button
                 onClick={() => { setAllocationTab('employees'); setFilterQuery(''); }}
@@ -414,7 +414,7 @@ export function AdminSettingsView({
           <div className="relative">
             <input
               type="text"
-              placeholder={allocationTab === 'companies' ? "Search client companies..." : "Search employees..."}
+              placeholder={allocationTab === 'companies' ? "Search client/lead companies..." : "Search employees..."}
               value={filterQuery}
               onChange={e => setFilterQuery(e.target.value)}
               className="w-full border border-border rounded-xl pl-10 pr-4 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"

@@ -78,7 +78,7 @@ export function EmployeeClientNotificationsView({ employee, shiftNotices = [], a
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="flex justify-between items-center gap-4 flex-wrap mb-4">
         <div>
-          <h1 className="text-slate-800" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Client Notifications</h1>
+          <h1 className="text-slate-800" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Client/Lead Notifications</h1>
           <p className="text-slate-500 text-sm font-medium mt-1">Alerts, shift start instructions, and leaves sent by your hiring client</p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export function EmployeeClientNotificationsView({ employee, shiftNotices = [], a
                 <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800"></div>
               </div>
               <p className="font-bold text-slate-500 dark:text-slate-400 text-lg">You're all caught up!</p>
-              <p className="text-sm font-medium mt-1">No new client notifications at the moment.</p>
+              <p className="text-sm font-medium mt-1">No new client/lead notifications at the moment.</p>
             </div>
           ) : (
             <div className="space-y-5 relative before:absolute before:inset-y-0 before:left-[27px] before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800 pl-2">

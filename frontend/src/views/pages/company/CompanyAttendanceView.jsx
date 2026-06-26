@@ -102,9 +102,13 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
 
     // Activity matches
     let matchesActivity = true;
-    if (activityFilter === 'Active') matchesActivity = rec.checkIn && !rec.checkOut;
-    else if (activityFilter === 'Meal Break') matchesActivity = rec.breaks && rec.breaks.some(b => b.type !== 'tea');
-    else if (activityFilter === 'Tea Break') matchesActivity = rec.breaks && rec.breaks.some(b => b.type === 'tea');
+    if (activityFilter !== 'All') {
+      const isOnMealBreak = rec.breaks?.some(b => b.type !== 'tea' && !b.end);
+      const isOnTeaBreak = rec.breaks?.some(b => b.type === 'tea' && !b.end);
+      if (activityFilter === 'Active') matchesActivity = rec.checkIn && !rec.checkOut && !isOnMealBreak && !isOnTeaBreak;
+      else if (activityFilter === 'Meal Break') matchesActivity = !!isOnMealBreak;
+      else if (activityFilter === 'Tea Break') matchesActivity = !!isOnTeaBreak;
+    }
 
     return matchesSearch && matchesStatus && matchesEmployee && matchesActivity;
   });
@@ -147,8 +151,8 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
     );
   };
 
-  const getTeaBreakDetails = (breaks = []) => {
-    const teaBreaks = breaks.filter(b => b.type === 'tea');
+  const getTeaBreakDetails = (breaks = [], checkOutStr = null) => {
+    const teaBreaks = breaks?.filter(b => b.type === 'tea') || [];
     const count = teaBreaks.length;
     if (count === 0) return '—';
     
@@ -163,9 +167,18 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
     
     let totalSecs = 0;
     teaBreaks.forEach(b => {
-      if (b.start && b.end) {
+      if (b.start) {
         let bIn = getSecsFromTime(b.start);
-        let bOut = getSecsFromTime(b.end);
+        let endStr = b.end;
+        if (!endStr) {
+          if (checkOutStr) {
+            endStr = checkOutStr;
+          } else {
+            const now = new Date();
+            endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          }
+        }
+        let bOut = getSecsFromTime(endStr);
         if (bOut < bIn) bOut += 86400;
         totalSecs += (bOut - bIn);
       }
@@ -294,6 +307,8 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               {sortedHistory.map(rec => {
                 const emp = myEmployees.find(e => e.id === rec.employeeId);
                 const isAbsent = rec.status === 'absent';
+                const isOnMealBreak = rec.breaks?.some(b => b.type !== 'tea' && !b.end);
+                const isOnTeaBreak = rec.breaks?.some(b => b.type === 'tea' && !b.end);
                 return (
                   <tr key={rec.id} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="py-4 px-6 bg-white dark:bg-slate-900 group-hover:bg-slate-50/80 dark:group-hover:bg-slate-800/50 min-w-[250px] transition-colors">
@@ -341,7 +356,9 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                           ) : rec.checkIn ? (
                              <div className="flex items-center gap-2">
                                <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black"><Clock className="w-3.5 h-3.5 animate-pulse"/></span>
-                               <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">Active</span>
+                               <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">
+                                 {isOnMealBreak ? 'Meal Break' : isOnTeaBreak ? 'Tea Break' : 'Active'}
+                               </span>
                              </div>
                           ) : null}
                         </div>
@@ -367,7 +384,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                         rec.breaks && rec.breaks.some(b => b.type === 'tea') ? (
                           <div className="w-fit text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-2 border border-emerald-100 shadow-sm">
                             <Coffee className="w-3.5 h-3.5" />
-                            {getTeaBreakDetails(rec.breaks)}
+                            {getTeaBreakDetails(rec.breaks, rec.checkOut)}
                           </div>
                         ) : (
                           <div className="w-fit text-emerald-700/50 bg-emerald-50/50 px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-2 border border-emerald-100/50 shadow-sm">
@@ -550,7 +567,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                     <Coffee className="w-4 h-4" /> Tea Break
                   </div>
                   <div className="text-lg font-black text-emerald-900 dark:text-emerald-100" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                    {getTeaBreakDetails(selectedRecordDetail.rec.breaks) !== '—' ? getTeaBreakDetails(selectedRecordDetail.rec.breaks) : '—'}
+                    {getTeaBreakDetails(selectedRecordDetail.rec.breaks, selectedRecordDetail.rec.checkOut) !== '—' ? getTeaBreakDetails(selectedRecordDetail.rec.breaks, selectedRecordDetail.rec.checkOut) : '—'}
                   </div>
                   {selectedRecordDetail.rec.breaks && selectedRecordDetail.rec.breaks.filter(b => b.type === 'tea').length > 0 && (
                     <div className="mt-3 space-y-1.5">

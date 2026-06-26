@@ -141,7 +141,9 @@ export function useAdminController(adminId, updateAuth) {
   const [hrNote, setHrNote] = useState('');
   const [leaveAction, setLeaveAction] = useState(null);
 
-  const [leaveTabFilter, setLeaveTabFilter] = useState('all');
+  const [leaveTabFilter, setLeaveTabFilter] = useState('pending');
+  const [leaveMonthFilter, setLeaveMonthFilter] = useState('all');
+  const [leaveYearFilter, setLeaveYearFilter] = useState(() => String(new Date().getFullYear()));
   const [leaveSearch, setLeaveSearch] = useState('');
 
   const leaveCounts = {
@@ -158,7 +160,19 @@ export function useAdminController(adminId, updateAuth) {
         leaveSearch === '' ||
         l.employeeName?.toLowerCase().includes(leaveSearch.toLowerCase()) ||
         l.department?.toLowerCase().includes(leaveSearch.toLowerCase())
-    );
+    )
+    .filter((l) => {
+      if (leaveMonthFilter !== 'all') {
+        const leaveDate = l.startDate || l.appliedOn;
+        if (!leaveDate) return false;
+        const [y, m] = leaveDate.split('-');
+        if (y !== leaveYearFilter || m !== leaveMonthFilter) return false;
+      } else if (leaveYearFilter !== 'all') {
+        const leaveDate = l.startDate || l.appliedOn;
+        if (leaveDate && !leaveDate.startsWith(leaveYearFilter)) return false;
+      }
+      return true;
+    });
 
   const [settings, setSettings] = useState({
     workHours: '8 hours',
@@ -831,6 +845,10 @@ export function useAdminController(adminId, updateAuth) {
 
     leaveTabFilter,
     setLeaveTabFilter,
+    leaveMonthFilter,
+    setLeaveMonthFilter,
+    leaveYearFilter,
+    setLeaveYearFilter,
     leaveSearch,
     setLeaveSearch,
     filteredLeaves,

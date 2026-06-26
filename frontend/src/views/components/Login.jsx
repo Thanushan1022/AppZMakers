@@ -9,7 +9,7 @@ import bgVideo from '../../assets/Employee_Enters_Office_Lobby_GIF.mp4';
 const roles = [
   { id: 'employee', label: 'Employee', icon: User },
   { id: 'hr', label: 'HR Manager', icon: IdCard },
-  { id: 'company', label: 'Client', icon: Briefcase },
+  { id: 'company', label: 'Client/Lead', icon: Briefcase },
   { id: 'superadmin', label: 'Super Admin', icon: Shield },
 ];
 
@@ -111,7 +111,7 @@ export function Login({
               Unified workforce<br /> operations in a single platform.
             </h1>
             <p className="text-[#40d6a2] text-base sm:text-lg leading-relaxed">
-              Track attendance, manage leaves, configure client accounts, and synchronize shifts seamlessly across your entire organization.
+              Track attendance, manage leaves, configure client/lead accounts, and synchronize shifts seamlessly across your entire organization.
             </p>
           </div>
 

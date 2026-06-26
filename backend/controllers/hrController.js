@@ -68,7 +68,7 @@ export const reviewLeave = async (req, res) => {
 
 export const getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find();
+    const employees = await Employee.find().sort({ createdAt: -1 });
     res.json(employees.map(toEmployeeJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -280,7 +280,7 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const employees = await Employee.find();
+    const employees = await Employee.find().sort({ createdAt: -1 });
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const settings = await getSettings();
@@ -335,7 +335,7 @@ export const getDashboard = async (req, res) => {
 export const getReports = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const employees = await Employee.find();
+    const employees = await Employee.find().sort({ createdAt: -1 });
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);
@@ -465,7 +465,7 @@ export const adjustAttendance = async (req, res) => {
     if (checkIn !== undefined) record.checkIn = checkIn;
     if (status !== undefined) record.status = status;
 
-    if (!record.checkOut && checkOut) {
+    if (checkOut) {
       record.onBreak = false;
       record.onTeaBreak = false;
       if (record.breaks) {
@@ -473,9 +473,6 @@ export const adjustAttendance = async (req, res) => {
           if (!b.end) b.end = checkOut;
         });
       }
-    }
-
-    if (checkOut) {
       finalizeClockOut(record, checkOut, settings);
     } else {
       record.checkOut = null;
@@ -494,8 +491,7 @@ export const adjustAttendance = async (req, res) => {
       if (outSecs < inSecs) outSecs += 86400;
 
       let elapsedHrs = (outSecs - inSecs) / 3600;
-      const extraBreakMin = Math.max(0, record.breakMinutes - allowedBreakMin);
-      let totalHr = elapsedHrs - extraBreakMin / 60;
+      let totalHr = elapsedHrs - (record.breakMinutes / 60);
       totalHr = Math.max(0, Math.round(totalHr * 100) / 100);
       record.totalHours = totalHr;
 
@@ -539,6 +535,13 @@ export const createManualAttendance = async (req, res) => {
       existingRecord.checkIn = checkIn || '09:00:00';
       existingRecord.status = status || 'present';
       if (checkOut) {
+        existingRecord.onBreak = false;
+        existingRecord.onTeaBreak = false;
+        if (existingRecord.breaks) {
+          existingRecord.breaks.forEach((b) => {
+            if (!b.end) b.end = checkOut;
+          });
+        }
         finalizeClockOut(existingRecord, checkOut, settings);
       } else {
         existingRecord.checkOut = null;
@@ -556,8 +559,7 @@ export const createManualAttendance = async (req, res) => {
         if (outSecs < inSecs) outSecs += 86400;
 
         let elapsedHrs = (outSecs - inSecs) / 3600;
-        const extraBreakMin = Math.max(0, existingRecord.breakMinutes - allowedBreakMin);
-        let totalHr = elapsedHrs - extraBreakMin / 60;
+        let totalHr = elapsedHrs - (existingRecord.breakMinutes / 60);
         totalHr = Math.max(0, Math.round(totalHr * 100) / 100);
         existingRecord.totalHours = totalHr;
 
@@ -610,8 +612,7 @@ export const createManualAttendance = async (req, res) => {
       if (outSecs < inSecs) outSecs += 86400;
 
       let elapsedHrs = (outSecs - inSecs) / 3600;
-      const extraBreakMin = Math.max(0, record.breakMinutes - allowedBreakMin);
-      let totalHr = elapsedHrs - extraBreakMin / 60;
+      let totalHr = elapsedHrs - (record.breakMinutes / 60);
       totalHr = Math.max(0, Math.round(totalHr * 100) / 100);
       record.totalHours = totalHr;
 

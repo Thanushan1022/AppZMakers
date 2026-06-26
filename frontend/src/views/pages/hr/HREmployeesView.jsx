@@ -35,17 +35,17 @@ export function HREmployeesView({
     checkOut: '',
     status: 'present',
     reason: '',
-    breakMinutes: 0,
+    breakMinutes: '',
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({
     date: '',
-    checkIn: '09:00:00',
-    checkOut: '17:00:00',
+    checkIn: '',
+    checkOut: '',
     status: 'present',
     reason: '',
-    breakMinutes: 0,
+    breakMinutes: '',
   });
 
   const FormatMultilineName = ({ name }) => {
@@ -299,16 +299,16 @@ export function HREmployeesView({
                 {/* Work Assignment Card */}
                 <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
                   <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
-                    💼 Client Assignment
+                    💼 Client/Lead Assignment
                   </h4>
                   <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
                     <div>
-                      <div className="text-xs text-slate-400 font-medium">Current Client</div>
+                      <div className="text-xs text-slate-400 font-medium">Current Client/Lead</div>
                       <div className="text-slate-800 font-semibold text-sm mt-1">{selectedEmployee.company || 'General (Our Company)'}</div>
                     </div>
 
                     <div className="pt-2 border-t border-slate-200/50">
-                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client</label>
+                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client/Lead</label>
                       <select
                         value={selectedEmployee.companyId || 'unassigned'}
                         onChange={(e) => handleAssignClient(selectedEmployee.id, e.target.value)}
@@ -405,26 +405,14 @@ export function HREmployeesView({
                       type="button"
                       onClick={() => {
                         const targetDate = attendanceDateFilter || getTodayDateString();
-                        const existing = selectedAttendance.find(r => r.date === targetDate);
-                        if (existing) {
-                          setCreateForm({
-                            date: targetDate,
-                            checkIn: existing.checkIn || '09:00:00',
-                            checkOut: existing.checkOut || '17:00:00',
-                            status: existing.status || 'present',
-                            reason: '',
-                            breakMinutes: existing.breakMinutes || 0,
-                          });
-                        } else {
-                          setCreateForm({
-                            date: targetDate,
-                            checkIn: '09:00:00',
-                            checkOut: '17:00:00',
-                            status: 'present',
-                            reason: '',
-                            breakMinutes: 0,
-                          });
-                        }
+                        setCreateForm({
+                          date: targetDate,
+                          checkIn: '',
+                          checkOut: '',
+                          status: 'present',
+                          reason: '',
+                          breakMinutes: '',
+                        });
                         setShowCreateModal(true);
                       }}
                       className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold cursor-pointer border border-indigo-100/50 transition-colors"
@@ -630,10 +618,10 @@ export function HREmployeesView({
       {/* Attendance Adjustment Modal */}
       {adjustingRec && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200">
-            <h3 className="text-slate-800 font-semibold text-lg mb-1">Adjust Attendance</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Manually modify the attendance details for <strong className="text-slate-600 font-semibold">{selectedEmployee.name}</strong> on <strong className="text-slate-600 font-semibold">{adjustingRec.date}</strong>.
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+            <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Adjust Attendance</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+              Manually modify the attendance details for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong> on <strong className="text-slate-600 dark:text-slate-300 font-semibold">{adjustingRec.date}</strong>.
             </p>
 
             <form
@@ -653,65 +641,58 @@ export function HREmployeesView({
               className="space-y-4"
             >
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check In Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={adjustForm.checkIn}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, checkIn: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check Out Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={adjustForm.checkOut}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, checkOut: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Break Time (Minutes)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={adjustForm.breakMinutes}
-                  onChange={(e) => setAdjustForm((p) => ({ ...p, breakMinutes: parseInt(e.target.value, 10) || 0 }))}
-                  required
-                  min="0"
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
-                />
-              </div>
+
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Attendance Status</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Attendance Status</label>
                 <select
                   value={adjustForm.status}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, status: e.target.value }))}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-600 focus:outline-none bg-slate-50"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 focus:outline-none bg-slate-50 dark:bg-slate-800/50"
                 >
                   <option value="present">Present</option>
-                  <option value="late">Late</option>
                   <option value="half-day">Half Day</option>
                   <option value="absent">Absent</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Reason for Adjustment</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Reason for Adjustment</label>
                 <textarea
                   placeholder="e.g. Power outage, forgot to clock out, etc."
                   value={adjustForm.reason}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, reason: e.target.value }))}
                   required
                   rows={2}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 resize-none"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 resize-none"
                 />
               </div>
 
@@ -725,7 +706,7 @@ export function HREmployeesView({
                 <button
                   type="button"
                   onClick={() => setAdjustingRec(null)}
-                  className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 border border-border dark:border-slate-700 py-2.5 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -738,10 +719,10 @@ export function HREmployeesView({
       {/* Create Manual Attendance Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200">
-            <h3 className="text-slate-800 font-semibold text-lg mb-1">Add Missed Attendance</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Manually create a new attendance record for <strong className="text-slate-600 font-semibold">{selectedEmployee.name}</strong>.
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+            <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Add Missed Attendance</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+              Manually create a new attendance record for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong>.
             </p>
 
             <form
@@ -761,98 +742,82 @@ export function HREmployeesView({
               className="space-y-4"
             >
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Date</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Date</label>
                 <input
                   type="date"
                   value={createForm.date}
                   onChange={(e) => {
                     const newDate = e.target.value;
-                    const existing = selectedAttendance.find(r => r.date === newDate);
-                    if (existing) {
-                      setCreateForm({
-                        date: newDate,
-                        checkIn: existing.checkIn || '09:00:00',
-                        checkOut: existing.checkOut || '17:00:00',
-                        status: existing.status || 'present',
-                        reason: '',
-                        breakMinutes: existing.breakMinutes || 0,
-                      });
-                    } else {
-                      setCreateForm({
-                        date: newDate,
-                        checkIn: '09:00:00',
-                        checkOut: '17:00:00',
-                        status: 'present',
-                        reason: '',
-                        breakMinutes: 0,
-                      });
-                    }
+                    setCreateForm({
+                      date: newDate,
+                      checkIn: '',
+                      checkOut: '',
+                      status: 'present',
+                      reason: '',
+                      breakMinutes: '',
+                    });
                   }}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  max={getTodayDateString()}
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check In Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={createForm.checkIn}
                   onChange={(e) => setCreateForm((p) => ({ ...p, checkIn: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check Out Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={createForm.checkOut}
                   onChange={(e) => setCreateForm((p) => ({ ...p, checkOut: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Break Time (Minutes)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={createForm.breakMinutes}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, breakMinutes: parseInt(e.target.value, 10) || 0 }))}
-                  required
-                  min="0"
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
-                />
-              </div>
+
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Attendance Status</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Attendance Status</label>
                 <select
                   value={createForm.status}
                   onChange={(e) => setCreateForm((p) => ({ ...p, status: e.target.value }))}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-600 focus:outline-none bg-slate-50"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 focus:outline-none bg-slate-50 dark:bg-slate-800/50"
                 >
                   <option value="present">Present</option>
-                  <option value="late">Late</option>
                   <option value="half-day">Half Day</option>
                   <option value="absent">Absent</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Reason for Creation</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Reason for Creation</label>
                 <textarea
                   placeholder="e.g. Employee forgot to clock in"
                   value={createForm.reason}
                   onChange={(e) => setCreateForm((p) => ({ ...p, reason: e.target.value }))}
                   required
                   rows={2}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 resize-none"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 resize-none"
                 />
               </div>
 
@@ -866,7 +831,7 @@ export function HREmployeesView({
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 border border-border dark:border-slate-700 py-2.5 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

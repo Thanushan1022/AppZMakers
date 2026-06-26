@@ -58,6 +58,8 @@ export function useEmployeeController(userId, updateAuth) {
   // Leave form states
   const [showForm, setShowForm] = useState(false);
   const [leaveFilter, setLeaveFilter] = useState('all');
+  const [leaveMonthFilter, setLeaveMonthFilter] = useState('all');
+  const [leaveYearFilter, setLeaveYearFilter] = useState(() => String(new Date().getFullYear()));
   const [leaveForm, setLeaveForm] = useState({
     type: 'casual',
     startDate: '',
@@ -113,13 +115,15 @@ export function useEmployeeController(userId, updateAuth) {
           setCheckInTime(todayRecord.checkIn);
           setCheckedIn(!!todayRecord.checkIn && !todayRecord.checkOut);
           setTodayTasks(todayRecord.tasks || []);
+          const recBreaks = todayRecord.breaks || [];
+          const recOnBreak = !!todayRecord.onBreak;
+          const recOnTeaBreak = !!todayRecord.onTeaBreak;
+          setBreaks(recBreaks);
+          setOnBreak(recOnBreak);
+          setOnTeaBreak(recOnTeaBreak);
+
           if (todayRecord.checkIn && !todayRecord.checkOut) {
-            const recBreaks = todayRecord.breaks || [];
-            const recOnBreak = !!todayRecord.onBreak;
-            const recOnTeaBreak = !!todayRecord.onTeaBreak;
-            setBreaks(recBreaks);
-            setOnBreak(recOnBreak);
-            setOnTeaBreak(recOnTeaBreak);
+
 
             const now = new Date();
             const getSecsFromTime = (tStr) => {
@@ -437,13 +441,9 @@ export function useEmployeeController(userId, updateAuth) {
       return;
     }
 
-    // If employee is currently on a break, skip the "Take a break" confirmation modal
-    // and instantly proceed with checking out (which automatically ends active breaks).
-    if (onBreak || onTeaBreak) {
-      confirmCheckOut();
-    } else {
-      setShowCheckoutConfirm(true);
-    }
+    // Show the checkout confirmation modal in all cases.
+    // If they are on a break, the modal will warn them that checking out ends the break.
+    setShowCheckoutConfirm(true);
   };
 
   const confirmCheckOut = async () => {
@@ -757,7 +757,19 @@ export function useEmployeeController(userId, updateAuth) {
     return { mondayStr: format(monday), sundayStr: format(sunday) };
   };
 
-  const filteredLeaves = leaveFilter === 'all' ? allLeaves : allLeaves.filter(l => l.status === leaveFilter);
+  const filteredLeaves = allLeaves.filter(l => {
+    if (leaveFilter !== 'all' && l.status !== leaveFilter) return false;
+    if (leaveMonthFilter !== 'all') {
+      const leaveDate = l.startDate || l.appliedOn;
+      if (!leaveDate) return false;
+      const [y, m] = leaveDate.split('-');
+      if (y !== leaveYearFilter || m !== leaveMonthFilter) return false;
+    } else if (leaveYearFilter !== 'all') {
+      const leaveDate = l.startDate || l.appliedOn;
+      if (leaveDate && !leaveDate.startsWith(leaveYearFilter)) return false;
+    }
+    return true;
+  });
 
   let filteredAttendance = [];
   if (filterType === 'monthly') {
@@ -805,6 +817,10 @@ export function useEmployeeController(userId, updateAuth) {
     setShowForm,
     leaveFilter,
     setLeaveFilter,
+    leaveMonthFilter,
+    setLeaveMonthFilter,
+    leaveYearFilter,
+    setLeaveYearFilter,
     leaveForm,
     setLeaveForm,
     leaveError,

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router';
 import { LogIn, LogOut, Coffee, Clock, Calendar, ChevronLeft, ChevronRight, AlertCircle, ClipboardList, Plus, ChevronDown, ChevronUp, CheckCircle2, Timer } from 'lucide-react';
 import sessionVideo from '../../../assets/Video_Generation_Successful.mp4';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
@@ -72,6 +73,20 @@ export function EmployeeAttendanceView({ mySalary,
   const [selectedTasks, setSelectedTasks] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.expandWorkLog) {
+      setIsTaskBoxExpanded(true);
+      setTimeout(() => {
+        const el = document.getElementById('work-log-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [location.state]);
+
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editTaskDesc, setEditTaskDesc] = useState('');
   const [editTaskTime, setEditTaskTime] = useState('');
@@ -137,8 +152,8 @@ export function EmployeeAttendanceView({ mySalary,
     return `${m}m ${s}s`;
   };
 
-  const getTeaBreakDetails = (breaks = []) => {
-    const teaBreaks = breaks.filter(b => b.type === 'tea');
+  const getTeaBreakDetails = (breaks = [], checkOutStr = null) => {
+    const teaBreaks = breaks?.filter(b => b.type === 'tea') || [];
     const count = teaBreaks.length;
     if (count === 0) return '—';
     
@@ -153,20 +168,29 @@ export function EmployeeAttendanceView({ mySalary,
     
     let totalSecs = 0;
     teaBreaks.forEach(b => {
-      if (b.start && b.end) {
+      if (b.start) {
         let bIn = getSecsFromTime(b.start);
-        let bOut = getSecsFromTime(b.end);
+        let endStr = b.end;
+        if (!endStr) {
+          if (checkOutStr) {
+            endStr = checkOutStr;
+          } else {
+            const now = new Date();
+            endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          }
+        }
+        let bOut = getSecsFromTime(endStr);
         if (bOut < bIn) bOut += 86400;
         totalSecs += (bOut - bIn);
       }
     });
     
     const totalMins = Math.round(totalSecs / 60);
-    return `${count}-${totalMins} min`;
+    return `${totalMins} min (${count} break${count !== 1 ? 's' : ''})`;
   };
 
-  const getMealBreakDetails = (breaks = [], fallbackMins = 0) => {
-    const mealBreaks = breaks.filter(b => b.type !== 'tea');
+  const getMealBreakDetails = (breaks = [], fallbackMins = 0, checkOutStr = null) => {
+    const mealBreaks = breaks?.filter(b => b.type !== 'tea') || [];
     const count = mealBreaks.length;
     if (count === 0) {
       if (fallbackMins > 0) {
@@ -190,9 +214,18 @@ export function EmployeeAttendanceView({ mySalary,
     
     let totalSecs = 0;
     mealBreaks.forEach(b => {
-      if (b.start && b.end) {
+      if (b.start) {
         let bIn = getSecsFromTime(b.start);
-        let bOut = getSecsFromTime(b.end);
+        let endStr = b.end;
+        if (!endStr) {
+          if (checkOutStr) {
+            endStr = checkOutStr;
+          } else {
+            const now = new Date();
+            endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          }
+        }
+        let bOut = getSecsFromTime(endStr);
         if (bOut < bIn) bOut += 86400;
         totalSecs += (bOut - bIn);
       }
@@ -204,9 +237,9 @@ export function EmployeeAttendanceView({ mySalary,
     const m = totalMins % 60;
     
     if (h > 0) {
-      return `${count}-${h}h ${m}m`;
+      return `${h}h ${m}m (${count} break${count !== 1 ? 's' : ''})`;
     }
-    return `${count}-${m} min`;
+    return `${m} min (${count} break${count !== 1 ? 's' : ''})`;
   };
 
   const netWork = sessionSecs;
@@ -442,7 +475,7 @@ export function EmployeeAttendanceView({ mySalary,
       )}
 
       {/* Daily Tasks Section - Glassmorphism */}
-      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300">
+      <div id="work-log-section" className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300">
         <button
           onClick={() => setIsTaskBoxExpanded(!isTaskBoxExpanded)}
           className={`w-full flex items-center justify-between p-6 md:p-8 transition-all text-left cursor-pointer ${
@@ -666,14 +699,14 @@ export function EmployeeAttendanceView({ mySalary,
                 <select
                   value={selectedMonthNum}
                   onChange={e => setSelectedMonthNum(e.target.value)}
-                  className="text-base border border-slate-200 rounded-2xl px-5 py-3 bg-white text-slate-800 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 font-bold cursor-pointer min-w-[180px] shadow-sm hover:border-indigo-300 transition-colors"
+                  className="text-base border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 font-bold cursor-pointer min-w-[180px] shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors"
                 >
                   {months.map(m => (
                     <option key={m.value} value={m.value}>{m.label}</option>
                   ))}
                 </select>
               </div>
-              <div className="text-sm text-indigo-800 font-medium pb-2.5 bg-indigo-50/80 px-5 py-3 rounded-2xl border border-indigo-100 flex items-center gap-2">
+              <div className="text-sm text-indigo-800 dark:text-indigo-300 font-medium pb-2.5 bg-indigo-50/80 dark:bg-indigo-900/40 px-5 py-3 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 Period: <strong className="font-bold">{getCompanyMonthRangeLabel(selectedYear, selectedMonthNum)}</strong>
               </div>
@@ -688,7 +721,7 @@ export function EmployeeAttendanceView({ mySalary,
                   <button
                     type="button"
                     onClick={handlePrevWeek}
-                    className="p-3.5 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 text-slate-600 transition-all flex items-center justify-center cursor-pointer shadow-sm hover:shadow active:scale-95"
+                    className="p-3.5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all flex items-center justify-center cursor-pointer shadow-sm hover:shadow active:scale-95"
                     title="Previous Week"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -697,12 +730,12 @@ export function EmployeeAttendanceView({ mySalary,
                     type="date"
                     value={selectedWeekDate}
                     onChange={e => setSelectedWeekDate(e.target.value)}
-                    className="text-base border border-slate-200 rounded-2xl px-5 py-3 bg-white text-slate-800 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 font-bold cursor-pointer shadow-sm hover:border-indigo-300 transition-colors"
+                    className="text-base border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 font-bold cursor-pointer shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={handleNextWeek}
-                    className="p-3.5 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 text-slate-600 transition-all flex items-center justify-center cursor-pointer shadow-sm hover:shadow active:scale-95"
+                    className="p-3.5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all flex items-center justify-center cursor-pointer shadow-sm hover:shadow active:scale-95"
                     title="Next Week"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -717,7 +750,7 @@ export function EmployeeAttendanceView({ mySalary,
                   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 };
                 return (
-                  <div className="text-sm text-indigo-800 font-medium pb-2.5 bg-indigo-50/80 px-5 py-3 rounded-2xl border border-indigo-100 flex items-center gap-2">
+                  <div className="text-sm text-indigo-800 dark:text-indigo-300 font-medium pb-2.5 bg-indigo-50/80 dark:bg-indigo-900/40 px-5 py-3 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-indigo-500" />
                     Resolved Week: <strong className="font-bold">{format(mondayStr)}</strong> to <strong className="font-bold">{format(sundayStr)}</strong>
                   </div>
@@ -820,14 +853,14 @@ export function EmployeeAttendanceView({ mySalary,
                       </div>
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap">
-                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-xs border border-amber-100">
-                         <Coffee className="w-3.5 h-3.5 opacity-70" /> {getMealBreakDetails(rec.breaks, rec.breakMinutes)}
+                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-[11px] border border-amber-100">
+                         <Coffee className="w-3.5 h-3.5 opacity-70" /> {getMealBreakDetails(rec.breaks, rec.breakMinutes, rec.checkOut)}
                        </span>
                     </td>
                     {teaBreakEnabled && teaBreakAllowed && (
                       <td className="py-4 px-5 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-mono font-bold text-xs border border-emerald-100">
-                          <Coffee className="w-3.5 h-3.5 opacity-70" /> {getTeaBreakDetails(rec.breaks)}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-mono font-bold text-[11px] border border-emerald-100">
+                          <Coffee className="w-3.5 h-3.5 opacity-70" /> {getTeaBreakDetails(rec.breaks, rec.checkOut)}
                         </span>
                       </td>
                     )}
@@ -936,7 +969,7 @@ export function EmployeeAttendanceView({ mySalary,
                   <div className="text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Coffee className="w-3.5 h-3.5" /> Meal Break
                   </div>
-                  <div className="font-mono text-amber-900 dark:text-amber-100 font-bold text-lg">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes)}</div>
+                  <div className="font-mono text-amber-900 dark:text-amber-100 font-bold text-lg">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes, selectedRecord.checkOut)}</div>
                   {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea').length > 0 && (
                     <div className="mt-2 space-y-1">
                       {selectedRecord.breaks.filter(b => b.type !== 'tea').map((b, i) => (
@@ -1033,7 +1066,9 @@ export function EmployeeAttendanceView({ mySalary,
               </div>
               <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black text-center mb-2 tracking-tight">Almost done!</h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm text-center mb-8 font-medium">
-                Would you like to take a break before leaving, or proceed directly to check-out?
+                {(onBreak || onTeaBreak) 
+                  ? "You are currently on a break. Checking out now will automatically end your break. Are you sure you want to proceed?" 
+                  : "Would you like to take a break before leaving, or proceed directly to check-out?"}
               </p>
               
               <div className="space-y-4">

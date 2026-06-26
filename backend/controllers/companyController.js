@@ -28,7 +28,7 @@ export const getDashboard = async (req, res) => {
     await syncCompanyEmployeeCounts();
 
     const cid = comp.legacyId || comp._id.toString();
-    const compEmployees = await Employee.find({ companyId: cid });
+    const compEmployees = await Employee.find({ companyId: cid }).sort({ createdAt: -1 });
     const employeesJson = compEmployees.map(toEmployeeJSON);
     const employeeIds = employeesJson.map((e) => e.id);
     const today = getTodayString();
@@ -76,7 +76,7 @@ export const getReports = async (req, res) => {
 
     const { startDate, endDate } = req.query;
 
-    const employees = await Employee.find({ companyId: legacyId });
+    const employees = await Employee.find({ companyId: legacyId }).sort({ createdAt: -1 });
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);

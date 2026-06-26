@@ -56,7 +56,7 @@ export default function App() {
   );
 }
 
-function TaskWarningModal({ onClose }) {
+function TaskWarningModal({ onClose, onNavigate }) {
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xl max-w-sm w-full overflow-hidden p-6 animate-in fade-in zoom-in-95 duration-200" style={{ fontFamily: 'DM Sans, sans-serif' }}>
@@ -70,7 +70,10 @@ function TaskWarningModal({ onClose }) {
           </p>
           <div className="w-full">
             <button
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                if (onNavigate) onNavigate();
+              }}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors cursor-pointer shadow-md shadow-indigo-600/15"
             >
               Okay
@@ -249,6 +252,7 @@ function AppRoutes() {
       {auth.role === 'employee' && employeeController.showTaskWarning && (
         <TaskWarningModal
           onClose={() => employeeController.setShowTaskWarning(false)}
+          onNavigate={() => navigate('/employee/attendance', { state: { expandWorkLog: true } })}
         />
       )}
 

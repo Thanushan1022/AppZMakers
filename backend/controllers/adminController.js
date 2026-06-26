@@ -38,7 +38,7 @@ export const getDashboard = async (req, res) => {
 
     const companies = (await Company.find()).map(toCompanyJSON);
     const hrUsers = (await HRUser.find()).map(toHRJSON);
-    const employees = (await Employee.find()).map(toEmployeeJSON);
+    const employees = (await Employee.find().sort({ createdAt: -1 })).map(toEmployeeJSON);
     const pendingLeaves = (await LeaveRequest.find({ status: 'pending' })).map(toLeaveJSON);
     const activeEmployees = employees.filter((e) => e.status === 'active');
 

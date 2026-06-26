@@ -469,7 +469,7 @@ export function EmployeeDashboardView({
         </div>
       )}
 
-      {/* Embedded Location-Based Company Calendar */}
+      {/* Embedded Location-Based Calendar */}
       {employee && (
         <div className="pt-6">
           <CompanyCalendarView role="employee" employeeId={employee.id} />
@@ -486,7 +486,9 @@ export function EmployeeDashboardView({
               </div>
               <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">Check-Out Confirmation</h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
-                Would you like to take a break before leaving, or proceed directly with checking out of your shift?
+                {(onBreak || onTeaBreak) 
+                  ? "You are currently on a break. Checking out now will automatically end your break. Are you sure you want to proceed?" 
+                  : "Would you like to take a break before leaving, or proceed directly with checking out of your shift?"}
               </p>
 
               <div className="space-y-4">

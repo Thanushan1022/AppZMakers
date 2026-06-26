@@ -23,7 +23,31 @@ export function HRLeaveApprovalsView({
   handleConfirmLeaveAction,
   filteredLeaves,
   leaveCounts,
+  leaveMonthFilter,
+  setLeaveMonthFilter,
+  leaveYearFilter,
+  setLeaveYearFilter,
 }) {
+  const availableYears = [];
+  for (let y = 2030; y >= 2024; y--) {
+    availableYears.push(y);
+  }
+
+  const months = [
+    { value: 'all', label: 'All Months' },
+    { value: '01', label: 'January' },
+    { value: '02', label: 'February' },
+    { value: '03', label: 'March' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'May' },
+    { value: '06', label: 'June' },
+    { value: '07', label: 'July' },
+    { value: '08', label: 'August' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' },
+  ];
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div>
@@ -33,18 +57,42 @@ export function HRLeaveApprovalsView({
 
       {/* Filter tabs + search */}
       <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xl shadow-slate-200/40 dark:shadow-none">
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
-          {['all', 'pending', 'approved', 'rejected'].map(f => (
-            <button
-              key={f}
-              onClick={() => setLeaveTabFilter(f)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${leaveTabFilter === f ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+            {['all', 'pending', 'approved', 'rejected'].map(f => (
+              <button
+                key={f}
+                onClick={() => setLeaveTabFilter(f)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${leaveTabFilter === f ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+              >
+                {f} ({leaveCounts[f] || 0})
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={leaveYearFilter}
+              onChange={(e) => setLeaveYearFilter(e.target.value)}
+              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
             >
-              {f} ({leaveCounts[f] || 0})
-            </button>
-          ))}
+              <option value="all">All Years</option>
+              {availableYears.map(y => (
+                <option key={y} value={String(y)}>{y}</option>
+              ))}
+            </select>
+            <select
+              value={leaveMonthFilter}
+              onChange={(e) => setLeaveMonthFilter(e.target.value)}
+              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
+            >
+              {months.map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="flex-1 relative w-full">
+        <div className="flex-1 relative w-full sm:w-auto">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
@@ -85,7 +133,7 @@ export function HRLeaveApprovalsView({
 
                 <div className="mt-4 flex items-center gap-4 flex-wrap">
                   <span className={`px-3 py-1.5 rounded-lg text-sm font-bold border shadow-sm capitalize ${typeColors[leave.type] || 'bg-slate-50 text-slate-600'}`}>
-                    {leave.type === 'client-assigned' ? 'Client' : leave.type} Leave
+                    {leave.type === 'client-assigned' ? 'Client/Lead' : leave.type} Leave
                   </span>
                   <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <Calendar className="w-4 h-4" />

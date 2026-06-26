@@ -85,8 +85,8 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div>
-        <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Client Notifications</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Telemetry log of shift start messages and leave assignments sent from clients to employees</p>
+        <h1 className="text-slate-800" style={{ fontWeight: 700, fontSize: '1.375rem' }}>Client/Lead Notifications</h1>
+        <p className="text-slate-500 text-sm mt-0.5">Telemetry log of shift start messages and leave assignments sent from clients/leads to employees</p>
       </div>
 
       <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-8 flex flex-col shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden">
@@ -95,13 +95,13 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
         
         <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-6 flex items-center gap-2 relative z-10">
           <Bell className="w-5 h-5 text-emerald-600" />
-          All Client Messages & Leaves ({sortedNotices.length})
+          All Client/Lead Messages & Leaves ({sortedNotices.length})
         </h3>
 
         {sortedNotices.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
             <Bell className="w-12 h-12 mx-auto mb-3 opacity-30 animate-bounce text-emerald-500" />
-            <p className="font-medium text-slate-500">No client notifications recorded yet.</p>
+            <p className="font-medium text-slate-500">No client/lead notifications recorded yet.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -158,7 +158,7 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
                       <div className="flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-bold text-slate-500 tracking-wider uppercase">
-                            Client: {notice.companyName}
+                            Client/Lead: {notice.companyName}
                           </span>
                           <span className="text-slate-300 text-xs">|</span>
                           <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
@@ -166,7 +166,7 @@ export function HRClientNotificationsView({ hrProfile, shiftNotices = [] }) {
                           </span>
                           {isLeave ? (
                             <span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full font-bold uppercase">
-                              🍁 Client Leave
+                              🍁 Client/Lead Leave
                             </span>
                           ) : notice.informHR ? (
                             <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-rose-200 shadow-sm animate-pulse">

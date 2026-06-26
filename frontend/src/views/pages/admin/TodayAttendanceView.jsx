@@ -69,8 +69,8 @@ export function TodayAttendanceView({
     containerRef.current.scrollLeft = scrollLeft.current - walk;
   };
 
-  const getTeaBreakDetails = (breaks = []) => {
-    const teaBreaks = breaks.filter(b => b.type === 'tea');
+  const getTeaBreakDetails = (breaks = [], checkOutStr = null) => {
+    const teaBreaks = breaks?.filter(b => b.type === 'tea') || [];
     const count = teaBreaks.length;
     if (count === 0) return '—';
     
@@ -89,8 +89,12 @@ export function TodayAttendanceView({
         let bIn = getSecsFromTime(b.start);
         let endStr = b.end;
         if (!endStr) {
-          const now = new Date();
-          endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          if (checkOutStr) {
+            endStr = checkOutStr;
+          } else {
+            const now = new Date();
+            endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          }
         }
         let bOut = getSecsFromTime(endStr);
         if (bOut < bIn) bOut += 86400;
@@ -102,8 +106,8 @@ export function TodayAttendanceView({
     return `${count}-${totalMins} min`;
   };
 
-  const getMealBreakDetails = (breaks = [], fallbackMins = 0) => {
-    const mealBreaks = breaks.filter(b => b.type !== 'tea');
+  const getMealBreakDetails = (breaks = [], fallbackMins = 0, checkOutStr = null) => {
+    const mealBreaks = breaks?.filter(b => b.type !== 'tea') || [];
     const count = mealBreaks.length;
     if (count === 0) {
       if (fallbackMins > 0) {
@@ -131,8 +135,12 @@ export function TodayAttendanceView({
         let bIn = getSecsFromTime(b.start);
         let endStr = b.end;
         if (!endStr) {
-          const now = new Date();
-          endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          if (checkOutStr) {
+            endStr = checkOutStr;
+          } else {
+            const now = new Date();
+            endStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          }
         }
         let bOut = getSecsFromTime(endStr);
         if (bOut < bIn) bOut += 86400;
@@ -271,14 +279,17 @@ export function TodayAttendanceView({
                   const status = rec?.status || 'absent';
                   const isAbsent = status === 'absent';
                   
+                  const isOnMealBreak = rec?.onBreak || (rec?.breaks?.some(b => b.type !== 'tea' && !b.end));
+                  const isOnTeaBreak = rec?.onTeaBreak || (rec?.breaks?.some(b => b.type === 'tea' && !b.end));
+                  
                   if (statusFilter === 'present' && isAbsent) return false;
                   if (statusFilter === 'absent' && !isAbsent) return false;
 
                   if (activityFilter !== 'all') {
                     if (isAbsent || !rec?.checkIn || rec?.checkOut) return false;
-                    if (activityFilter === 'meal-break' && !rec.onBreak) return false;
-                    if (activityFilter === 'tea-break' && !rec.onTeaBreak) return false;
-                    if (activityFilter === 'active' && (rec.onBreak || rec.onTeaBreak)) return false;
+                    if (activityFilter === 'meal-break' && !isOnMealBreak) return false;
+                    if (activityFilter === 'tea-break' && !isOnTeaBreak) return false;
+                    if (activityFilter === 'active' && (isOnMealBreak || isOnTeaBreak)) return false;
                   }
 
                   return true;
@@ -301,6 +312,9 @@ export function TodayAttendanceView({
                   const rec = todayAttendance.find((a) => a.employeeId === emp.id);
                   const status = rec?.status || 'absent';
                   const isAbsent = status === 'absent';
+                  
+                  const isOnMealBreak = rec?.onBreak || (rec?.breaks?.some(b => b.type !== 'tea' && !b.end));
+                  const isOnTeaBreak = rec?.onTeaBreak || (rec?.breaks?.some(b => b.type === 'tea' && !b.end));
                   const statusCls = {
                     present: 'bg-emerald-50 text-emerald-700',
                     late: 'bg-amber-50 text-amber-700',
@@ -308,7 +322,7 @@ export function TodayAttendanceView({
                     'half-day': 'bg-sky-50 text-sky-700',
                   };
                   return (
-                    <tr key={emp.id} className="group even:bg-slate-50/60 hover:bg-indigo-50/40 transition-colors border-b border-border last:border-0">
+                    <tr key={emp.id} className="group even:bg-slate-50/60 dark:even:bg-slate-800/30 hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 transition-colors border-b border-border dark:border-slate-800/50 last:border-0">
                       <td className="py-3 px-4 min-w-[200px]">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold flex-shrink-0 overflow-hidden">
@@ -350,7 +364,7 @@ export function TodayAttendanceView({
                              <div className="flex items-center gap-2">
                                <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black"><Clock className="w-3.5 h-3.5 animate-pulse"/></span>
                                <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">
-                                 {rec.onBreak ? 'Meal Break' : rec.onTeaBreak ? 'Tea Break' : 'Active'}
+                                 {isOnMealBreak ? 'Meal Break' : isOnTeaBreak ? 'Tea Break' : 'Active'}
                                </span>
                              </div>
                           ) : null)}
@@ -358,12 +372,12 @@ export function TodayAttendanceView({
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-xs border border-amber-100">
-                           <Coffee className="w-3.5 h-3.5 opacity-70" /> {isAbsent || !rec?.checkIn ? '—' : getMealBreakDetails(rec?.breaks, rec?.breakMinutes)}
+                           <Coffee className="w-3.5 h-3.5 opacity-70" /> {isAbsent || !rec?.checkIn ? '—' : getMealBreakDetails(rec?.breaks, rec?.breakMinutes, rec?.checkOut)}
                          </span>
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-mono font-bold text-xs border border-emerald-100">
-                          <Coffee className="w-3.5 h-3.5 opacity-70" /> {isAbsent || !rec?.checkIn ? '—' : getTeaBreakDetails(rec?.breaks)}
+                          <Coffee className="w-3.5 h-3.5 opacity-70" /> {isAbsent || !rec?.checkIn ? '—' : getTeaBreakDetails(rec?.breaks, rec?.checkOut)}
                         </span>
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
@@ -481,49 +495,49 @@ export function TodayAttendanceView({
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3">
+                <div className="bg-indigo-50/50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-3">
                   <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></span>Check In</div>
-                  <div className="font-mono text-indigo-900 font-bold text-base">{selectedRecord.checkIn || '—'}</div>
+                  <div className="font-mono text-indigo-900 dark:text-indigo-100 font-bold text-base">{selectedRecord.checkIn || '—'}</div>
                 </div>
-                <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3">
+                <div className="bg-indigo-50/50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-3">
                   <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></span>Check Out</div>
-                  <div className="font-mono text-indigo-900 font-bold text-base">{selectedRecord.checkOut || (selectedRecord.checkIn ? 'Active' : '—')}</div>
+                  <div className="font-mono text-indigo-900 dark:text-indigo-100 font-bold text-base">{selectedRecord.checkOut || (selectedRecord.checkIn ? 'Active' : '—')}</div>
                 </div>
-                <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-3">
+                <div className="bg-amber-50/50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800/50 rounded-xl p-3">
                   <div className="text-amber-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>Meal Break</div>
-                  <div className="font-mono text-amber-900 font-bold text-base">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes)}</div>
+                  <div className="font-mono text-amber-900 dark:text-amber-100 font-bold text-base">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes, selectedRecord.checkOut)}</div>
                   {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea').length > 0 && (
                     <div className="mt-2 space-y-1">
                       {selectedRecord.breaks.filter(b => b.type !== 'tea').map((b, i) => (
-                        <div key={i} className="text-[11px] font-bold text-amber-700/80 flex items-center gap-1.5">
+                        <div key={i} className="text-[11px] font-bold text-amber-700/80 dark:text-amber-400 flex items-center gap-1.5">
                           {i + 1}{['st', 'nd', 'rd'][i] || 'th'} meal: {b.start} - {b.end || 'Ongoing'}
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <div className="bg-teal-50/50 border border-teal-100 rounded-xl p-3">
+                <div className="bg-teal-50/50 dark:bg-teal-900/30 border border-teal-100 dark:border-teal-800/50 rounded-xl p-3">
                   <div className="text-teal-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>Tea Break</div>
-                  <div className="font-mono text-teal-900 font-bold text-base">{getTeaBreakDetails(selectedRecord.breaks)}</div>
+                  <div className="font-mono text-teal-900 dark:text-teal-100 font-bold text-base">{getTeaBreakDetails(selectedRecord.breaks)}</div>
                   {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type === 'tea').length > 0 && (
                     <div className="mt-2 space-y-1">
                       {selectedRecord.breaks.filter(b => b.type === 'tea').map((b, i) => (
-                        <div key={i} className="text-[11px] font-bold text-teal-700/80 flex items-center gap-1.5">
+                        <div key={i} className="text-[11px] font-bold text-teal-700/80 dark:text-teal-400 flex items-center gap-1.5">
                           {i + 1}{['st', 'nd', 'rd'][i] || 'th'} tea: {b.start} - {b.end || 'Ongoing'}
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3">
+                <div className="bg-blue-50/50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl p-3">
                   <div className="text-blue-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>Net Hours</div>
-                  <div className="font-mono text-blue-900 font-bold text-base">{formatDecimalHours(selectedRecord.totalHours)}</div>
+                  <div className="font-mono text-blue-900 dark:text-blue-100 font-bold text-base">{formatDecimalHours(selectedRecord.totalHours)}</div>
                 </div>
                 <div className={`border rounded-xl p-3 ${
-                  selectedRecord.status === 'present' ? 'bg-emerald-50/50 border-emerald-100' :
-                  selectedRecord.status === 'absent' ? 'bg-rose-50/50 border-rose-100' :
-                  selectedRecord.status === 'late' ? 'bg-amber-50/50 border-amber-100' :
-                  'bg-sky-50/50 border-sky-100'
+                  selectedRecord.status === 'present' ? 'bg-emerald-50/50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800/50' :
+                  selectedRecord.status === 'absent' ? 'bg-rose-50/50 dark:bg-rose-900/30 border-rose-100 dark:border-rose-800/50' :
+                  selectedRecord.status === 'late' ? 'bg-amber-50/50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800/50' :
+                  'bg-sky-50/50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-800/50'
                 }`}>
                   <div className={`text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5 ${
                     selectedRecord.status === 'present' ? 'text-emerald-500' :
@@ -537,19 +551,19 @@ export function TodayAttendanceView({
                     'bg-sky-500'
                   }`}></span>Status</div>
                   <div className={`capitalize font-bold text-base ${
-                    selectedRecord.status === 'present' ? 'text-emerald-900' :
-                    selectedRecord.status === 'absent' ? 'text-rose-900' :
-                    selectedRecord.status === 'late' ? 'text-amber-900' :
-                    'text-sky-900'
+                    selectedRecord.status === 'present' ? 'text-emerald-900 dark:text-emerald-100' :
+                    selectedRecord.status === 'absent' ? 'text-rose-900 dark:text-rose-100' :
+                    selectedRecord.status === 'late' ? 'text-amber-900 dark:text-amber-100' :
+                    'text-sky-900 dark:text-sky-100'
                   }`}>{selectedRecord.status}</div>
                 </div>
-                <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3">
+                <div className="bg-emerald-50/50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 rounded-xl p-3">
                   <div className="text-emerald-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Extra Hours</div>
-                  <div className="font-mono text-emerald-700 font-bold text-base">{selectedRecord.extraHours > 0 ? `+${formatDecimalHours(selectedRecord.extraHours)}` : '—'}</div>
+                  <div className="font-mono text-emerald-700 dark:text-emerald-400 font-bold text-base">{selectedRecord.extraHours > 0 ? `+${formatDecimalHours(selectedRecord.extraHours)}` : '—'}</div>
                 </div>
-                <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-3">
+                <div className="bg-rose-50/50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800/50 rounded-xl p-3">
                   <div className="text-rose-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-rose-400 rounded-full"></span>Less Hours</div>
-                  <div className="font-mono text-rose-600 font-bold text-base">{formatDecimalHours(selectedRecord.lessHours)}</div>
+                  <div className="font-mono text-rose-600 dark:text-rose-400 font-bold text-base">{formatDecimalHours(selectedRecord.lessHours)}</div>
                 </div>
               </div>
 
@@ -562,19 +576,19 @@ export function TodayAttendanceView({
                 {selectedRecord.tasks && selectedRecord.tasks.length > 0 ? (
                   <div className="space-y-2">
                     {selectedRecord.tasks.map((task, idx) => (
-                      <div key={idx} className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 flex items-start gap-2.5">
-                        <div className="mt-0.5 text-indigo-500">
+                      <div key={idx} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2.5 border border-slate-100 dark:border-slate-700/50 flex items-start gap-2.5">
+                        <div className="mt-0.5 text-indigo-500 dark:text-indigo-400">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-slate-700 text-sm font-medium">{task.description}</p>
-                          <p className="text-slate-400 text-[10px] mt-0.5 font-mono">{task.timeContext}</p>
+                          <p className="text-slate-700 dark:text-slate-200 text-sm font-medium">{task.description}</p>
+                          <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-0.5 font-mono">{task.timeContext}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-400 text-xs italic bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">No tasks recorded for this day.</p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs italic bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-xl p-3 text-center">No tasks recorded for this day.</p>
                 )}
               </div>
 

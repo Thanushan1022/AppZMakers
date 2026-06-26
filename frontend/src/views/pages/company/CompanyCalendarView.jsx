@@ -186,8 +186,15 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
 
 
 
-  const isEventHoliday = (event) => {
-    return event.type === 'holiday' || event.type === 'bank-holiday' || event.type === 'festival';
+  const isReadOnlyEvent = (event) => {
+    return event.type === 'holiday' || 
+           event.type === 'bank-holiday' || 
+           event.type === 'festival' ||
+           event.type === 'annual-leave' ||
+           event.type === 'casual-leave' ||
+           event.type === 'medical-leave' ||
+           event.type === 'birthday' ||
+           event.type === 'anniversary';
   };
 
   const canManageEvents = role === 'hr' || role === 'superadmin';
@@ -212,7 +219,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
 
   const openEditEvent = (event, e) => {
     e.stopPropagation();
-    if (!canEditOrDelete || isEventHoliday(event)) {
+    if (!canEditOrDelete || isReadOnlyEvent(event)) {
       setSelectedEvent(event);
       return;
     }
@@ -335,7 +342,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
         <div>
-          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Company Calendar</h1>
+          <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Calendar</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">
             {canManageEvents
               ? 'Manage company events'
@@ -681,7 +688,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
             </div>
 
             <div className="flex gap-4 pt-8">
-              {canEditOrDelete && !isEventHoliday(selectedEvent) && (
+              {canEditOrDelete && !isReadOnlyEvent(selectedEvent) && (
                 <button
                   type="button"
                   onClick={(e) => handleDelete(selectedEvent._id || selectedEvent.id, e)}

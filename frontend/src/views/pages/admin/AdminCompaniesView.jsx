@@ -29,15 +29,15 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="relative z-10">
-        <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>Clients & Teams</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">View client companies and the employees assigned to them</p>
+        <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>Clients/Leads & Teams</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">View client/lead companies and the employees assigned to them</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Column: Companies List */}
         <div className="md:col-span-1 space-y-3">
           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
-            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-base mb-4">Client Companies</h3>
+            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-base mb-4">Client/Lead Companies</h3>
             <div className="max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               <div className="space-y-2">
                 {companies.map(co => {
@@ -75,7 +75,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                   );
                 })}
                 {companies.length === 0 && (
-                  <div className="py-8 text-center text-slate-400 text-sm">No client companies found</div>
+                  <div className="py-8 text-center text-slate-400 text-sm">No client/lead companies found</div>
                 )}
               </div>
             </div>
@@ -158,7 +158,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                     {companyEmployees.length === 0 && (
                       <div className="sm:col-span-2 py-12 text-center text-slate-400">
                         <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">No employees assigned to this client yet</p>
+                        <p className="text-sm">No employees assigned to this client/lead yet</p>
                       </div>
                     )}
                   </div>
@@ -203,7 +203,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                 { icon: Mail, label: 'Email', value: selectedEmployee.email },
                 { icon: Phone, label: 'Phone', value: selectedEmployee.phone || 'N/A' },
                 { icon: Briefcase, label: 'Department', value: selectedEmployee.department || 'General' },
-                { icon: Building2, label: 'Company / Client', value: selectedEmployee.company || 'General (Our Company)' },
+                { icon: Building2, label: 'Company / Client/Lead', value: selectedEmployee.company || 'General (Our Company)' },
                 { icon: MapPin, label: 'Address', value: selectedEmployee.address || 'N/A' },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-start gap-3">

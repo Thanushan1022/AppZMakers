@@ -18,10 +18,34 @@ export function EmployeeLeaveView({
   setLeaveForm,
   leaveError,
   setLeaveError,
+  leaveMonthFilter,
+  setLeaveMonthFilter,
+  leaveYearFilter,
+  setLeaveYearFilter,
   filteredLeaves,
   handleLeaveSubmit,
   handleDeleteLeave,
 }) {
+  const availableYears = [];
+  for (let y = 2030; y >= 2024; y--) {
+    availableYears.push(y);
+  }
+
+  const months = [
+    { value: 'all', label: 'All Months' },
+    { value: '01', label: 'January' },
+    { value: '02', label: 'February' },
+    { value: '03', label: 'March' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'May' },
+    { value: '06', label: 'June' },
+    { value: '07', label: 'July' },
+    { value: '08', label: 'August' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' },
+  ];
   const balanceItems = [
     { key: 'annual', label: 'Annual Leave', data: balance.annual, color: 'bg-indigo-500', ring: 'border-indigo-200' },
     { key: 'casual', label: 'Casual Leave', data: balance.casual, color: 'bg-sky-500', ring: 'border-sky-200' },
@@ -235,20 +259,44 @@ export function EmployeeLeaveView({
             </div>
             <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight">Leave History</h3>
           </div>
-          <div className="flex items-center p-1 bg-slate-100/80 dark:bg-slate-900/80 rounded-2xl shadow-inner border border-slate-200/50 dark:border-slate-700/50">
-            {['all', 'pending', 'approved', 'rejected'].map(f => (
-              <button
-                key={f}
-                onClick={() => setLeaveFilter(f)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                  leaveFilter === f 
-                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800'
-                }`}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <select
+                value={leaveYearFilter}
+                onChange={(e) => setLeaveYearFilter(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
               >
-                {f}
-              </button>
-            ))}
+                <option value="all">All Years</option>
+                {availableYears.map(y => (
+                  <option key={y} value={String(y)}>{y}</option>
+                ))}
+              </select>
+              <select
+                value={leaveMonthFilter}
+                onChange={(e) => setLeaveMonthFilter(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
+              >
+                {months.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex items-center p-1 bg-slate-100/80 dark:bg-slate-900/80 rounded-2xl shadow-inner border border-slate-200/50 dark:border-slate-700/50">
+              {['all', 'pending', 'approved', 'rejected'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setLeaveFilter(f)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                    leaveFilter === f 
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -276,7 +324,7 @@ export function EmployeeLeaveView({
                     <div className="flex-1 space-y-4">
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider border ${typeColors[leave.type] || 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700/50'}`}>
-                          {leave.type === 'client-assigned' ? 'Client' : leave.type} Leave
+                          {leave.type === 'client-assigned' ? 'Client/Lead' : leave.type} Leave
                         </span>
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${st.bg} ${st.text}`}>
                           {st.icon && <span className="scale-75">{st.icon}</span>}

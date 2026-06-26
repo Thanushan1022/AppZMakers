@@ -65,6 +65,8 @@ export function useHRController(hrId, updateAuth) {
   });
 
   const [leaveTabFilter, setLeaveTabFilter] = useState('pending');
+  const [leaveMonthFilter, setLeaveMonthFilter] = useState('all');
+  const [leaveYearFilter, setLeaveYearFilter] = useState(() => String(new Date().getFullYear()));
   const [leaveSearch, setLeaveSearch] = useState('');
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -406,7 +408,19 @@ export function useHRController(hrId, updateAuth) {
         leaveSearch === '' ||
         l.employeeName.toLowerCase().includes(leaveSearch.toLowerCase()) ||
         l.department.toLowerCase().includes(leaveSearch.toLowerCase())
-    );
+    )
+    .filter((l) => {
+      if (leaveMonthFilter !== 'all') {
+        const leaveDate = l.startDate || l.appliedOn;
+        if (!leaveDate) return false;
+        const [y, m] = leaveDate.split('-');
+        if (y !== leaveYearFilter || m !== leaveMonthFilter) return false;
+      } else if (leaveYearFilter !== 'all') {
+        const leaveDate = l.startDate || l.appliedOn;
+        if (leaveDate && !leaveDate.startsWith(leaveYearFilter)) return false;
+      }
+      return true;
+    });
 
   const leaveCounts = {
     all: leavesList.length,
@@ -577,6 +591,10 @@ export function useHRController(hrId, updateAuth) {
 
     leaveTabFilter,
     setLeaveTabFilter,
+    leaveMonthFilter,
+    setLeaveMonthFilter,
+    leaveYearFilter,
+    setLeaveYearFilter,
     leaveSearch,
     setLeaveSearch,
     selectedLeave,

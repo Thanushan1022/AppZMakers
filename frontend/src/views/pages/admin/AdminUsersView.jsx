@@ -87,17 +87,17 @@ export function AdminUsersView({
     checkOut: '',
     status: 'present',
     reason: '',
-    breakMinutes: 0,
+    breakMinutes: '',
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({
     date: '',
-    checkIn: '09:00:00',
-    checkOut: '17:00:00',
+    checkIn: '',
+    checkOut: '',
     status: 'present',
     reason: '',
-    breakMinutes: 0,
+    breakMinutes: '',
   });
 
   const FormatMultilineName = ({ name }) => {
@@ -128,7 +128,7 @@ export function AdminUsersView({
   const tabs = [
     { id: 'employees', label: 'Employees', icon: Users, count: employees.length },
     { id: 'hr', label: 'HR Managers', icon: ShieldCheck, count: hrUsers.length },
-    { id: 'companies', label: 'Clients', icon: Building2, count: companies.length },
+    { id: 'companies', label: 'Clients/Leads', icon: Building2, count: companies.length },
   ];
 
   return (
@@ -136,20 +136,20 @@ export function AdminUsersView({
       <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
         <div>
           <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>User Management</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage all employees, HR managers, and clients in the platform</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage all employees, HR managers, and clients/leads in the platform</p>
         </div>
         <button
           onClick={handleAddClick}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 shadow-indigo-500/25 cursor-pointer"
         >
-          <Plus className="w-5 h-5" />Add {activeTab === 'employees' ? 'Employee' : activeTab === 'hr' ? 'HR Manager' : 'Client'}
+          <Plus className="w-5 h-5" />Add {activeTab === 'employees' ? 'Employee' : activeTab === 'hr' ? 'HR Manager' : 'Client/Lead'}
         </button>
       </div>
 
       {/* Tabs */}
       {/* Tabs */}
       <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-3 shadow-lg shadow-slate-200/40 dark:shadow-none flex flex-col sm:flex-row gap-4 relative z-10">
-        <div className="flex w-full sm:w-auto items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-[1.5rem] p-1.5 border border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex w-full sm:w-auto items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-[1.5rem] p-1.5 border border-slate-200/50 dark:border-slate-700/50 overflow-x-auto hide-scrollbar">
           {tabs.map(({ id, label, icon: Icon, count }) => (
             <button
               key={id}
@@ -185,8 +185,8 @@ export function AdminUsersView({
 
       {/* Employees table */}
       {activeTab === 'employees' && (
-        <div className={`grid gap-6 ${selectedEmployee ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} relative z-10`}>
-          <div className={selectedEmployee ? 'lg:col-span-2' : ''}>
+        <div className={`grid gap-6 ${selectedEmployee ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} relative z-10 min-w-0`}>
+          <div className={`min-w-0 ${selectedEmployee ? 'lg:col-span-2' : ''}`}>
             <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none">
               <div
                 ref={containerRef}
@@ -198,19 +198,19 @@ export function AdminUsersView({
               >
                 <table className="w-full text-sm min-w-[800px]">
                   <thead className="z-10">
-                    <tr className="border-b border-border bg-slate-50">
-                      {['Employee', 'Position', 'Department', 'Client', 'Status', 'Actions'].map((h, i) => {
+                    <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                      {['Employee', 'Position', 'Department', 'Client/Lead', 'Status', 'Actions'].map((h, i) => {
                         const minWidths = ['min-w-[200px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[100px]', 'min-w-[100px]'];
                         return (
-                          <th key={h} className={`sticky top-0 text-left text-slate-600 font-bold py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
+                          <th key={h} className={`sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)] ${minWidths[i]}`}>{h}</th>
                         );
                       })}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {filteredEmployees.map(emp => (
-                      <tr key={emp.id} className={`group hover:bg-slate-50/50 transition-colors ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50' : ''}`}>
-                        <td className={`py-3 px-4 cursor-pointer ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50' : 'bg-white'} group-hover:bg-slate-50/50 min-w-[200px]`} onClick={() => setSelectedEmployeeId(selectedEmployeeId === emp.id ? null : emp.id)}>
+                      <tr key={emp.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : ''}`}>
+                        <td className={`py-3 px-4 cursor-pointer ${selectedEmployeeId === emp.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-transparent'} group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 min-w-[200px]`} onClick={() => setSelectedEmployeeId(selectedEmployeeId === emp.id ? null : emp.id)}>
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold overflow-hidden flex-shrink-0">
                               {emp.avatar && emp.avatar.startsWith('data:image/') ? (
@@ -220,9 +220,9 @@ export function AdminUsersView({
                               )}
                             </div>
                             <div>
-                              <div className="text-slate-700 font-medium hover:text-indigo-600 transition-colors break-all break-words"><FormatMultilineName name={emp.name} /></div>
-                              <div className="text-slate-400 text-xs break-all break-words">{emp.email}</div>
-                              <div className="text-slate-400 text-[10px] whitespace-nowrap">Joined: {emp.joinDate || 'N/A'}</div>
+                              <div className="text-slate-700 dark:text-slate-200 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors break-all break-words"><FormatMultilineName name={emp.name} /></div>
+                              <div className="text-slate-400 dark:text-slate-500 text-xs break-all break-words">{emp.email}</div>
+                              <div className="text-slate-400 dark:text-slate-500 text-[10px] whitespace-nowrap">Joined: {emp.joinDate || 'N/A'}</div>
                             </div>
                           </div>
                         </td>
@@ -264,7 +264,7 @@ export function AdminUsersView({
             });
             const recentRecs = filteredAttendance.slice(0, 5);
             return (
-              <div className="lg:col-span-1 space-y-4">
+              <div className="lg:col-span-1 space-y-4 min-w-0">
                 {/* Profile card */}
                 <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-colors duration-500"></div>
@@ -359,16 +359,16 @@ export function AdminUsersView({
                 {/* Work Assignment Card */}
                 <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
                   <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
-                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">💼</span> Client Assignment
+                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">💼</span> Client/Lead Assignment
                   </h4>
                   <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
                     <div>
-                      <div className="text-xs text-slate-400 font-medium">Current Client</div>
+                      <div className="text-xs text-slate-400 font-medium">Current Client/Lead</div>
                       <div className="text-slate-800 font-semibold text-sm mt-1">{selectedEmployee.company || 'General (Our Company)'}</div>
                     </div>
 
                     <div className="pt-2 border-t border-slate-200/50">
-                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client</label>
+                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client/Lead</label>
                       <select
                         value={selectedEmployee.companyId || 'unassigned'}
                         onChange={(e) => handleAssignClient(selectedEmployee.id, e.target.value)}
@@ -469,26 +469,14 @@ export function AdminUsersView({
                         type="button"
                         onClick={() => {
                           const targetDate = attendanceDateFilter || getTodayDateString();
-                          const existing = selectedAttendance.find(r => r.date === targetDate);
-                          if (existing) {
-                            setCreateForm({
-                              date: targetDate,
-                              checkIn: existing.checkIn || '09:00:00',
-                              checkOut: existing.checkOut || '17:00:00',
-                              status: existing.status || 'present',
-                              reason: '',
-                              breakMinutes: existing.breakMinutes || 0,
-                            });
-                          } else {
-                            setCreateForm({
-                              date: targetDate,
-                              checkIn: '09:00:00',
-                              checkOut: '17:00:00',
-                              status: 'present',
-                              reason: '',
-                              breakMinutes: 0,
-                            });
-                          }
+                          setCreateForm({
+                            date: targetDate,
+                            checkIn: '',
+                            checkOut: '',
+                            status: 'present',
+                            reason: '',
+                            breakMinutes: '',
+                          });
                           setShowCreateModal(true);
                         }}
                         className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold cursor-pointer border border-indigo-100/50 transition-colors"
@@ -534,11 +522,11 @@ export function AdminUsersView({
                               onClick={() => {
                                 setAdjustingRec(rec);
                                 setAdjustForm({
-                                  checkIn: rec.checkIn || '09:00:00',
-                                  checkOut: rec.checkOut || new Date().toTimeString().slice(0, 8),
+                                  checkIn: rec.checkIn || '',
+                                  checkOut: rec.checkOut || '',
                                   status: rec.status || 'present',
                                   reason: '',
-                                  breakMinutes: rec.breakMinutes || 0,
+                                  breakMinutes: rec.breakMinutes || '',
                                 });
                               }}
                               className="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold transition-colors cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg"
@@ -564,44 +552,44 @@ export function AdminUsersView({
 
       {/* HR table */}
       {activeTab === 'hr' && (
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10 min-w-0">
           <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
             <table className="w-full text-sm min-w-[650px]">
               <thead className="z-10">
-                <tr className="border-b border-border bg-slate-50">
-                  {['HR Manager', 'Department', 'Status', 'Actions'].map((h, i) => {
+                <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                  {['Manager Name', 'Company Name', 'Status', 'Actions'].map((h, i) => {
                     const minWidths = ['min-w-[250px]', 'min-w-[200px]', 'min-w-[100px]', 'min-w-[100px]'];
                     return (
-                      <th key={h} className={`sticky top-0 text-left text-slate-600 font-bold py-3 px-4 bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] ${minWidths[i]}`}>{h}</th>
+                      <th key={h} className={`sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)] ${minWidths[i]}`}>{h}</th>
                     );
                   })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredHR.map(hr => (
-                  <tr key={hr.id} className="hover:bg-slate-50/50 transition-colors">
+                {filteredHR.map(mgr => (
+                  <tr key={mgr.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center text-sky-700 text-xs font-bold flex-shrink-0">
-                          {hr.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-xs font-bold flex-shrink-0">
+                          {mgr.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
                         <div>
-                          <div className="text-slate-700 font-medium break-all break-words">{hr.name}</div>
-                          <div className="text-slate-400 text-xs break-all break-words">{hr.email}</div>
-                          <div className="text-slate-400 text-[10px] whitespace-nowrap">Joined: {hr.joinDate || 'N/A'}</div>
+                          <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{mgr.name}</div>
+                          <div className="text-slate-400 dark:text-slate-500 text-xs break-all break-words">{mgr.email}</div>
+                          <div className="text-slate-400 dark:text-slate-500 text-[10px] whitespace-nowrap">Joined: {mgr.joinDate || 'N/A'}</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-500">
-                      <div className="break-all break-words">{hr.department}</div>
+                      <div className="break-all break-words">{mgr.companyName}</div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${hr.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{hr.status}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${mgr.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{mgr.status}</span>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => handleEditClick(hr, 'hr')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
-                        <button type="button" onClick={() => handleDeleteHR(hr.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                        <button type="button" onClick={() => handleEditClick(mgr, 'hr')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
+                        <button type="button" onClick={() => handleDeleteHR(mgr.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                     </td>
                   </tr>
@@ -613,31 +601,31 @@ export function AdminUsersView({
         </div>
       )}
 
-      {/* Clients table */}
+      {/* Clients/Leads table */}
       {activeTab === 'companies' && (
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10 min-w-0">
           <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
             <table className="w-full text-sm min-w-[800px]">
               <thead className="z-10">
-                <tr className="border-b border-border bg-slate-50">
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[200px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Client</th>
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Industry</th>
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[150px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Contact</th>
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Employees</th>
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Joined</th>
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[100px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Status</th>
-                  <th className="sticky top-0 text-left text-slate-600 font-bold py-3 px-4 min-w-[120px] bg-slate-50 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)]">Actions</th>
+                <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[200px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Client/Lead</th>
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Industry</th>
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Contact</th>
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Employees</th>
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Joined</th>
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Status</th>
+                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border dark:divide-slate-700/50">
                 {filteredCompanies.map(co => (
-                  <tr key={co.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={co.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 text-xs font-bold flex-shrink-0">
+                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold flex-shrink-0">
                           {co.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
-                        <div className="text-slate-700 font-medium break-all break-words">{co.name}</div>
+                        <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{co.name}</div>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-500">
@@ -664,7 +652,7 @@ export function AdminUsersView({
                     </td>
                   </tr>
                 ))}
-                {filteredCompanies.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No clients found</td></tr>}
+                {filteredCompanies.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No clients/leads found</td></tr>}
               </tbody>
             </table>
           </div>
@@ -877,7 +865,7 @@ export function AdminUsersView({
                   {editingItem ? <Edit2 className="w-5 h-5" /> : <Building2 className="w-6 h-6" />}
                 </div>
                 <div>
-                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">{editingItem ? 'Edit Client Company' : 'Add New Client Company'}</h3>
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">{editingItem ? 'Edit Client/Lead Company' : 'Add New Client/Lead Company'}</h3>
                   <p className="text-white/70 font-bold text-sm mt-0.5">{editingItem ? 'Update company details' : 'Enter details to add new client'}</p>
                 </div>
               </div>
@@ -981,7 +969,7 @@ export function AdminUsersView({
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
                 <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
                 <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
-                  {editingItem ? 'Update Client' : 'Add Client'}
+                  {editingItem ? 'Update Client/Lead' : 'Add Client/Lead'}
                 </button>
               </div>
             </form>
@@ -994,7 +982,7 @@ export function AdminUsersView({
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col">
             <div className="flex justify-between items-center pb-4 border-b border-border">
               <div>
-                <h3 className="text-slate-800 font-semibold">Assign Workers to Client</h3>
+                <h3 className="text-slate-800 font-semibold">Assign Workers to Client/Lead</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Manage workforce assigned to <strong className="text-slate-700">{assigningCompany.name}</strong></p>
               </div>
               <button
@@ -1050,10 +1038,10 @@ export function AdminUsersView({
       {/* Attendance Adjustment Modal */}
       {adjustingRec && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200">
-            <h3 className="text-slate-800 font-semibold text-lg mb-1">Adjust Attendance</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Manually modify the attendance details for <strong className="text-slate-600 font-semibold">{selectedEmployee.name}</strong> on <strong className="text-slate-600 font-semibold">{adjustingRec.date}</strong>.
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+            <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Adjust Attendance</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+              Manually modify the attendance details for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong> on <strong className="text-slate-600 dark:text-slate-300 font-semibold">{adjustingRec.date}</strong>.
             </p>
 
             <form
@@ -1073,65 +1061,59 @@ export function AdminUsersView({
               className="space-y-4"
             >
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check In Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={adjustForm.checkIn}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, checkIn: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check Out Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={adjustForm.checkOut}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, checkOut: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Break Time (Minutes)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={adjustForm.breakMinutes}
-                  onChange={(e) => setAdjustForm((p) => ({ ...p, breakMinutes: parseInt(e.target.value, 10) || 0 }))}
-                  required
-                  min="0"
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
-                />
-              </div>
+
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Attendance Status</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Attendance Status</label>
                 <select
                   value={adjustForm.status}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, status: e.target.value }))}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-600 focus:outline-none bg-slate-50"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 focus:outline-none bg-slate-50 dark:bg-slate-800/50"
                 >
                   <option value="present">Present</option>
-                  <option value="late">Late</option>
                   <option value="half-day">Half Day</option>
                   <option value="absent">Absent</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Reason for Adjustment</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Reason for Adjustment</label>
                 <textarea
                   placeholder="e.g. Power outage, forgot to clock out, etc."
                   value={adjustForm.reason}
                   onChange={(e) => setAdjustForm((p) => ({ ...p, reason: e.target.value }))}
                   required
                   rows={2}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 resize-none"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 resize-none"
                 />
               </div>
 
@@ -1145,7 +1127,7 @@ export function AdminUsersView({
                 <button
                   type="button"
                   onClick={() => setAdjustingRec(null)}
-                  className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 border border-border dark:border-slate-700 py-2.5 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1158,10 +1140,10 @@ export function AdminUsersView({
       {/* Create Manual Attendance Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200">
-            <h3 className="text-slate-800 font-semibold text-lg mb-1">Add Missed Attendance</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Manually create a new attendance record for <strong className="text-slate-600 font-semibold">{selectedEmployee.name}</strong>.
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+            <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Add Missed Attendance</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+              Manually create a new attendance record for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong>.
             </p>
 
             <form
@@ -1181,98 +1163,82 @@ export function AdminUsersView({
               className="space-y-4"
             >
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Date</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Date</label>
                 <input
                   type="date"
                   value={createForm.date}
                   onChange={(e) => {
                     const newDate = e.target.value;
-                    const existing = selectedAttendance.find(r => r.date === newDate);
-                    if (existing) {
-                      setCreateForm({
-                        date: newDate,
-                        checkIn: existing.checkIn || '09:00:00',
-                        checkOut: existing.checkOut || '17:00:00',
-                        status: existing.status || 'present',
-                        reason: '',
-                        breakMinutes: existing.breakMinutes || 0,
-                      });
-                    } else {
-                      setCreateForm({
-                        date: newDate,
-                        checkIn: '09:00:00',
-                        checkOut: '17:00:00',
-                        status: 'present',
-                        reason: '',
-                        breakMinutes: 0,
-                      });
-                    }
+                    setCreateForm({
+                      date: newDate,
+                      checkIn: '',
+                      checkOut: '',
+                      status: 'present',
+                      reason: '',
+                      breakMinutes: '',
+                    });
                   }}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  max={getTodayDateString()}
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check In Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check In Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={createForm.checkIn}
                   onChange={(e) => setCreateForm((p) => ({ ...p, checkIn: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Check Out Time</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Check Out Time</label>
                 <input
                   type="text"
                   placeholder="HH:MM:SS"
+                  pattern="^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$"
+                  title="24-hour format: HH:MM:SS"
                   value={createForm.checkOut}
                   onChange={(e) => setCreateForm((p) => ({ ...p, checkOut: e.target.value }))}
                   required
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Break Time (Minutes)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={createForm.breakMinutes}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, breakMinutes: parseInt(e.target.value, 10) || 0 }))}
-                  required
-                  min="0"
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
-                />
-              </div>
+
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Attendance Status</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Attendance Status</label>
                 <select
                   value={createForm.status}
                   onChange={(e) => setCreateForm((p) => ({ ...p, status: e.target.value }))}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-600 focus:outline-none bg-slate-50"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 focus:outline-none bg-slate-50 dark:bg-slate-800/50"
                 >
                   <option value="present">Present</option>
-                  <option value="late">Late</option>
                   <option value="half-day">Half Day</option>
                   <option value="absent">Absent</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-600 text-xs font-semibold mb-1.5">Reason for Creation</label>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Reason for Creation</label>
                 <textarea
                   placeholder="e.g. Employee forgot to clock in"
                   value={createForm.reason}
                   onChange={(e) => setCreateForm((p) => ({ ...p, reason: e.target.value }))}
                   required
                   rows={2}
-                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 resize-none"
+                  className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 resize-none"
                 />
               </div>
 
@@ -1286,7 +1252,7 @@ export function AdminUsersView({
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 border border-border py-2.5 rounded-xl text-sm text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 border border-border dark:border-slate-700 py-2.5 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
