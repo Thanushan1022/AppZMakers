@@ -23,6 +23,7 @@ const signToken = (user) =>
 const buildAuthResponse = async (user) => {
   const role = normalizeRole(user.role);
   const profileId = await resolveProfileId(user);
+  const settings = await getSettings();
 
   const payload = {
     email: user.email,
@@ -30,6 +31,7 @@ const buildAuthResponse = async (user) => {
     role,
     token: signToken(user),
     avatar: user.avatar || '',
+    sessionTimeout: settings.sessionTimeout,
   };
 
   if (role === 'company' && profileId) {

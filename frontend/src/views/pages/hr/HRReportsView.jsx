@@ -3,6 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Calendar, Download, Users, BarChart3, Clock, Coffee, Utensils } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const formatHrMin = (valDec) => {
   if (valDec === null || valDec === undefined || valDec === '' || isNaN(valDec)) return '—';
@@ -473,6 +475,205 @@ export function HRReportsView({
     }
   };
 
+  const downloadExcel = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'AppzMaker';
+      workbook.lastModifiedBy = 'AppzMaker';
+      workbook.created = new Date();
+      workbook.modified = new Date();
+
+      const sheet = workbook.addWorksheet('Report', {
+        views: [{ state: 'frozen', ySplit: 5 }],
+        pageSetup: { paperSize: 9, orientation: 'landscape' }
+      });
+
+      // Title
+      let reportTitle = (reportType || 'Attendance').charAt(0).toUpperCase() + (reportType || 'Attendance').slice(1) + ' Report';
+      sheet.mergeCells('A1:I2');
+      const titleCell = sheet.getCell('A1');
+      titleCell.value = `AppzMaker Portal - ${reportTitle}`;
+      titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+      titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4338CA' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // Subtitle (Period)
+      let periodText = 'Period: All Time';
+      if (reportsFilterType === 'monthly') {
+        const { startStr, endStr } = getReportsCompanyMonthRange(reportsSelectedYear, reportsSelectedMonthNum);
+        periodText = `Period: Monthly (${startStr} to ${endStr})`;
+      } else if (reportsFilterType === 'weekly') {
+        const { mondayStr, sundayStr } = getReportsWeekRange(reportsSelectedWeekDate);
+        periodText = `Period: Weekly (${mondayStr} to ${sundayStr})`;
+      } else if (reportsFilterType === 'custom') {
+        periodText = `Period: Custom Range (${reportsCustomStartDate} to ${reportsCustomEndDate})`;
+      }
+
+      sheet.mergeCells('A3:I3');
+      const subTitleCell = sheet.getCell('A3');
+      subTitleCell.value = periodText;
+      subTitleCell.font = { name: 'Arial', size: 11, italic: true };
+      subTitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // Generated Date & Info
+      sheet.mergeCells('A4:I4');
+      const infoCell = sheet.getCell('A4');
+      infoCell.value = `Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | Role: ${role === 'superadmin' ? 'Administrator' : 'HR Manager'}`;
+      infoCell.font = { name: 'Arial', size: 10, color: { argb: 'FF64748B' } };
+      infoCell.alignment = { vertical: 'middle', horizontal: 'right' };
+
+      let tableHeaders = [];
+      let tableRows = [];
+      let colWidths = [];
+
+      if (reportType === 'attendance') {
+        if (selectedEmployeeFilter !== 'all') {
+          tableHeaders = ['Date', 'Check In', 'Check Out', 'Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Status'];
+          colWidths = [15, 12, 12, 10, 12, 12, 12, 15];
+          tableRows = filteredEmployeeAttendanceData.map((a) => [
+            a.date,
+            a.checkIn || '—',
+            a.checkOut || '—',
+            formatMin(a.breakMinutes || 0),
+            formatHrMin(a.totalHours || 0),
+            a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—',
+            a.lessHours > 0 ? `${formatHrMin(a.lessHours)}` : '—',
+            a.status
+          ]);
+        } else {
+          tableHeaders = ['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate'];
+          colWidths = [25, 20, 10, 12, 12, 12, 12, 12, 10];
+          tableRows = filteredEmployeesList.map((emp) => {
+            const stats = getEmployeeStats ? getEmployeeStats(emp.id) : { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
+            return [
+              emp.name,
+              emp.department || '—',
+              stats.present,
+              formatMin(stats.mealBreakMinutes),
+              formatMin(stats.teaBreakMinutes),
+              formatHrMin(stats.hours),
+              stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—',
+              stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—',
+              `${stats.pct || 0}%`
+            ];
+          });
+        }
+      } else if (reportType === 'leave') {
+        tableHeaders = ['Employee', 'Dept', 'Type', 'From', 'To', 'Days', 'Status', 'Applied'];
+        colWidths = [25, 20, 15, 15, 15, 10, 15, 15];
+        tableRows = filteredLeavesList.map((l) => [
+          l.employeeName,
+          l.department || '—',
+          l.type,
+          l.startDate,
+          l.endDate,
+          l.days,
+          l.status,
+          l.appliedOn
+        ]);
+      } else {
+        tableHeaders = ['Employee', 'Company', 'Department', 'Position', 'Join Date', 'Status'];
+        colWidths = [25, 20, 20, 20, 15, 15];
+        tableRows = filteredEmployeesList.map((emp) => [
+          emp.name,
+          emp.company || '—',
+          emp.department || '—',
+          emp.position || '—',
+          emp.joinDate,
+          emp.status
+        ]);
+      }
+
+      // Add Headers
+      const headerRow = sheet.getRow(5);
+      headerRow.values = tableHeaders;
+      headerRow.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+      headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+      
+      tableHeaders.forEach((header, index) => {
+        const cell = headerRow.getCell(index + 1);
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+          left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+          bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+          right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+        };
+      });
+
+      // Add Data
+      tableRows.forEach((rowData, index) => {
+        const row = sheet.getRow(index + 6);
+        row.values = rowData;
+        row.font = { name: 'Arial', size: 10, color: { argb: 'FF334155' } };
+        row.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+        
+        // Alternate row colors
+        const bgColor = index % 2 === 0 ? 'FFF8FAFC' : 'FFFFFFFF';
+        
+        rowData.forEach((val, cIndex) => {
+          const cell = row.getCell(cIndex + 1);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+          };
+
+          // Center specific columns
+          if (typeof val === 'number' || val?.includes('%') || ['Status', 'Date', 'From', 'To', 'Join Date', 'Present', 'Days'].includes(tableHeaders[cIndex])) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          }
+          
+          // Color code status if applicable
+          if (tableHeaders[cIndex] === 'Status') {
+            const statusStr = String(val).toLowerCase();
+            let statusColor = 'FF334155'; // default
+            if (statusStr === 'present' || statusStr === 'active' || statusStr === 'approved') statusColor = 'FF10B981'; // emerald
+            else if (statusStr === 'absent' || statusStr === 'rejected') statusColor = 'FFEF4444'; // red
+            else if (statusStr === 'late' || statusStr === 'pending') statusColor = 'FFF59E0B'; // amber
+            
+            cell.font = { ...row.font, color: { argb: statusColor }, bold: true };
+          }
+        });
+      });
+
+      // Set column widths
+      sheet.columns.forEach((col, index) => {
+        if (colWidths[index]) {
+          col.width = colWidths[index];
+        } else {
+          col.width = 15;
+        }
+      });
+
+      let suffix = 'Report';
+      if (reportsFilterType === 'monthly') {
+        suffix = `${reportsSelectedYear}_${reportsSelectedMonthNum}`;
+      } else if (reportsFilterType === 'weekly') {
+        suffix = `Week_${reportsSelectedWeekDate}`;
+      } else if (reportsFilterType === 'custom') {
+        suffix = `${reportsCustomStartDate}_to_${reportsCustomEndDate}`;
+      }
+
+      let empNameSuffix = '';
+      if (selectedEmployeeFilter !== 'all' && filteredEmployeesList.length > 0) {
+        empNameSuffix = `_${filteredEmployeesList[0].name.replace(/\s+/g, '_')}`;
+      }
+
+      const filename = `AppzMaker_${reportType}_Report_${suffix}${empNameSuffix}.xlsx`;
+      
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, filename);
+      
+    } catch (err) {
+      console.error('Excel generation error:', err);
+      alert('Error generating Excel report. Please try again.');
+    }
+  };
+
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -481,6 +682,13 @@ export function HRReportsView({
           <p className="text-slate-500 dark:text-slate-400 text-base font-medium mt-1">Generate and export workforce analytics</p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={downloadExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors cursor-pointer shadow-sm shadow-emerald-600/10"
+          >
+            <Download className="w-4 h-4" />Excel
+          </button>
           <button
             type="button"
             onClick={downloadPDF}

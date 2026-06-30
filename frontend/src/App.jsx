@@ -204,6 +204,47 @@ function AppRoutes() {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (!auth) return;
+    
+    // Parse timeout from settings, defaulting to 30 minutes
+    let timeoutMinutes = 30;
+    if (auth.sessionTimeout) {
+      const match = String(auth.sessionTimeout).match(/(\d+)/);
+      if (match) timeoutMinutes = parseInt(match[1], 10);
+    }
+    
+    const timeoutMs = timeoutMinutes * 60 * 1000;
+    let inactivityTimer;
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        globalShowToast('Your session has expired due to inactivity.', 'warning');
+        handleLogout();
+      }, timeoutMs);
+    };
+
+    const handleActivity = () => {
+      resetTimer();
+    };
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
+    resetTimer();
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+    };
+  }, [auth, handleLogout]);
+
   if (!auth) {
     return (
       <Routes>
