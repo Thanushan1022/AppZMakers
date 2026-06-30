@@ -28,7 +28,7 @@ import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveServi
 export const getLeaves = async (req, res) => {
   try {
     await autoRejectPassedLeaves();
-    const leaves = await LeaveRequest.find().sort({ createdAt: -1 });
+    const leaves = await LeaveRequest.find().sort({ createdAt: -1 }).lean();
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -68,7 +68,7 @@ export const reviewLeave = async (req, res) => {
 
 export const getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find().select('-cvData -cvName').sort({ createdAt: -1 });
+    const employees = await Employee.find().select('-cvData -cvName').sort({ createdAt: -1 }).lean();
     res.json(employees.map(toEmployeeJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -82,8 +82,8 @@ export const getEmployeeDetail = async (req, res) => {
 
     const empId = getEmployeeLegacyId(emp);
     const balance = await syncLeaveBalance(empId, emp.joinDate);
-    const attendance = await Attendance.find({ employeeId: empId }).sort({ date: -1 }).limit(10);
-    const allAttendance = await Attendance.find({ employeeId: empId });
+    const attendance = await Attendance.find({ employeeId: empId }).sort({ date: -1 }).limit(10).lean();
+    const allAttendance = await Attendance.find({ employeeId: empId }).lean();
     const stats = computeEmployeeStats(empId, allAttendance.map(toAttendanceJSON));
 
     res.json({
@@ -280,15 +280,15 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 });
+    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const settings = await getSettings();
-    const attendanceRecords = await Attendance.find();
+    const attendanceRecords = await Attendance.find().lean();
     await autoEndOverdueTeaBreaks(attendanceRecords, settings);
     
     const attJson = attendanceRecords.map(toAttendanceJSON);
-    const leaveRequests = await LeaveRequest.find();
+    const leaveRequests = await LeaveRequest.find().lean();
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
     const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
@@ -336,7 +336,7 @@ export const getDashboard = async (req, res) => {
 export const getReports = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 });
+    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);
@@ -346,7 +346,7 @@ export const getReports = async (req, res) => {
     if (startDate && endDate) {
       attendanceFilter.date = { $gte: startDate, $lte: endDate };
     }
-    const attendanceRecords = await Attendance.find(attendanceFilter);
+    const attendanceRecords = await Attendance.find(attendanceFilter).lean();
     const attJson = attendanceRecords.map(toAttendanceJSON);
 
     let leaveFilter = {};
@@ -357,7 +357,7 @@ export const getReports = async (req, res) => {
         { startDate: { $lte: startDate }, endDate: { $gte: endDate } }
       ];
     }
-    const leaveRequests = await LeaveRequest.find(leaveFilter);
+    const leaveRequests = await LeaveRequest.find(leaveFilter).lean();
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
     const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
@@ -662,7 +662,7 @@ export const updateEmployeeStatus = async (req, res) => {
 
 export const getHRShiftNotices = async (req, res) => {
   try {
-    const notices = await ShiftNotice.find().sort({ createdAt: -1 });
+    const notices = await ShiftNotice.find().sort({ createdAt: -1 }).lean();
     res.json(notices);
   } catch (error) {
     res.status(500).json({ error: error.message });

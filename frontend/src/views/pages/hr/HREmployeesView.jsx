@@ -28,6 +28,7 @@ export function HREmployeesView({
   handleAddEmployee,
   handleAdjustAttendance,
   handleCreateManualAttendance,
+  handleAssignShift,
 }) {
   const [adjustingRec, setAdjustingRec] = useState(null);
   const [adjustForm, setAdjustForm] = useState({

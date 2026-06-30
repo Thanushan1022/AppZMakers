@@ -316,7 +316,6 @@ export function EmployeeProfileView({
               { label: 'Attendance Rate', value: `${attendancePct}%`, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50' },
               { label: 'Present Days', value: `${presentDays}`, color: 'text-indigo-700 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50' },
               { label: 'Absent Days', value: `${absentDays}`, color: 'text-rose-700 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50' },
-              { label: 'Late Days', value: `${myAttendance ? myAttendance.filter(a => a.status === 'late').length : 0}`, color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50' },
             ].map(s => (
               <div key={s.label} className={`${s.bg} rounded-2xl p-5 shadow-sm transform transition-transform hover:scale-[1.02]`}>
                 <div className={`${s.color} mb-1`} style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 900, fontSize: '2rem', lineHeight: '1' }}>{s.value}</div>

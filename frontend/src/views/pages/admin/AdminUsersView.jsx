@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User, X } from 'lucide-react';
 
-export function AdminUsersView({
+export const AdminUsersView = React.memo(function AdminUsersView({
   employees,
   hrUsers,
   companies,
@@ -976,31 +976,31 @@ export function AdminUsersView({
       {/* Assign Employees Modal */}
       {assigningCompany && (
         <div className="fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col">
-            <div className="flex justify-between items-center pb-4 border-b border-border">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col border border-transparent dark:border-slate-800">
+            <div className="flex justify-between items-center pb-4 border-b border-border dark:border-slate-800">
               <div>
-                <h3 className="text-slate-800 font-semibold">Assign Workers to Client/Lead</h3>
-                <p className="text-slate-500 text-xs mt-0.5">Manage workforce assigned to <strong className="text-slate-700">{assigningCompany.name}</strong></p>
+                <h3 className="text-slate-800 dark:text-slate-100 font-semibold">Assign Workers to Client/Lead</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Manage workforce assigned to <strong className="text-slate-700 dark:text-slate-200">{assigningCompany.name}</strong></p>
               </div>
               <button
                 type="button"
                 onClick={() => setAssigningCompany(null)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-medium"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-sm font-medium"
               >
                 Close
               </button>
             </div>
 
-            <div className="overflow-y-auto my-4 flex-1 divide-y divide-border pr-1">
+            <div className="overflow-y-auto my-4 flex-1 divide-y divide-border dark:divide-slate-800 pr-1">
               {employees.map(emp => {
                 const isAssigned = emp.companyId === assigningCompany.id;
                 return (
                   <div key={emp.id} className="flex items-center justify-between py-3">
                     <div>
-                      <div className="text-slate-700 text-sm font-medium">{emp.name}</div>
-                      <div className="text-slate-400 text-xs">{emp.position} · {emp.department}</div>
-                      <div className="text-slate-400 text-[10px] mt-0.5">
-                        Current: <span className="font-medium text-slate-600">{emp.company || 'General (Our Company)'}</span>
+                      <div className="text-slate-700 dark:text-slate-200 text-sm font-medium">{emp.name}</div>
+                      <div className="text-slate-400 dark:text-slate-500 text-xs">{emp.position} · {emp.department}</div>
+                      <div className="text-slate-400 dark:text-slate-500 text-[10px] mt-0.5">
+                        Current: <span className="font-medium text-slate-600 dark:text-slate-400">{emp.company || 'General (Our Company)'}</span>
                       </div>
                     </div>
                     <div>
@@ -1008,18 +1008,18 @@ export function AdminUsersView({
                         type="checkbox"
                         checked={isAssigned}
                         onChange={() => handleAssignClient(emp.id, isAssigned ? '' : assigningCompany.id)}
-                        className="w-4 h-4 rounded text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                        className="w-4 h-4 rounded text-indigo-600 border-gray-300 dark:border-slate-600 focus:ring-indigo-500 cursor-pointer dark:bg-slate-700"
                       />
                     </div>
                   </div>
                 );
               })}
               {employees.length === 0 && (
-                <p className="text-slate-400 text-sm py-8 text-center">No employees available</p>
+                <p className="text-slate-400 dark:text-slate-500 text-sm py-8 text-center">No employees available</p>
               )}
             </div>
 
-            <div className="pt-4 border-t border-border flex justify-end">
+            <div className="pt-4 border-t border-border dark:border-slate-800 flex justify-end">
               <button
                 type="button"
                 onClick={() => setAssigningCompany(null)}
@@ -1300,4 +1300,4 @@ export function AdminUsersView({
       )}
     </div>
   );
-}
+});

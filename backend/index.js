@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import compression from 'compression';
 import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import apiRouter from './routes/api.js';
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 

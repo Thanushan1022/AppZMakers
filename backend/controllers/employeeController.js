@@ -59,7 +59,7 @@ export const getAttendance = async (req, res) => {
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
     const settings = await getSettings();
-    const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp) }).sort({ date: -1 });
+    const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp) }).sort({ date: -1 }).lean();
     await autoEndOverdueTeaBreaks(records, settings);
     res.json(records.map(toAttendanceJSON));
   } catch (error) {
@@ -304,7 +304,7 @@ export const getLeaves = async (req, res) => {
     // Auto-reject any pending leaves whose end dates have passed
     await autoRejectPassedLeaves();
 
-    const leaves = await LeaveRequest.find({ employeeId: getEmployeeLegacyId(emp), hiddenForEmployee: { $ne: true } }).sort({ createdAt: -1 });
+    const leaves = await LeaveRequest.find({ employeeId: getEmployeeLegacyId(emp), hiddenForEmployee: { $ne: true } }).sort({ createdAt: -1 }).lean();
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -340,8 +340,17 @@ export const createLeaveRequest = async (req, res) => {
 
     const numericDays = Number(days);
     const balance = await syncLeaveBalance(empId, emp.joinDate);
+    
+    const pendingLeaves = await LeaveRequest.find({ employeeId: empId, type, status: 'pending' });
+    const pendingDays = pendingLeaves.reduce((sum, l) => sum + Number(l.days), 0);
+
     const remaining = balance[type] ? (balance[type].total - balance[type].used) : 0;
-    if (numericDays > remaining) {
+    const actualRemaining = remaining - pendingDays;
+
+    if (numericDays > actualRemaining) {
+      if (pendingDays > 0) {
+        return res.status(400).json({ error: `Insufficient leave balance. Remaining: ${actualRemaining} days (${pendingDays} days already pending approval).` });
+      }
       return res.status(400).json({ error: `Insufficient leave balance. Remaining: ${remaining} days.` });
     }
 
@@ -480,7 +489,7 @@ export const getEmployeeShiftNotices = async (req, res) => {
       ]
     };
 
-    const notices = await ShiftNotice.find(query).sort({ createdAt: -1 });
+    const notices = await ShiftNotice.find(query).sort({ createdAt: -1 }).lean();
     res.json(notices);
   } catch (error) {
     res.status(500).json({ error: error.message });

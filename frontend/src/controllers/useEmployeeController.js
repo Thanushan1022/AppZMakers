@@ -54,6 +54,10 @@ export function useEmployeeController(userId, updateAuth) {
   const [teaBreakGapRemainingSecs, setTeaBreakGapRemainingSecs] = useState(0);
   const [todayTasks, setTodayTasks] = useState([]);
   const [shiftNotices, setShiftNotices] = useState([]);
+  
+  // Checkout Summary State
+  const [showGoodbye, setShowGoodbye] = useState(false);
+  const [todaySummary, setTodaySummary] = useState(null);
 
   // Leave form states
   const [showForm, setShowForm] = useState(false);
@@ -410,8 +414,15 @@ export function useEmployeeController(userId, updateAuth) {
     }
   };
 
+  // Session Over Modal State
+  const [showSessionOverModal, setShowSessionOverModal] = useState(false);
+
   // Actions
   const handleCheckIn = async () => {
+    if (hasAttendedToday) {
+      setShowSessionOverModal(true);
+      return;
+    }
     const todayStr = getLocalTodayStr();
     const timeNow = getTimeString();
 
@@ -423,6 +434,7 @@ export function useEmployeeController(userId, updateAuth) {
       });
       if (res.ok) {
         setCheckedIn(true);
+        setHasAttendedToday(true);
         setCheckInTime(timeNow);
         setSessionSecs(0);
         setBreakSecs(0);
@@ -465,6 +477,22 @@ export function useEmployeeController(userId, updateAuth) {
         setCheckedIn(false);
         setOnBreak(false);
         setOnTeaBreak(false);
+        
+        // Show goodbye summary for 30s
+        setTodaySummary({
+            sessionSecs,
+            breakSecs,
+            teaBreakSecs,
+            tasks: todayTasks,
+            checkInTime,
+            checkOutTime: timeNow
+        });
+        setShowGoodbye(true);
+        setTimeout(() => {
+            setShowGoodbye(false);
+            setTodaySummary(null);
+        }, 30000);
+
         fetchData();
       }
     } catch (err) {
@@ -838,6 +866,10 @@ export function useEmployeeController(userId, updateAuth) {
     targetWorkSecs,
     totalExtraHours,
     totalLessHours,
+    showGoodbye,
+    todaySummary,
+    showSessionOverModal,
+    setShowSessionOverModal,
 
     // Calculated statistics
     presentDays,

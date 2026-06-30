@@ -1,4 +1,5 @@
-import { Search, Users, Mail, Phone, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Users, Mail, Phone, Calendar, Briefcase, Building2, MapPin, X } from 'lucide-react';
 
 export function CompanyEmployeesView({
   searchQuery,
@@ -7,6 +8,8 @@ export function CompanyEmployeesView({
   setStatusFilter,
   filteredEmployees,
 }) {
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="flex justify-between items-center gap-4 flex-wrap mb-4">
@@ -47,7 +50,11 @@ export function CompanyEmployeesView({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 relative z-10">
           {filteredEmployees.map(emp => (
-            <div key={emp.id} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl border border-white/60 dark:border-slate-600/50 p-6 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-none transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
+            <div 
+              key={emp.id} 
+              onClick={() => setSelectedEmployee(emp)}
+              className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl border border-white/60 dark:border-slate-600/50 p-6 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-none transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden cursor-pointer"
+            >
               <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent dark:from-white/5 dark:to-transparent pointer-events-none"></div>
               <div className="relative z-10">
                 <div className="flex gap-4">
@@ -78,13 +85,13 @@ export function CompanyEmployeesView({
                   <div className="w-8 h-8 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-white/50 dark:border-slate-700/50 flex items-center justify-center flex-shrink-0">
                     <Phone className="w-4 h-4 text-indigo-500" />
                   </div>
-                  <span>{emp.phone}</span>
+                  <span>{emp.phone || 'Not provided'}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 font-medium">
                   <div className="w-8 h-8 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-white/50 dark:border-slate-700/50 flex items-center justify-center flex-shrink-0">
                     <Calendar className="w-4 h-4 text-indigo-500" />
                   </div>
-                  <span>Hired since {emp.joinDate}</span>
+                  <span>Hired since {emp.joinDate || 'N/A'}</span>
                 </div>
               </div>
               </div>
@@ -98,6 +105,89 @@ export function CompanyEmployeesView({
           )}
         </div>
       </div>
+
+      {/* Employee Details Modal */}
+      {selectedEmployee && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              onClick={() => setSelectedEmployee(null)}
+              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors z-20"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+                <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/50 rounded-3xl flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-black text-3xl overflow-hidden shadow-lg flex-shrink-0">
+                  {selectedEmployee.avatar && selectedEmployee.avatar.startsWith('data:image/') ? (
+                    <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                  ) : (
+                    selectedEmployee.avatar || selectedEmployee.name?.substring(0, 2).toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">{selectedEmployee.name}</h2>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg text-sm font-bold">
+                      {selectedEmployee.position}
+                    </span>
+                    <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium">
+                      {selectedEmployee.department}
+                    </span>
+                    <span className={`px-3 py-1 rounded-lg text-sm font-bold uppercase tracking-wider ${selectedEmployee.status === 'active' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                      {selectedEmployee.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                  <div className="flex items-center gap-3 mb-2 text-slate-500 dark:text-slate-400">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Email</span>
+                  </div>
+                  <div className="text-slate-800 dark:text-slate-100 font-medium truncate">{selectedEmployee.email}</div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                  <div className="flex items-center gap-3 mb-2 text-slate-500 dark:text-slate-400">
+                    <Phone className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Phone</span>
+                  </div>
+                  <div className="text-slate-800 dark:text-slate-100 font-medium">{selectedEmployee.phone || 'Not provided'}</div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                  <div className="flex items-center gap-3 mb-2 text-slate-500 dark:text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Join Date</span>
+                  </div>
+                  <div className="text-slate-800 dark:text-slate-100 font-medium">{selectedEmployee.joinDate || 'N/A'}</div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                  <div className="flex items-center gap-3 mb-2 text-slate-500 dark:text-slate-400">
+                    <Briefcase className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Shift</span>
+                  </div>
+                  <div className="text-slate-800 dark:text-slate-100 font-medium capitalize">{selectedEmployee.shift || 'morning'} Shift</div>
+                </div>
+                
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 sm:col-span-2">
+                  <div className="flex items-center gap-3 mb-2 text-slate-500 dark:text-slate-400">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Location / Country</span>
+                  </div>
+                  <div className="text-slate-800 dark:text-slate-100 font-medium">{selectedEmployee.country || 'Not specified'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

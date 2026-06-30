@@ -36,6 +36,7 @@ export function HRDashboardView({
   selectedDate,
   setSelectedDate,
   shiftNotices = [],
+  onLeaveToday = 0,
 }) {
   const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
   const absent = todayAttendance.filter((a) => a.status === 'absent').length;
@@ -44,6 +45,7 @@ export function HRDashboardView({
   const pieData = [
     { name: 'Present', value: present, color: '#10b981' },
     { name: 'Absent', value: absent, color: '#ef4444' },
+    { name: 'On Leave', value: onLeaveToday, color: '#3b82f6' },
   ];
 
   // Compute department distribution from active employees
@@ -88,10 +90,11 @@ export function HRDashboardView({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
           { label: 'Total Employees', value: employeesList.filter((e) => e.status === 'active').length, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', sub: `${employeesList.length} total incl. inactive` },
           { label: 'Present Today', value: present, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: `${employeesList.length > 0 ? Math.round((present / employeesList.length) * 100) : 0}% of workforce` },
+          { label: 'On Leave Today', value: onLeaveToday, icon: ClipboardList, color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Approved leaves today' },
           { label: 'Absent Today', value: absent, icon: XCircle, color: 'text-red-500', bg: 'bg-red-50', sub: 'Total absentees' },
           { label: 'Pending Approvals', value: leaveCounts.pending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Leave requests pending' },
         ].map((s) => {
@@ -124,6 +127,7 @@ export function HRDashboardView({
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
               <Bar dataKey="present" name="Present" fill="#10b981" radius={[4, 4, 0, 0]} />
               <Bar dataKey="absent" name="Absent" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="onLeave" name="On Leave" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

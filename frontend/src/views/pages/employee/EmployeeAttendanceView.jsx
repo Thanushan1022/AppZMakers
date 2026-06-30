@@ -65,6 +65,8 @@ export function EmployeeAttendanceView({ mySalary,
   setSelectedYear,
   selectedMonthNum,
   setSelectedMonthNum,
+  showGoodbye,
+  todaySummary,
 }) {
   const [isTaskBoxExpanded, setIsTaskBoxExpanded] = useState(false);
   const [taskDesc, setTaskDesc] = useState('');
@@ -307,6 +309,8 @@ export function EmployeeAttendanceView({ mySalary,
     };
     return `${formatMonthName(prevMo)} 28, ${prevYr} - ${formatMonthName(mo)} 27, ${yr}`;
   };
+
+
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
