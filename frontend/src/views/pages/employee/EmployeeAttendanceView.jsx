@@ -957,14 +957,20 @@ export function EmployeeAttendanceView({ mySalary,
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6">
                 <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/20 dark:to-slate-800 border border-indigo-100 dark:border-indigo-800/50 rounded-2xl p-5 shadow-sm dark:shadow-none">
-                  <div className="text-indigo-500 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <LogIn className="w-3.5 h-3.5" /> Check In
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-indigo-500 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                      <LogIn className="w-3.5 h-3.5" /> Check In
+                    </div>
+                    {selectedRecord.checkIn && <span className="text-xs text-indigo-700 dark:text-indigo-300 font-black bg-indigo-100/80 dark:bg-indigo-800/50 px-2 py-0.5 rounded shadow-sm border border-indigo-200/50 dark:border-indigo-700/50 tracking-wide font-mono">{selectedRecord.date}</span>}
                   </div>
                   <div className="font-mono text-slate-800 dark:text-slate-100 font-black text-xl">{selectedRecord.checkIn || '—'}</div>
                 </div>
                 <div className="col-span-2 bg-gradient-to-br from-rose-50 to-white dark:from-rose-900/20 dark:to-slate-800 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-5 shadow-sm dark:shadow-none">
-                  <div className="text-rose-500 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <LogOut className="w-3.5 h-3.5" /> Check Out
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-rose-500 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                      <LogOut className="w-3.5 h-3.5" /> Check Out
+                    </div>
+                    {selectedRecord.checkOut && <span className="text-xs text-rose-700 dark:text-rose-300 font-black bg-rose-100/80 dark:bg-rose-800/50 px-2 py-0.5 rounded shadow-sm border border-rose-200/50 dark:border-rose-700/50 tracking-wide font-mono">{selectedRecord.checkOutDate || selectedRecord.date}</span>}
                   </div>
                   <div className="font-mono text-slate-800 dark:text-slate-100 font-black text-xl">{selectedRecord.checkOut || (selectedRecord.checkIn ? <span className="text-blue-500 animate-pulse">Active</span> : '—')}</div>
                 </div>

@@ -72,7 +72,7 @@ export async function autoRejectPassedLeaves() {
   if (pendingLeaves.length > 0) {
     for (const leave of pendingLeaves) {
       leave.status = 'rejected';
-      leave.rejectionReason = 'Auto-rejected: Leave date has passed without approval.';
+      leave.rejectionReason = 'Expired: Leave date has passed without approval.';
       await leave.save();
     }
     return true;

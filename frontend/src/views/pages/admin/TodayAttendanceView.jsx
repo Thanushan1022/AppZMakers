@@ -183,7 +183,7 @@ export function TodayAttendanceView({
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
               >
-                <option value="all">All</option>
+                <option value="all">All Departments</option>
                 {departments.map(d => (
                   <option key={d} value={d}>{d}</option>
                 ))}
@@ -196,7 +196,7 @@ export function TodayAttendanceView({
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
               >
-                <option value="all">All</option>
+                <option value="all">All Statuses</option>
                 <option value="present">Present</option>
                 <option value="absent">Absent</option>
               </select>
@@ -208,7 +208,7 @@ export function TodayAttendanceView({
                 onChange={(e) => setActivityFilter(e.target.value)}
                 className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
               >
-                <option value="all">All</option>
+                <option value="all">All Activities</option>
                 <option value="active">Active</option>
                 <option value="meal-break">Meal Break</option>
                 <option value="tea-break">Tea Break</option>
@@ -221,7 +221,7 @@ export function TodayAttendanceView({
                 onChange={(e) => setEmployeeFilter(e.target.value)}
                 className="border border-border rounded-xl px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 cursor-pointer"
               >
-                <option value="all">All</option>
+                <option value="all">All Employees</option>
                 {(employees || []).filter(e => e.status === 'active').sort((a,b) => a.name.localeCompare(b.name)).map(e => (
                   <option key={e.id} value={e.id}>{e.name}</option>
                 ))}
@@ -496,11 +496,17 @@ export function TodayAttendanceView({
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="bg-indigo-50/50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-3">
-                  <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></span>Check In</div>
+                  <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></span>Check In</span>
+                    {selectedRecord.checkIn && <span className="text-xs text-indigo-700 dark:text-indigo-300 font-black bg-indigo-100/80 dark:bg-indigo-800/50 px-2 py-0.5 rounded shadow-sm border border-indigo-200/50 dark:border-indigo-700/50 tracking-wide font-mono">{selectedRecord.date || selectedDate}</span>}
+                  </div>
                   <div className="font-mono text-indigo-900 dark:text-indigo-100 font-bold text-base">{selectedRecord.checkIn || '—'}</div>
                 </div>
                 <div className="bg-indigo-50/50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-3">
-                  <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></span>Check Out</div>
+                  <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></span>Check Out</span>
+                    {selectedRecord.checkOut && <span className="text-xs text-indigo-700 dark:text-indigo-300 font-black bg-indigo-100/80 dark:bg-indigo-800/50 px-2 py-0.5 rounded shadow-sm border border-indigo-200/50 dark:border-indigo-700/50 tracking-wide font-mono">{selectedRecord.checkOutDate || selectedRecord.date || selectedDate}</span>}
+                  </div>
                   <div className="font-mono text-indigo-900 dark:text-indigo-100 font-bold text-base">{selectedRecord.checkOut || (selectedRecord.checkIn ? 'Active' : '—')}</div>
                 </div>
                 <div className="bg-amber-50/50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800/50 rounded-xl p-3">

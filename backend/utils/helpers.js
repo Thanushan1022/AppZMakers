@@ -43,9 +43,6 @@ export const getTodayAttendanceForEmployees = (employees, attendanceRecords, dat
     }
 
     let finalStatus = rec?.status || fallbackStatus;
-    if (rec?.status === 'absent' && activeLeave) {
-      finalStatus = fallbackStatus;
-    }
 
     return {
       employeeId: emp.id,
@@ -139,14 +136,13 @@ export const getWeeklyAttendanceData = (attendanceRecords, employeeIds, referenc
       continue;
     }
 
-    const dayRecords = attendanceRecords.filter(
-      (r) => r.date === dateStr && employeeIds.includes(r.employeeId)
-    );
+    const dummyEmployees = employeeIds.map(id => ({ id, name: '', department: '' }));
+    const dayAttendance = getTodayAttendanceForEmployees(dummyEmployees, attendanceRecords, dateStr, allLeaves);
 
-    const presentCount = dayRecords.filter((r) => r.status === 'present').length;
-    const lateCount = dayRecords.filter((r) => r.status === 'late').length;
-    const onLeaveCount = employeeIds.filter(empId => isEmployeeOnLeave(empId, allLeaves, dateStr)).length;
-    const absentCount = Math.max(0, employeeIds.length - presentCount - lateCount - onLeaveCount);
+    const presentCount = dayAttendance.filter((r) => r.status === 'present' || r.status === 'late').length;
+    const lateCount = dayAttendance.filter((r) => r.status === 'late').length;
+    const absentCount = dayAttendance.filter((r) => r.status === 'absent').length;
+    const onLeaveCount = dayAttendance.filter((r) => r.status.startsWith('on leave')).length;
 
     result.push({
       day: days[i],

@@ -101,7 +101,9 @@ export function HREmployeesView({
           onChange={e => setDeptFilter(e.target.value)}
           className="border border-border rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none bg-slate-50"
         >
-          {departments.map(d => <option key={d}>{d}</option>)}
+          {departments.map(d => (
+            <option key={d} value={d}>{d === 'All' ? 'All Departments' : d}</option>
+          ))}
         </select>
         <select
           value={statusFilter}
@@ -191,10 +193,16 @@ export function HREmployeesView({
                         selectedEmployee.avatar
                       )}
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="font-black text-xl text-slate-800"><FormatMultilineName name={selectedEmployee.name} /></div>
                       <div className="text-slate-500 text-sm mt-1">{selectedEmployee.position}</div>
                     </div>
+                    <button
+                      onClick={() => setSelectedEmployeeId(null)}
+                      className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-100"
+                    >
+                      Close
+                    </button>
                   </div>
                   <div className="space-y-3 text-sm">
                     {[

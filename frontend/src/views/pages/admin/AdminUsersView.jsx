@@ -41,6 +41,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   getEmployeeStats,
   handleAssignShift,
   selectedEmployeeDetail,
+  handleUpdateEmployeeStatus,
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
 
@@ -300,6 +301,32 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                         <span className="truncate text-xs">{value}</span>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'active')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'active'
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500 shadow-sm shadow-emerald-500/10'
+                          : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:text-[#5b4cf5]'
+                          }`}
+                      >
+                        Active
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateEmployeeStatus(selectedEmployee.id, 'inactive')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${selectedEmployee.status === 'inactive'
+                          ? 'bg-red-500 hover:bg-red-600 text-white border-red-500 shadow-sm shadow-red-500/10'
+                          : 'bg-white hover:bg-slate-50 text-slate-650 border-slate-200 hover:text-red-500'
+                          }`}
+                      >
+                        Deactivate
+                      </button>
+                    </div>
                   </div>
 
                   {/* CV section */}

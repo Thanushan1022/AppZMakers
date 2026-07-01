@@ -236,7 +236,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               onChange={e => setStatusFilter(e.target.value)}
               className="border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer"
             >
-              <option value="All">All</option>
+              <option value="All">All Statuses</option>
               <option value="present">Present</option>
               <option value="absent">Absent</option>
             </select>
@@ -249,7 +249,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               onChange={e => setActivityFilter(e.target.value)}
               className="border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer"
             >
-              <option value="All">All</option>
+              <option value="All">All Activities</option>
               <option value="Meal Break">Meal Break</option>
               <option value="Tea Break">Tea Break</option>
               <option value="Active">Active</option>
@@ -263,7 +263,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               onChange={e => setEmployeeFilter(e.target.value)}
               className="border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer max-w-[150px] truncate"
             >
-              <option value="All">All</option>
+              <option value="All">All Employees</option>
               {myEmployees.map(emp => (
                 <option key={emp.id} value={emp.id}>{emp.name}</option>
               ))}
@@ -525,16 +525,22 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               {/* Grid 1: Check In / Out */}
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-indigo-50 dark:border-indigo-900/30 shadow-sm">
-                  <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 font-black text-xs uppercase tracking-widest mb-3">
-                    <LogIn className="w-4 h-4" /> Check In
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 font-black text-xs uppercase tracking-widest">
+                      <LogIn className="w-4 h-4" /> Check In
+                    </div>
+                    {selectedRecordDetail.rec.checkIn && <span className="text-xs text-indigo-700 dark:text-indigo-300 font-black bg-indigo-100/80 dark:bg-indigo-800/50 px-2 py-0.5 rounded shadow-sm border border-indigo-200/50 dark:border-indigo-700/50 tracking-wide font-mono">{selectedRecordDetail.rec.date}</span>}
                   </div>
                   <div className="text-2xl font-black text-slate-800 dark:text-slate-100" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                     {selectedRecordDetail.rec.checkIn || '—'}
                   </div>
                 </div>
                 <div className="bg-rose-50/30 dark:bg-rose-900/10 rounded-3xl p-5 border border-rose-100 dark:border-rose-900/30 shadow-sm">
-                  <div className="flex items-center gap-2 text-rose-500 dark:text-rose-400 font-black text-xs uppercase tracking-widest mb-3">
-                    <LogOut className="w-4 h-4" /> Check Out
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-rose-500 dark:text-rose-400 font-black text-xs uppercase tracking-widest">
+                      <LogOut className="w-4 h-4" /> Check Out
+                    </div>
+                    {selectedRecordDetail.rec.checkOut && <span className="text-xs text-rose-700 dark:text-rose-300 font-black bg-rose-100/80 dark:bg-rose-800/50 px-2 py-0.5 rounded shadow-sm border border-rose-200/50 dark:border-rose-700/50 tracking-wide font-mono">{selectedRecordDetail.rec.checkOutDate || selectedRecordDetail.rec.date}</span>}
                   </div>
                   <div className="text-2xl font-black text-slate-800 dark:text-slate-100" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                     {selectedRecordDetail.rec.checkOut || '—'}

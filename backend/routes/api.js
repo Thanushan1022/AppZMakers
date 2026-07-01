@@ -59,6 +59,7 @@ router.post('/admin/leaves/:id/review', adminController.reviewLeave);
 router.post('/admin/hr', adminController.createHR);
 router.post('/admin/companies', adminController.createCompany);
 router.put('/admin/employees/:id', adminController.updateEmployee);
+router.put('/admin/employees/:id/status', adminController.updateEmployeeStatus);
 router.put('/admin/hr/:id', adminController.updateHR);
 router.put('/admin/companies/:id', adminController.updateCompany);
 router.delete('/admin/employees/:id', adminController.deleteEmployee);

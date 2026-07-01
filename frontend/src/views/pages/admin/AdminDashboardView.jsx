@@ -54,7 +54,7 @@ export function AdminDashboardView({
           { label: 'Registered Companies', value: dashboardStats.totalCompanies ?? companies.length, icon: Building2, color: 'text-fuchsia-500', bg: 'bg-fuchsia-50', gradient: 'from-fuchsia-500 to-pink-600', sub: `${dashboardStats.activeCompanies ?? companies.filter((c) => c.status === 'active').length} active clients` },
           { label: 'Active Accounts', value: activeCount, icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-50', gradient: 'from-emerald-400 to-teal-500', sub: 'Employees + HR active' },
           { label: 'HR Managers', value: dashboardStats.totalHR ?? hrUsers.length, icon: ShieldCheck, color: 'text-sky-500', bg: 'bg-sky-50', gradient: 'from-sky-400 to-blue-600', sub: `${dashboardStats.activeHR ?? hrUsers.filter((h) => h.status === 'active').length} active` },
-          { label: 'Leave Approvals', value: leaveCounts?.pending ?? pending.length, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', gradient: 'from-amber-400 to-orange-500', sub: 'Awaiting review' },
+          { label: 'Pending Approvals', value: leaveCounts?.pending ?? pending.length, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', gradient: 'from-amber-400 to-orange-500', sub: 'Awaiting review' },
         ].map((s, idx) => {
           const Icon = s.icon;
           return (
@@ -103,9 +103,6 @@ export function AdminDashboardView({
             { label: 'Total Employees Registered', value: dashboardStats.totalEmployees ?? employees.length, color: 'indigo' },
             { label: 'Currently Active Employees', value: dashboardStats.activeEmployees ?? employees.filter((e) => e.status === 'active').length, color: 'emerald' },
             { label: 'Total Hiring Companies', value: dashboardStats.totalCompanies ?? companies.length, color: 'fuchsia' },
-            { label: "Today's Attendance Records", value: dashboardStats.todayAttendanceRecords ?? 0, color: 'sky' },
-            { label: 'Total Approved Leaves', value: leaveCounts?.approved ?? 0, color: 'teal' },
-            { label: 'Total Rejected Leaves', value: leaveCounts?.rejected ?? 0, color: 'rose' },
           ].map((item, i) => (
             <div key={item.label} className="group bg-white dark:bg-slate-800/80 rounded-[2rem] p-6 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 flex flex-col justify-between">
               <div className="flex justify-between items-start mb-6">

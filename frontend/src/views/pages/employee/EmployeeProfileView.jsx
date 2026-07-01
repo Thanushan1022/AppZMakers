@@ -302,27 +302,7 @@ export function EmployeeProfileView({
           </div>
         </div>
 
-        {/* Performance stats */}
-        <div className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white dark:border-slate-800 p-6 md:p-8 shadow-2xl shadow-violet-100/50 dark:shadow-none hover:shadow-violet-200/50 transition-shadow">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full blur-2xl"></div>
-          <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-6 flex items-center gap-3 tracking-tight">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/50 flex items-center justify-center border border-violet-100 dark:border-violet-800 shadow-sm">
-              <TrendingUp className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-            </div>
-            Performance Details
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: 'Present Days', value: `${presentDays}`, color: 'text-indigo-700 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50' },
-              { label: 'Absent Days', value: `${absentDays}`, color: 'text-rose-700 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50' },
-            ].map(s => (
-              <div key={s.label} className={`${s.bg} rounded-2xl p-5 shadow-sm transform transition-transform hover:scale-[1.02]`}>
-                <div className={`${s.color} mb-1`} style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 900, fontSize: '2rem', lineHeight: '1' }}>{s.value}</div>
-                <div className="text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+
 
         {/* Leave summary */}
         <div className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white dark:border-slate-800 p-6 md:p-8 shadow-2xl shadow-sky-100/50 dark:shadow-none hover:shadow-sky-200/50 transition-shadow">

@@ -145,7 +145,7 @@ function AppRoutes() {
   const navigate = useNavigate();
 
   // Lifted employee controller to ensure shared state for checkout validation
-  const employeeController = useEmployeeController(auth?.role === 'employee' ? auth.userId : null, updateAuth);
+  const employeeController = useEmployeeController(auth?.role === 'employee' ? auth.userId : null, updateAuth, handleLogout);
 
   const [toasts, setToasts] = React.useState([]);
 

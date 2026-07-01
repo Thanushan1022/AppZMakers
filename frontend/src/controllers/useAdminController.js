@@ -630,6 +630,27 @@ export function useAdminController(adminId, updateAuth) {
     }
   };
 
+  const handleUpdateEmployeeStatus = async (employeeId, status) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/employees/${employeeId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || 'Employee status updated successfully.');
+        fetchData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update employee status.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while updating employee status.');
+    }
+  };
+
   const handleEditClick = (item, type) => {
     setEditingItem({ id: item.id, type });
     if (type === 'employee') {
@@ -888,6 +909,7 @@ export function useAdminController(adminId, updateAuth) {
     selectedBalance,
     handleAdjustAttendance,
     handleCreateManualAttendance,
+    handleUpdateEmployeeStatus,
 
     employeesList: employees,
     reportType,

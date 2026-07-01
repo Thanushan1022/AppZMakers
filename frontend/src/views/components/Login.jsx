@@ -180,7 +180,7 @@ export function Login({
           )}
 
           {error && (
-            <div className="p-3.5 rounded-[14px] bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-200 text-sm font-medium shadow-inner">
+            <div className={`p-3.5 rounded-[14px] bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-200 text-sm shadow-inner ${error.includes('You did not checkout properly') ? 'font-bold' : 'font-medium'}`}>
               {error}
             </div>
           )}

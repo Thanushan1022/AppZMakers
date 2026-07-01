@@ -15,7 +15,7 @@ const parseBreakSeconds = (breakTimeSetting) => {
   return allowedBreakMin * 60;
 };
 
-export function useEmployeeController(userId, updateAuth) {
+export function useEmployeeController(userId, updateAuth, handleLogout) {
   const getLocalTodayStr = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -49,6 +49,7 @@ export function useEmployeeController(userId, updateAuth) {
   const [breakSecs, setBreakSecs] = useState(0);
   const [teaBreakSecs, setTeaBreakSecs] = useState(0);
   const [checkInTime, setCheckInTime] = useState(null);
+  const [checkInDate, setCheckInDate] = useState(null);
   const [breaks, setBreaks] = useState([]);
   const [currentBreakStart, setCurrentBreakStart] = useState(null);
   const [teaBreakGapRemainingSecs, setTeaBreakGapRemainingSecs] = useState(0);
@@ -117,6 +118,7 @@ export function useEmployeeController(userId, updateAuth) {
         if (todayRecord) {
           setHasAttendedToday(true);
           setCheckInTime(todayRecord.checkIn);
+          setCheckInDate(todayRecord.date);
           setCheckedIn(!!todayRecord.checkIn && !todayRecord.checkOut);
           setTodayTasks(todayRecord.tasks || []);
           const recBreaks = todayRecord.breaks || [];
@@ -220,6 +222,22 @@ export function useEmployeeController(userId, updateAuth) {
     }
 
     const updateTimers = () => {
+      // Auto-logout check: 24h limit
+      if (checkInDate && checkInTime) {
+        const checkInDateObj = new Date(`${checkInDate}T${checkInTime}`);
+        if (!isNaN(checkInDateObj.getTime())) {
+          const elapsedMs = Date.now() - checkInDateObj.getTime();
+          if (elapsedMs > 24 * 60 * 60 * 1000) {
+            if (handleLogout) {
+              handleLogout();
+            } else {
+              window.location.href = '/login';
+            }
+            return;
+          }
+        }
+      }
+
       const now = new Date();
       const getSecsFromTime = (tStr) => {
         if (!tStr) return 0;
@@ -289,7 +307,7 @@ export function useEmployeeController(userId, updateAuth) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', updateTimers);
     };
-  }, [checkedIn, checkInTime, breaks]);
+  }, [checkedIn, checkInTime, checkInDate, breaks, handleLogout]);
 
 
   // Sync gap/cooldown remaining seconds

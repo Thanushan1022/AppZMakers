@@ -38,7 +38,7 @@ export const getDashboard = async (req, res) => {
 
     const companies = (await Company.find().select('-avatar').sort({ createdAt: -1 })).map(toCompanyJSON);
     const hrUsers = (await HRUser.find().select('-avatar').sort({ createdAt: -1 })).map(toHRJSON);
-    const employees = (await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 })).map(toEmployeeJSON);
+    const employees = (await Employee.find().sort({ createdAt: -1 })).map(toEmployeeJSON);
     const pendingLeaves = (await LeaveRequest.find({ status: 'pending' })).map(toLeaveJSON);
     const activeEmployees = employees.filter((e) => e.status === 'active');
 
@@ -699,6 +699,41 @@ export const updateProfile = async (req, res) => {
     res.json({
       message: 'Profile updated successfully',
       admin: user.toSafeJSON(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateEmployeeStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ error: 'Valid status ("active" or "inactive") is required.' });
+    }
+
+    const emp = await Employee.findById(req.params.id);
+    if (!emp && req.params.id.startsWith('emp_')) {
+      const allEmps = await Employee.find();
+      const matched = allEmps.find(e => e.legacyId === req.params.id);
+      if (matched) {
+        matched.status = status;
+        await matched.save();
+        return res.json({
+          message: `Employee account status updated to ${status} successfully.`,
+          employee: { id: matched.legacyId, status: matched.status },
+        });
+      }
+    }
+    
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    emp.status = status;
+    await emp.save();
+
+    res.json({
+      message: `Employee account status updated to ${status} successfully.`,
+      employee: { id: emp.legacyId || emp._id.toString(), status: emp.status },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

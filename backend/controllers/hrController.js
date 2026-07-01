@@ -280,7 +280,7 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 }).lean();
+    const employees = await Employee.find().sort({ createdAt: -1 }).lean();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const settings = await getSettings();
@@ -334,7 +334,7 @@ export const getDashboard = async (req, res) => {
 export const getReports = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const employees = await Employee.find().select('-avatar -cvData -cvName').sort({ createdAt: -1 }).lean();
+    const employees = await Employee.find().sort({ createdAt: -1 }).lean();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);

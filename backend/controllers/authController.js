@@ -2,6 +2,7 @@
 import User from '../models/User.js';
 import Employee from '../models/Employee.js';
 import HRUser from '../models/HRUser.js';
+import Attendance from '../models/Attendance.js';
 import crypto from 'crypto';
 import Company from '../models/Company.js';
 import LeaveBalance from '../models/LeaveBalance.js';
@@ -225,11 +226,31 @@ export const login = async (req, res) => {
     }
 
     if (accountRole === 'employee') {
-      const emp = await Employee.findOne({ email: user.email.toLowerCase() }).select('status');
+      const emp = await Employee.findOne({ email: user.email.toLowerCase() }).select('status legacyId _id');
       if (emp && emp.status === 'inactive') {
         return res.status(403).json({
           error: 'Your account has been deactivated. Please contact HR.',
         });
+      }
+
+      if (emp) {
+        const empId = emp.legacyId || emp._id.toString();
+        const pendingRecord = await Attendance.findOne({ employeeId: empId, checkOut: null });
+        
+        if (pendingRecord && pendingRecord.date && pendingRecord.checkIn) {
+          const dateTimeStr = `${pendingRecord.date}T${pendingRecord.checkIn}`;
+          const checkInMs = new Date(dateTimeStr).getTime();
+          
+          if (!isNaN(checkInMs)) {
+            const elapsedHours = (Date.now() - checkInMs) / (1000 * 60 * 60);
+            if (elapsedHours > 24) {
+              return res.status(403).json({
+                error: 'You did not checkout properly. Please contact your HR. After check out process complete you can login again.',
+                requiresForceCheckout: true
+              });
+            }
+          }
+        }
       }
     }
 
