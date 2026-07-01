@@ -356,22 +356,20 @@ export function CompanyReportsView({
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
       doc.text('TOTAL EMPLOYEES', 20, currentY + 6);
-      doc.text('AVG ATTENDANCE', 65, currentY + 6);
-      doc.text('TOTAL HOURS', 110, currentY + 6);
-      doc.text('LEAVE DAYS USED', 155, currentY + 6);
+      doc.text('TOTAL HOURS', 65, currentY + 6);
+      doc.text('LEAVES USED', 105, currentY + 6);
 
       doc.setFont('Helvetica', 'bold');
-      doc.setFontSize(12);
+      doc.setFontSize(14);
       doc.setTextColor(30, 41, 59);
+      
       const sumVal1 = String(dynamicSummary?.totalEmployees ?? filteredEmployeesList.length ?? 0);
-      const sumVal2 = `${dynamicSummary?.avgAttendance ?? 0}%`;
-      const sumVal3 = `${(dynamicSummary?.totalHours ?? totalHours ?? 0).toFixed(0)}h`;
-      const sumVal4 = String(dynamicSummary?.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0) ?? 0);
+      const sumVal2 = `${Math.round(dynamicSummary?.totalHours ?? totalHours ?? 0)}h`;
+      const sumVal3 = String(dynamicSummary?.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0) ?? 0);
 
       doc.text(sumVal1, 20, currentY + 14);
       doc.text(sumVal2, 65, currentY + 14);
-      doc.text(sumVal3, 110, currentY + 14);
-      doc.text(sumVal4, 155, currentY + 14);
+      doc.text(sumVal3, 105, currentY + 14);
 
       currentY += 30;
 
@@ -392,9 +390,9 @@ export function CompanyReportsView({
             a.status
           ]);
         } else {
-          tableHeaders = [['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate']];
+          tableHeaders = [['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours']];
           tableRows = filteredEmployeesList.map((emp) => {
-            const stats = getEmployeeStats ? getEmployeeStats(emp.id) : { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
+            const stats = getEmployeeStats ? getEmployeeStats(emp.id) : { present: 0, total: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
             return [
               emp.name,
               emp.department || '—',
@@ -403,8 +401,7 @@ export function CompanyReportsView({
               formatMin(stats.teaBreakMinutes),
               formatHrMin(stats.hours),
               stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—',
-              stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—',
-              `${stats.pct || 0}%`
+              stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—'
             ];
           });
         }
@@ -663,7 +660,6 @@ export function CompanyReportsView({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Employees', value: dynamicSummary.totalEmployees || filteredEmployeesList.length, sub: `${dynamicSummary.activeEmployees || filteredEmployeesList.filter((e) => e.status === 'active').length} active` },
-          { label: 'Avg Attendance', value: `${dynamicSummary.avgAttendance || 0}%`, sub: 'This period' },
           { label: 'Total Hours', value: `${(dynamicSummary.totalHours || totalHours).toFixed(0)}h`, sub: selectedEmployeeFilter === 'all' ? 'All employees' : 'Selected employee' },
           { label: 'Leave Days Used', value: dynamicSummary.leaveDaysUsed || filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
         ].map((s) => (
@@ -726,7 +722,7 @@ export function CompanyReportsView({
                         <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap bg-white dark:bg-slate-900/90 z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-none ${i === 0 ? 'min-w-[200px]' : ''}`}>{h}</th>
                       ))
                     ) : (
-                      ['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Att. Rate'].map((h, i) => (
+                      ['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours'].map((h, i) => (
                         <th key={h} className={`sticky top-0 text-left text-slate-400 font-medium py-3 px-4 whitespace-nowrap bg-white dark:bg-slate-900/90 z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-none ${i === 0 ? 'min-w-[200px]' : ''}`}>{h}</th>
                       ))
                     )}
@@ -795,7 +791,7 @@ export function CompanyReportsView({
                                 {emp.avatar && emp.avatar.startsWith('data:image/') ? (
                                   <img src={emp.avatar} alt="" className="w-full h-full object-cover" />
                                 ) : (
-                                  emp.avatar
+                                  emp.avatar || (emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
                                 )}
                               </div>
                               <FormatMultilineName name={emp.name} />
@@ -808,14 +804,6 @@ export function CompanyReportsView({
                           <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{formatHrMin(stats.hours)}</td>
                           <td className="py-3 px-4 text-emerald-600 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.extraHours > 0 ? `+${formatHrMin(stats.extraHours)}` : '—'}</td>
                           <td className="py-3 px-4 text-red-500 font-medium" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—'}</td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 h-1.5 bg-slate-100 rounded-full max-w-16">
-                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${stats.pct}%` }} />
-                              </div>
-                              <span className="text-slate-600 text-xs" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.pct}%</span>
-                            </div>
-                          </td>
                         </tr>
                       );
                     })
@@ -933,7 +921,7 @@ export function CompanyReportsView({
                           {emp.avatar && emp.avatar.startsWith('data:image/') ? (
                             <img src={emp.avatar} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            emp.avatar
+                            emp.avatar || (emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
                           )}
                         </div>
                         <div className="text-slate-700 font-medium whitespace-nowrap">

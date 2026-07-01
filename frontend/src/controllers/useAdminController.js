@@ -102,6 +102,7 @@ export function useAdminController(adminId, updateAuth) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [selectedAttendance, setSelectedAttendance] = useState([]);
   const [selectedBalance, setSelectedBalance] = useState(null);
+  const [selectedEmployeeDetail, setSelectedEmployeeDetail] = useState(null);
   const [adminName, setAdminName] = useState('Administrator');
 
   const [empForm, setEmpForm] = useState({
@@ -328,6 +329,7 @@ export function useAdminController(adminId, updateAuth) {
       const res = await fetch(`${BACKEND_URL}/hr/employees/${empId}`);
       if (res.ok) {
         const data = await res.json();
+        setSelectedEmployeeDetail(data.employee);
         setSelectedAttendance(data.attendance || []);
         setSelectedBalance(data.leaveBalance);
         if (data.stats) {
@@ -345,6 +347,7 @@ export function useAdminController(adminId, updateAuth) {
       const intervalId = setInterval(() => fetchEmployeeDetail(selectedEmployeeId), 15000);
       return () => clearInterval(intervalId);
     } else {
+      setSelectedEmployeeDetail(null);
       setSelectedAttendance([]);
       setSelectedBalance(null);
     }
@@ -914,5 +917,6 @@ export function useAdminController(adminId, updateAuth) {
     setSelectedDate,
     deptData,
     todayLabel,
+    selectedEmployeeDetail,
   };
 }

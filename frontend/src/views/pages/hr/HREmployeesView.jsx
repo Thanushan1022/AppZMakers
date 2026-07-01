@@ -145,7 +145,7 @@ export function HREmployeesView({
                       {emp.avatar && emp.avatar.startsWith('data:image/') ? (
                         <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
                       ) : (
-                        emp.avatar
+                        emp.avatar || (emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -154,12 +154,6 @@ export function HREmployeesView({
                         <span className={`px-3 py-1 rounded-full text-sm font-bold shadow-sm ${emp.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50' : 'bg-slate-100 text-slate-500 border border-slate-200/50'}`}>{emp.status}</span>
                       </div>
                       <div className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">{emp.position} · {emp.department}</div>
-                    </div>
-                    <div className="hidden sm:flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 font-medium">
-                      <div className="text-right">
-                        <div className="font-bold text-base text-slate-700 dark:text-slate-200" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{stats.pct}%</div>
-                        <div>attendance</div>
-                      </div>
                     </div>
                   </div>
                 );
@@ -355,7 +349,6 @@ export function HREmployeesView({
                 <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm">Performance</h4>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: 'Attendance', value: `${stats.pct}%`, color: 'text-emerald-600' },
                     { label: 'Hours', value: `${stats.hours.toFixed(1)}h`, color: 'text-indigo-600' },
                     { label: 'Extra Hours', value: stats.extraHours ? `+${stats.extraHours.toFixed(1)}h` : '—', color: 'text-emerald-600' },
                     { label: 'Less Hours', value: stats.lessHours ? `${stats.lessHours.toFixed(1)}h` : '—', color: 'text-red-500' },

@@ -321,7 +321,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                             {emp.avatar && emp.avatar.startsWith('data:image/') ? (
                               <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
                             ) : (
-                              emp.avatar
+                              emp.avatar || (emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
                             )}
                           </div>
                           <div>

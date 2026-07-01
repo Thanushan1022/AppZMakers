@@ -415,7 +415,6 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
       {/* Stats - Floating Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Attendance Rate', value: `${attendancePct}%`, sub: `${presentDays}/${totalWorkingDays} days`, icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800' },
           { label: 'Monthly Hours', value: formatDecimalHours(monthlyHours), sub: 'This month', icon: Timer, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-200 dark:border-indigo-800' },
           { label: 'Extra Hours', value: formatDecimalHours(totalExtraHours), sub: 'Total excess hours', icon: CheckCircle2, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800' },
           { label: 'Less Hours', value: formatDecimalHours(totalLessHours), sub: 'Total deficit hours', icon: XCircle, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30', border: 'border-rose-200 dark:border-rose-800' },

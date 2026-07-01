@@ -50,6 +50,7 @@ export function useHRController(hrId, updateAuth) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [selectedAttendance, setSelectedAttendance] = useState([]);
   const [selectedBalance, setSelectedBalance] = useState(null);
+  const [selectedEmployeeDetail, setSelectedEmployeeDetail] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [empForm, setEmpForm] = useState({
@@ -194,6 +195,7 @@ export function useHRController(hrId, updateAuth) {
       const res = await fetch(`${BACKEND_URL}/hr/employees/${empId}`);
       if (res.ok) {
         const data = await res.json();
+        setSelectedEmployeeDetail(data.employee);
         setSelectedAttendance(data.attendance || []);
         setSelectedBalance(data.leaveBalance);
         if (data.stats) {
@@ -346,6 +348,7 @@ export function useHRController(hrId, updateAuth) {
       const intervalId = setInterval(() => fetchEmployeeDetail(selectedEmployeeId), 15000);
       return () => clearInterval(intervalId);
     } else {
+      setSelectedEmployeeDetail(null);
       setSelectedAttendance([]);
       setSelectedBalance(null);
     }
@@ -365,9 +368,9 @@ export function useHRController(hrId, updateAuth) {
     return matchSearch && matchDept && matchStatus && matchShift;
   });
 
-  const selectedEmployee = selectedEmployeeId
+  const selectedEmployee = selectedEmployeeDetail || (selectedEmployeeId
     ? employeesList.find((e) => e.id === selectedEmployeeId)
-    : null;
+    : null);
 
   const getEmployeeStats = (empId) =>
     employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };

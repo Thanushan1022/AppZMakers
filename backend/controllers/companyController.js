@@ -45,9 +45,7 @@ export const getDashboard = async (req, res) => {
     const leaves = await LeaveRequest.find({ employeeId: { $in: employeeIds }, status: 'pending' });
     const pendingLeaves = leaves.length;
     const totalHours = attJson.reduce((sum, r) => sum + (r.totalHours || 0), 0);
-    const onLeaveCount = employeesJson.filter((e) =>
-      isEmployeeOnLeave(e.id, leavesJson, today)
-    ).length;
+    const onLeaveCount = todayRecs.filter((r) => r.status.startsWith('on leave')).length;
 
     res.json({
       company: { ...toCompanyJSON(comp), employeeCount: employeesJson.length },

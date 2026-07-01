@@ -42,12 +42,17 @@ export const getTodayAttendanceForEmployees = (employees, attendanceRecords, dat
       fallbackStatus = `on leave (${activeLeave.type})`;
     }
 
+    let finalStatus = rec?.status || fallbackStatus;
+    if (rec?.status === 'absent' && activeLeave) {
+      finalStatus = fallbackStatus;
+    }
+
     return {
       employeeId: emp.id,
       employeeName: emp.name,
       department: emp.department,
       date,
-      status: rec?.status || fallbackStatus,
+      status: finalStatus,
       checkIn: rec?.checkIn || null,
       checkOut: rec?.checkOut || null,
       totalHours: rec?.totalHours || 0,

@@ -40,6 +40,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   handleCreateManualAttendance,
   getEmployeeStats,
   handleAssignShift,
+  selectedEmployeeDetail,
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
 
@@ -121,9 +122,9 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   };
   const [attendanceDateFilter, setAttendanceDateFilter] = useState(getTodayDateString());
 
-  const selectedEmployee = selectedEmployeeId
+  const selectedEmployee = selectedEmployeeDetail || (selectedEmployeeId
     ? employees.find((e) => e.id === selectedEmployeeId)
-    : null;
+    : null);
 
   const tabs = [
     { id: 'employees', label: 'Employees', icon: Users, count: employees.length },
@@ -216,7 +217,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                               {emp.avatar && emp.avatar.startsWith('data:image/') ? (
                                 <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
                               ) : (
-                                emp.avatar
+                                emp.avatar || (emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
                               )}
                             </div>
                             <div>
@@ -413,7 +414,6 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm">Performance</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { label: 'Attendance', value: `${stats.pct}%`, color: 'text-emerald-600' },
                       { label: 'Hours', value: `${stats.hours.toFixed(1)}h`, color: 'text-indigo-600' },
                       { label: 'Extra Hours', value: stats.extraHours ? `+${stats.extraHours.toFixed(1)}h` : '—', color: 'text-emerald-600' },
                       { label: 'Less Hours', value: stats.lessHours ? `${stats.lessHours.toFixed(1)}h` : '—', color: 'text-red-500' },

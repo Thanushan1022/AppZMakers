@@ -51,9 +51,7 @@ export const getDashboard = async (req, res) => {
     const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
     const absent = todayAttendance.filter((a) => a.status === 'absent').length;
     const late = todayAttendance.filter((a) => a.status === 'late').length;
-    const onLeaveToday = activeEmployees.filter((e) =>
-      isEmployeeOnLeave(e.id, leavesJson, today)
-    ).length;
+    const onLeaveToday = todayAttendance.filter((a) => a.status.startsWith('on leave')).length;
 
     res.json({
       todayDate: today,
