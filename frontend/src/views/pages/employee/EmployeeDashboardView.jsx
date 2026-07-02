@@ -530,63 +530,76 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
 
       {/* Check-Out Confirmation Modal - Premium Style */}
       {showCheckoutConfirm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300">
             <div className="p-8">
-              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-amber-200 dark:border-amber-800">
-                <AlertCircle className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-6 shadow-inner mx-auto border border-transparent dark:border-amber-800/50">
+                <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-500" />
               </div>
-              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">Check-Out Confirmation</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
-                {(onBreak || onTeaBreak) 
+              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black text-center mb-2 tracking-tight">
+                {sessionConfirmLevel > 0 ? "Session Confirmation" : "Almost done!"}
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm text-center mb-8 font-medium">
+                {sessionConfirmLevel === 1 && "You have been working for 8 hours. Are you still working?"}
+                {sessionConfirmLevel === 2 && "Reminder: Are you still working? (1st warning)"}
+                {sessionConfirmLevel === 3 && "Final Reminder: You will be automatically checked out in 10 minutes."}
+                {sessionConfirmLevel === 0 && ((onBreak || onTeaBreak) 
                   ? "You are currently on a break. Checking out now will automatically end your break. Are you sure you want to proceed?" 
-                  : "Would you like to take a break before leaving, or proceed directly with checking out of your shift?"}
+                  : "Would you like to take a break before leaving, or proceed directly to check-out?")}
               </p>
-
+              
               <div className="space-y-4">
+                {sessionConfirmLevel > 0 && (
+                   <button
+                     onClick={handleSessionContinue}
+                     className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer shadow-lg shadow-indigo-500/25 active:scale-95 tracking-widest uppercase"
+                   >
+                     YES, CONTINUE WORKING
+                   </button>
+                )}
                 {/* Take Meal Break button */}
-                {checkedIn && !onBreak && !mealBreakLimitReached && !isBreakOver && (
+                {checkedIn && !onBreak && !mealBreakLimitReached && !isBreakOver && sessionConfirmLevel === 0 && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);
                       handleBreak();
                     }}
-                    className="w-full flex items-center justify-center gap-3 bg-white hover:bg-amber-50 text-amber-600 font-bold py-4 px-6 rounded-2xl border-2 border-amber-200 transition-all duration-200 text-sm shadow-sm hover:shadow-md active:scale-95"
+                    className="w-full flex items-center justify-center gap-3 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 font-bold py-4 px-6 rounded-2xl border border-amber-200 dark:border-amber-800/50 transition-all text-sm cursor-pointer shadow-sm active:scale-95 uppercase tracking-wider"
                   >
                     <Utensils className="w-5 h-5" />
-                    Take a Meal Break
+                    TAKE A MEAL BREAK
                   </button>
                 )}
 
                 {/* Take Tea Break button */}
-                {checkedIn && teaBreakEnabled && teaBreakAllowed && !teaBreakLimitReached && teaBreakGapRemainingSecs <= 0 && !onTeaBreak && (
+                {checkedIn && !onBreak && !teaBreakLimitReached && !isTeaBreakOver && teaBreakGapRemainingSecs <= 0 && teaBreakEnabled && teaBreakAllowed && sessionConfirmLevel === 0 && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);
                       handleTeaBreak();
                     }}
-                    className="w-full flex items-center justify-center gap-3 bg-white hover:bg-emerald-50 text-emerald-600 font-bold py-4 px-6 rounded-2xl border-2 border-emerald-200 transition-all duration-200 text-sm shadow-sm hover:shadow-md active:scale-95"
+                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 text-sm font-bold uppercase tracking-wider transition-all transform active:scale-95 shadow-sm"
                   >
                     <Coffee className="w-5 h-5" />
-                    Take a Tea Break
+                    TAKE A TEA BREAK
                   </button>
                 )}
 
                 {/* Proceed to Check-out */}
                 <button
                   onClick={confirmCheckOut}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black tracking-wider py-4 px-6 rounded-2xl shadow-lg shadow-red-500/30 transition-all duration-200 text-sm active:scale-95"
+                  className={`w-full flex items-center justify-center gap-3 ${sessionConfirmLevel > 0 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700' : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/25'} font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer active:scale-95 tracking-widest uppercase`}
                 >
                   <LogOut className="w-5 h-5" />
-                  PROCEED TO CHECK-OUT
+                  {sessionConfirmLevel > 0 ? 'CHECK OUT' : 'PROCEED TO CHECK-OUT'}
                 </button>
 
                 {/* Cancel */}
                 <button
                   onClick={() => setShowCheckoutConfirm(false)}
-                  className="w-full mt-2 text-slate-500 hover:text-slate-800 font-bold py-3 transition-colors text-sm"
+                  className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer active:scale-95 mt-2 border border-transparent dark:border-slate-700"
                 >
-                  Cancel and return to dashboard
+                  Cancel
                 </button>
               </div>
             </div>

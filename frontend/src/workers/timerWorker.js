@@ -17,6 +17,7 @@ function getSecsFromTimeStr(tStr) {
 function getNowSecs() {
   const now = new Date();
   const nowSecsRaw = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  // If we checked in later in the day than it is now, it means it's the next day (wrapped around midnight)
   return nowSecsRaw < checkInSecs ? nowSecsRaw + 86400 : nowSecsRaw;
 }
 
