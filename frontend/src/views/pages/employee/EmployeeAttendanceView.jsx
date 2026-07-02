@@ -1082,7 +1082,7 @@ export function EmployeeAttendanceView({ mySalary,
                 {sessionConfirmLevel > 0 ? "Session Confirmation" : "Almost done!"}
               </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm text-center mb-8 font-medium">
-                {sessionConfirmLevel === 1 && "You have been working for 10 hours. Are you still working?"}
+                {sessionConfirmLevel === 1 && "You have been working for 8 hours. Are you still working?"}
                 {sessionConfirmLevel === 2 && "Reminder: Are you still working? (1st warning)"}
                 {sessionConfirmLevel === 3 && "Final Reminder: You will be automatically checked out in 10 minutes."}
                 {sessionConfirmLevel === 0 && ((onBreak || onTeaBreak) 

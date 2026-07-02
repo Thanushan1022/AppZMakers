@@ -548,7 +548,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
           if (type === 'SHOW_CONFIRM') {
             setSessionConfirmLevel(1);
             setShowCheckoutConfirm(true);
-            showNotification('Session Confirmation', 'You have been working for 10 hours. Are you still working?');
+            showNotification('Session Confirmation', 'You have been working for 8 hours. Are you still working?');
           } else if (type === 'REMINDER_1') {
             setSessionConfirmLevel(2);
             setShowCheckoutConfirm(true);

@@ -659,9 +659,9 @@ export function CompanyReportsView({
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Employees', value: dynamicSummary.totalEmployees || filteredEmployeesList.length, sub: `${dynamicSummary.activeEmployees || filteredEmployeesList.filter((e) => e.status === 'active').length} active` },
-          { label: 'Total Hours', value: `${(dynamicSummary.totalHours || totalHours).toFixed(0)}h`, sub: selectedEmployeeFilter === 'all' ? 'All employees' : 'Selected employee' },
-          { label: 'Leave Days Used', value: dynamicSummary.leaveDaysUsed || filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
+          { label: 'Total Employees', value: dynamicSummary.totalEmployees ?? filteredEmployeesList.length, sub: `${dynamicSummary.activeEmployees ?? filteredEmployeesList.filter((e) => e.status === 'active').length} active` },
+          { label: 'Total Hours', value: `${(dynamicSummary.totalHours ?? totalHours).toFixed(0)}h`, sub: selectedEmployeeFilter === 'all' ? 'All employees' : 'Selected employee' },
+          { label: 'Leave Days Used', value: dynamicSummary.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
         ].map((s) => (
           <div key={s.label} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out"></div>

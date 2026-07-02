@@ -5,7 +5,7 @@ let checkInterval = null;
 
 // Settings for timing (in seconds)
 const TWO_HOURS_SECS = 2 * 3600;
-const TEN_HOURS_SECS = 10 * 3600;
+const EIGHT_HOURS_SECS = 8 * 3600;
 const TEN_MINS_SECS = 10 * 60;
 
 function getSecsFromTimeStr(tStr) {
@@ -53,13 +53,13 @@ self.onmessage = function(e) {
         const elapsed = getNowSecs() - checkInSecs;
         
         // Determine the next target
-        if (elapsed < TEN_HOURS_SECS) {
-            targetElapsedSecs = TEN_HOURS_SECS;
+        if (elapsed < EIGHT_HOURS_SECS) {
+            targetElapsedSecs = EIGHT_HOURS_SECS;
         } else {
-            // Calculate how many 2-hour blocks past 10 hours
-            const hoursPast10 = (elapsed - TEN_HOURS_SECS) / 3600;
-            const nextEvenHourPast10 = Math.ceil(hoursPast10 / 2) * 2;
-            targetElapsedSecs = TEN_HOURS_SECS + (nextEvenHourPast10 * 3600);
+            // Calculate how many 2-hour blocks past 8 hours
+            const hoursPast8 = (elapsed - EIGHT_HOURS_SECS) / 3600;
+            const nextEvenHourPast8 = Math.ceil(hoursPast8 / 2) * 2;
+            targetElapsedSecs = EIGHT_HOURS_SECS + (nextEvenHourPast8 * 3600);
             
             if (targetElapsedSecs <= elapsed) {
                 targetElapsedSecs = elapsed + TWO_HOURS_SECS;
@@ -73,9 +73,9 @@ self.onmessage = function(e) {
     } else if (action === 'RESET_INTERVAL') {
         // User clicked "Yes, Continue" - we reset for another 2 hours
         const elapsed = getNowSecs() - checkInSecs;
-        const hoursPast10 = Math.max(0, (elapsed - TEN_HOURS_SECS) / 3600);
-        const nextEvenHourPast10 = Math.ceil(hoursPast10 / 2) * 2;
-        targetElapsedSecs = TEN_HOURS_SECS + (nextEvenHourPast10 * 3600);
+        const hoursPast8 = Math.max(0, (elapsed - EIGHT_HOURS_SECS) / 3600);
+        const nextEvenHourPast8 = Math.ceil(hoursPast8 / 2) * 2;
+        targetElapsedSecs = EIGHT_HOURS_SECS + (nextEvenHourPast8 * 3600);
         
         if (targetElapsedSecs <= elapsed) {
              targetElapsedSecs = elapsed + TWO_HOURS_SECS;

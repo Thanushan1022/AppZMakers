@@ -527,21 +527,43 @@ export function HRReportsView({
         if (selectedEmployeeFilter !== 'all') {
           tableHeaders = ['Date', 'Check In', 'Check Out', 'Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Status'];
           colWidths = [15, 12, 12, 10, 12, 12, 12, 15];
-          tableRows = filteredEmployeeAttendanceData.map((a) => [
-            a.date,
-            a.checkIn || '—',
-            a.checkOut || '—',
-            formatMin(a.breakMinutes || 0),
-            formatHrMin(a.totalHours || 0),
-            a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—',
-            a.lessHours > 0 ? `${formatHrMin(a.lessHours)}` : '—',
-            a.status
+          let sumBreak = 0, sumHrs = 0, sumExtra = 0, sumLess = 0;
+          tableRows = filteredEmployeeAttendanceData.map((a) => {
+            sumBreak += (a.breakMinutes || 0);
+            sumHrs += (a.totalHours || 0);
+            sumExtra += (a.extraHours || 0);
+            sumLess += (a.lessHours || 0);
+            return [
+              a.date,
+              a.checkIn || '—',
+              a.checkOut || '—',
+              formatMin(a.breakMinutes || 0),
+              formatHrMin(a.totalHours || 0),
+              a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—',
+              a.lessHours > 0 ? `${formatHrMin(a.lessHours)}` : '—',
+              a.status
+            ];
+          });
+          tableRows.push([
+            'TOTAL', '—', '—',
+            formatMin(sumBreak),
+            formatHrMin(sumHrs),
+            sumExtra > 0 ? `+${formatHrMin(sumExtra)}` : '—',
+            sumLess > 0 ? formatHrMin(sumLess) : '—',
+            '—'
           ]);
         } else {
           tableHeaders = ['Employee', 'Department', 'Present', 'Meal Break', 'Tea Break', 'Total Hours', 'Extra Hours', 'Less Hours'];
           colWidths = [25, 20, 10, 12, 12, 12, 12, 12];
+          let sumPresent = 0, sumMeal = 0, sumTea = 0, sumHrs = 0, sumExtra = 0, sumLess = 0;
           tableRows = filteredEmployeesList.map((emp) => {
             const stats = getEmployeeStats ? getEmployeeStats(emp.id) : { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
+            sumPresent += stats.present;
+            sumMeal += stats.mealBreakMinutes;
+            sumTea += stats.teaBreakMinutes;
+            sumHrs += stats.hours;
+            sumExtra += stats.extraHours;
+            sumLess += stats.lessHours;
             return [
               emp.name,
               emp.department || '—',
@@ -553,19 +575,37 @@ export function HRReportsView({
               stats.lessHours > 0 ? `${formatHrMin(stats.lessHours)}` : '—'
             ];
           });
+          tableRows.push([
+            'TOTAL', '—',
+            sumPresent,
+            formatMin(sumMeal),
+            formatMin(sumTea),
+            formatHrMin(sumHrs),
+            sumExtra > 0 ? `+${formatHrMin(sumExtra)}` : '—',
+            sumLess > 0 ? formatHrMin(sumLess) : '—'
+          ]);
         }
       } else if (reportType === 'leave') {
         tableHeaders = ['Employee', 'Dept', 'Type', 'From', 'To', 'Days', 'Status', 'Applied'];
         colWidths = [25, 20, 15, 15, 15, 10, 15, 15];
-        tableRows = filteredLeavesList.map((l) => [
-          l.employeeName,
-          l.department || '—',
-          l.type,
-          l.startDate,
-          l.endDate,
-          l.days,
-          l.status,
-          l.appliedOn
+        let totalDays = 0;
+        tableRows = filteredLeavesList.map((l) => {
+          totalDays += (Number(l.days) || 0);
+          return [
+            l.employeeName,
+            l.department || '—',
+            l.type,
+            l.startDate,
+            l.endDate,
+            l.days,
+            l.status,
+            l.appliedOn
+          ];
+        });
+        tableRows.push([
+          'TOTAL', '—', '—', '—', '—',
+          totalDays,
+          '—', '—'
         ]);
       } else {
         tableHeaders = ['Employee', 'Company', 'Department', 'Position', 'Join Date', 'Status'];
@@ -577,6 +617,9 @@ export function HRReportsView({
           emp.position || '—',
           emp.joinDate,
           emp.status
+        ]);
+        tableRows.push([
+          'TOTAL EMPLOYEES', String(filteredEmployeesList.length), '—', '—', '—', '—'
         ]);
       }
 
@@ -631,6 +674,11 @@ export function HRReportsView({
             else if (statusStr === 'late' || statusStr === 'pending') statusColor = 'FFF59E0B'; // amber
             
             cell.font = { ...row.font, color: { argb: statusColor }, bold: true };
+          }
+
+          if (String(rowData[0]).startsWith('TOTAL')) {
+            cell.font = { ...row.font, bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
           }
         });
       });
@@ -866,9 +914,9 @@ export function HRReportsView({
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Employees', value: dynamicSummary.totalEmployees || filteredEmployeesList.length, sub: `${dynamicSummary.activeEmployees || filteredEmployeesList.filter((e) => e.status === 'active').length} active` },
-          { label: 'Total Hours', value: `${(dynamicSummary.totalHours || totalHours).toFixed(0)}h`, sub: selectedEmployeeFilter === 'all' ? 'All employees' : 'Selected employee' },
-          { label: 'Leave Days Used', value: dynamicSummary.leaveDaysUsed || filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
+          { label: 'Total Employees', value: dynamicSummary.totalEmployees ?? filteredEmployeesList.length, sub: `${dynamicSummary.activeEmployees ?? filteredEmployeesList.filter((e) => e.status === 'active').length} active` },
+          { label: 'Total Hours', value: `${(dynamicSummary.totalHours ?? totalHours).toFixed(0)}h`, sub: selectedEmployeeFilter === 'all' ? 'All employees' : 'Selected employee' },
+          { label: 'Leave Days Used', value: dynamicSummary.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), sub: 'Approved leaves' },
         ].map((s) => (
           <div key={s.label} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700 ease-out"></div>
