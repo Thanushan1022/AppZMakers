@@ -59,7 +59,11 @@ export const getAttendance = async (req, res) => {
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
     const settings = await getSettings();
-    const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp) }).sort({ date: -1 }).lean();
+    let targetDateObj = new Date();
+    targetDateObj.setDate(targetDateObj.getDate() - 30);
+    const startDateStr = targetDateObj.toISOString().split('T')[0];
+
+    const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp), date: { $gte: startDateStr } }).sort({ date: -1 }).lean();
     await autoEndOverdueTeaBreaks(records, settings);
     res.json(records.map(toAttendanceJSON));
   } catch (error) {

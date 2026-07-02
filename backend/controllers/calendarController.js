@@ -26,7 +26,7 @@ export const getEvents = async (req, res) => {
         query.$or.push({ _id: employeeId });
         query.$or.push({ userId: employeeId });
       }
-      const emp = await Employee.findOne(query).select('-avatar -cvData -cvName');
+      const emp = await Employee.findOne(query).select('-avatar -cvData -cvName').lean();
       if (emp) {
         country = emp.country || 'Sri Lanka';
         office = emp.office || 'Colombo';
@@ -37,7 +37,7 @@ export const getEvents = async (req, res) => {
           if (mongoose.Types.ObjectId.isValid(emp.companyId)) {
             compQuery.$or.push({ _id: emp.companyId });
           }
-          const comp = await Company.findOne(compQuery).select('-avatar');
+          const comp = await Company.findOne(compQuery).select('-avatar').lean();
           if (comp && comp.country) {
             country = comp.country;
           }
@@ -56,7 +56,7 @@ export const getEvents = async (req, res) => {
       if (mongoose.Types.ObjectId.isValid(companyId)) {
         query.$or.push({ _id: companyId });
       }
-      const comp = await Company.findOne(query).select('-avatar');
+      const comp = await Company.findOne(query).select('-avatar').lean();
       if (comp) {
         country = comp.country || 'Sri Lanka';
       }
@@ -70,7 +70,7 @@ export const getEvents = async (req, res) => {
       localFilter = {};
     }
 
-    const localEvents = await CompanyEvent.find(localFilter).sort({ start: 1 });
+    const localEvents = await CompanyEvent.find(localFilter).sort({ start: 1 }).lean();
 
     const mergedEvents = localEvents.map((e) => {
       const obj = e.toObject ? e.toObject() : e;
@@ -86,13 +86,13 @@ export const getEvents = async (req, res) => {
         query.$or.push({ _id: employeeId });
         query.$or.push({ userId: employeeId });
       }
-      const emp = await Employee.findOne(query).select('-avatar -cvData -cvName');
+      const emp = await Employee.findOne(query).select('-avatar -cvData -cvName').lean();
       if (emp) {
         const empId = emp.legacyId || emp._id.toString();
         const approvedLeaves = await LeaveRequest.find({
           employeeId: empId,
           status: 'approved'
-        });
+        }).lean();
         approvedLeaves.forEach((leave) => {
           mergedEvents.push({
             id: leave._id,
@@ -112,16 +112,16 @@ export const getEvents = async (req, res) => {
       if (mongoose.Types.ObjectId.isValid(companyId)) {
         query.$or.push({ _id: companyId });
       }
-      const comp = await Company.findOne(query).select('-avatar');
+      const comp = await Company.findOne(query).select('-avatar').lean();
       if (comp) {
         const compId = comp.legacyId || comp._id.toString();
-        const employees = await Employee.find({ companyId: compId }).select('-avatar -cvData -cvName');
+        const employees = await Employee.find({ companyId: compId }).select('-avatar -cvData -cvName').lean();
         const empIds = employees.map((emp) => emp.legacyId || emp._id.toString());
 
         const approvedLeaves = await LeaveRequest.find({
           employeeId: { $in: empIds },
           status: 'approved'
-        });
+        }).lean();
 
         approvedLeaves.forEach((leave) => {
           mergedEvents.push({
@@ -139,7 +139,7 @@ export const getEvents = async (req, res) => {
     } else {
       const approvedLeaves = await LeaveRequest.find({
         status: 'approved'
-      });
+      }).lean();
       approvedLeaves.forEach((leave) => {
         mergedEvents.push({
           id: leave._id,
@@ -162,12 +162,12 @@ export const getEvents = async (req, res) => {
         query.$or.push({ _id: employeeId });
         query.$or.push({ userId: employeeId });
       }
-      const emp = await Employee.findOne(query).select('-avatar -cvData -cvName');
+      const emp = await Employee.findOne(query).select('-avatar -cvData -cvName').lean();
       if (emp) {
         if (emp.companyId) {
-          targetEmployees = await Employee.find({ companyId: emp.companyId, status: 'active' }).select('-avatar -cvData -cvName');
+          targetEmployees = await Employee.find({ companyId: emp.companyId, status: 'active' }).select('-avatar -cvData -cvName').lean();
         } else {
-          targetEmployees = await Employee.find({ status: 'active' }).select('-avatar -cvData -cvName');
+          targetEmployees = await Employee.find({ status: 'active' }).select('-avatar -cvData -cvName').lean();
         }
       }
     } else if (companyId) {
@@ -175,14 +175,14 @@ export const getEvents = async (req, res) => {
       if (mongoose.Types.ObjectId.isValid(companyId)) {
         query.$or.push({ _id: companyId });
       }
-      const comp = await Company.findOne(query).select('-avatar');
+      const comp = await Company.findOne(query).select('-avatar').lean();
       if (comp) {
         const compId = comp.legacyId || comp._id.toString();
-        targetEmployees = await Employee.find({ companyId: compId, status: 'active' }).select('-avatar -cvData -cvName');
+        targetEmployees = await Employee.find({ companyId: compId, status: 'active' }).select('-avatar -cvData -cvName').lean();
       }
     } else {
       // HR/Admin sees all active employees
-      targetEmployees = await Employee.find({ status: 'active' }).select('-avatar -cvData -cvName');
+      targetEmployees = await Employee.find({ status: 'active' }).select('-avatar -cvData -cvName').lean();
     }
 
     const currentYear = new Date().getFullYear();

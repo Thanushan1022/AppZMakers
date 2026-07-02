@@ -36,6 +36,14 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
+    const startOfWeek = new Date(targetDateObj);
+    startOfWeek.setDate(startOfWeek.getDate() - 7); 
+    const startDateStr = getTodayString(startOfWeek);
+
+    const endOfWeek = new Date(targetDateObj);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+    const endDateStr = getTodayString(endOfWeek);
+
     const [
       companiesRaw,
       hrUsersRaw,
@@ -43,11 +51,18 @@ export const getDashboard = async (req, res) => {
       attendanceRecords,
       leaveRequests
     ] = await Promise.all([
-      Company.find().select('-avatar').sort({ createdAt: -1 }),
-      HRUser.find().select('-avatar').sort({ createdAt: -1 }),
-      Employee.find().sort({ createdAt: -1 }),
-      Attendance.find(),
-      LeaveRequest.find({ hiddenForAdmins: { $ne: true } })
+      Company.find().select('-avatar').sort({ createdAt: -1 }).lean(),
+      HRUser.find().select('-avatar').sort({ createdAt: -1 }).lean(),
+      Employee.find().select('-cvData -cvName').sort({ createdAt: -1 }).lean(),
+      Attendance.find({ date: { $gte: startDateStr, $lte: endDateStr } }).lean(),
+      LeaveRequest.find({ 
+        hiddenForAdmins: { $ne: true },
+        $or: [
+          { startDate: { $gte: startDateStr, $lte: endDateStr } },
+          { endDate: { $gte: startDateStr, $lte: endDateStr } },
+          { startDate: { $lte: startDateStr }, endDate: { $gte: endDateStr } }
+        ]
+      }).lean()
     ]);
 
     const companies = companiesRaw.map(toCompanyJSON);
@@ -109,7 +124,7 @@ export const getDashboard = async (req, res) => {
 export const getLeaves = async (req, res) => {
   try {
     await autoRejectPassedLeaves();
-    const leaves = await LeaveRequest.find({ hiddenForAdmins: { $ne: true } }).sort({ createdAt: -1 });
+    const leaves = await LeaveRequest.find({ hiddenForAdmins: { $ne: true } }).sort({ createdAt: -1 }).lean();
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -118,7 +133,7 @@ export const getLeaves = async (req, res) => {
 
 export const getCompanies = async (req, res) => {
   try {
-    const companies = await Company.find().select('-avatar').sort({ createdAt: -1 });
+    const companies = await Company.find().select('-avatar').sort({ createdAt: -1 }).lean();
     res.json(companies.map(toCompanyJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -127,7 +142,7 @@ export const getCompanies = async (req, res) => {
 
 export const getHRUsers = async (req, res) => {
   try {
-    const hrs = await HRUser.find().select('-avatar').sort({ createdAt: -1 });
+    const hrs = await HRUser.find().select('-avatar').sort({ createdAt: -1 }).lean();
     res.json(hrs.map(toHRJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -727,8 +742,7 @@ export const updateEmployeeStatus = async (req, res) => {
 
     const emp = await Employee.findById(req.params.id);
     if (!emp && req.params.id.startsWith('emp_')) {
-      const allEmps = await Employee.find();
-      const matched = allEmps.find(e => e.legacyId === req.params.id);
+      const matched = await Employee.findOne({ legacyId: req.params.id });
       if (matched) {
         matched.status = status;
         await matched.save();

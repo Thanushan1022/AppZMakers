@@ -28,21 +28,35 @@ export const getDashboard = async (req, res) => {
     await syncCompanyEmployeeCounts();
 
     const cid = comp.legacyId || comp._id.toString();
-    const compEmployees = await Employee.find({ companyId: cid }).sort({ createdAt: -1 });
+    const compEmployees = await Employee.find({ companyId: cid }).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = compEmployees.map(toEmployeeJSON);
     const employeeIds = employeesJson.map((e) => e.id);
-    const today = getTodayString();
+    
+    let targetDateObj = new Date();
+    const today = getTodayString(targetDateObj);
+    const startOfWeek = new Date(targetDateObj);
+    startOfWeek.setDate(startOfWeek.getDate() - 7); 
+    const startDateStr = getTodayString(startOfWeek);
+    const endOfWeek = new Date(targetDateObj);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+    const endDateStr = getTodayString(endOfWeek);
 
-    const attendanceRecords = await Attendance.find({ employeeId: { $in: employeeIds } });
+    const attendanceRecords = await Attendance.find({ employeeId: { $in: employeeIds }, date: { $gte: startDateStr, $lte: endDateStr } }).lean();
     const attJson = attendanceRecords.map(toAttendanceJSON);
-    const allLeaves = await LeaveRequest.find();
+    const allLeaves = await LeaveRequest.find({
+      $or: [
+        { startDate: { $gte: startDateStr, $lte: endDateStr } },
+        { endDate: { $gte: startDateStr, $lte: endDateStr } },
+        { startDate: { $lte: startDateStr }, endDate: { $gte: endDateStr } }
+      ]
+    }).lean();
     const leavesJson = allLeaves.map((l) => l.toObject());
     
     const todayRecs = getTodayAttendanceForEmployees(employeesJson, attJson, today, leavesJson);
 
     const presentCount = todayRecs.filter((r) => r.status === 'present' || r.status === 'late').length;
     const absentCount = todayRecs.filter((r) => r.status === 'absent').length;
-    const leaves = await LeaveRequest.find({ employeeId: { $in: employeeIds }, status: 'pending' });
+    const leaves = await LeaveRequest.find({ employeeId: { $in: employeeIds }, status: 'pending' }).lean();
     const pendingLeaves = leaves.length;
     const totalHours = attJson.reduce((sum, r) => sum + (r.totalHours || 0), 0);
     const onLeaveCount = todayRecs.filter((r) => r.status.startsWith('on leave')).length;
@@ -74,7 +88,7 @@ export const getReports = async (req, res) => {
 
     const { startDate, endDate } = req.query;
 
-    const employees = await Employee.find({ companyId: legacyId }).sort({ createdAt: -1 });
+    const employees = await Employee.find({ companyId: legacyId }).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);
@@ -84,7 +98,7 @@ export const getReports = async (req, res) => {
     if (startDate && endDate) {
       attendanceFilter.date = { $gte: startDate, $lte: endDate };
     }
-    const attendanceRecords = await Attendance.find(attendanceFilter);
+    const attendanceRecords = await Attendance.find(attendanceFilter).lean();
     const attJson = attendanceRecords.map(toAttendanceJSON);
 
     let leaveFilter = { employeeId: { $in: employeeIds } };
@@ -95,7 +109,7 @@ export const getReports = async (req, res) => {
         { startDate: { $lte: startDate }, endDate: { $gte: endDate } }
       ];
     }
-    const leaveRequests = await LeaveRequest.find(leaveFilter);
+    const leaveRequests = await LeaveRequest.find(leaveFilter).lean();
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
     const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
@@ -305,7 +319,7 @@ export const getCompanyShiftNotices = async (req, res) => {
     }
 
     const cid = company.legacyId || company._id.toString();
-    const notices = await ShiftNotice.find({ companyId: cid }).sort({ createdAt: -1 });
+    const notices = await ShiftNotice.find({ companyId: cid }).sort({ createdAt: -1 }).lean();
     res.json(notices);
   } catch (error) {
     res.status(500).json({ error: error.message });

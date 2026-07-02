@@ -83,7 +83,10 @@ export const getEmployeeDetail = async (req, res) => {
     const empId = getEmployeeLegacyId(emp);
     const balance = await syncLeaveBalance(empId, emp.joinDate);
     const attendance = await Attendance.find({ employeeId: empId }).sort({ date: -1 }).limit(10).lean();
-    const allAttendance = await Attendance.find({ employeeId: empId }).lean();
+    let targetDateObj = new Date();
+    targetDateObj.setDate(targetDateObj.getDate() - 90);
+    const startDateStr = targetDateObj.toISOString().split('T')[0];
+    const allAttendance = await Attendance.find({ employeeId: empId, date: { $gte: startDateStr } }).lean();
     const stats = computeEmployeeStats(empId, allAttendance.map(toAttendanceJSON));
 
     res.json({
@@ -280,16 +283,31 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
+    const startOfWeek = new Date(targetDateObj);
+    startOfWeek.setDate(startOfWeek.getDate() - 7); 
+    const startDateStr = getTodayString(startOfWeek);
+
+    const endOfWeek = new Date(targetDateObj);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+    const endDateStr = getTodayString(endOfWeek);
+
     const [
       employees,
       settings,
       attendanceRecords,
       leaveRequests
     ] = await Promise.all([
-      Employee.find().sort({ createdAt: -1 }).lean(),
+      Employee.find().select('-cvData -cvName').sort({ createdAt: -1 }).lean(),
       getSettings(),
-      Attendance.find().lean(),
-      LeaveRequest.find({ hiddenForAdmins: { $ne: true } }).lean()
+      Attendance.find({ date: { $gte: startDateStr, $lte: endDateStr } }).lean(),
+      LeaveRequest.find({ 
+        hiddenForAdmins: { $ne: true },
+        $or: [
+          { startDate: { $gte: startDateStr, $lte: endDateStr } },
+          { endDate: { $gte: startDateStr, $lte: endDateStr } },
+          { startDate: { $lte: startDateStr }, endDate: { $gte: endDateStr } }
+        ]
+      }).lean()
     ]);
 
     const employeesJson = employees.map(toEmployeeJSON);
