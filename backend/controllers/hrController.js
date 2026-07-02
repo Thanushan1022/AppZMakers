@@ -28,7 +28,7 @@ import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveServi
 export const getLeaves = async (req, res) => {
   try {
     await autoRejectPassedLeaves();
-    const leaves = await LeaveRequest.find().sort({ createdAt: -1 }).lean();
+    const leaves = await LeaveRequest.find({ hiddenForAdmins: { $ne: true } }).sort({ createdAt: -1 }).lean();
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -271,7 +271,7 @@ export const createEmployee = async (req, res) => {
 
 export const getDashboard = async (req, res) => {
   try {
-    await autoRejectPassedLeaves();
+    autoRejectPassedLeaves().catch(console.error);
     let targetDateObj = new Date();
     if (req.query.date) {
       const [year, month, day] = req.query.date.split('-').map(Number);
@@ -280,15 +280,24 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const employees = await Employee.find().sort({ createdAt: -1 }).lean();
+    const [
+      employees,
+      settings,
+      attendanceRecords,
+      leaveRequests
+    ] = await Promise.all([
+      Employee.find().sort({ createdAt: -1 }).lean(),
+      getSettings(),
+      Attendance.find().lean(),
+      LeaveRequest.find({ hiddenForAdmins: { $ne: true } }).lean()
+    ]);
+
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
-    const settings = await getSettings();
-    const attendanceRecords = await Attendance.find().lean();
+    
     await autoEndOverdueTeaBreaks(attendanceRecords, settings);
     
     const attJson = attendanceRecords.map(toAttendanceJSON);
-    const leaveRequests = await LeaveRequest.find().lean();
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
     const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
@@ -372,7 +381,8 @@ export const getReports = async (req, res) => {
     const totalHours = allStats.reduce((sum, s) => sum + s.hours, 0);
 
     // If a range is provided, compute weekly and monthly charts relative to the end date of that range.
-    const referenceDateObj = endDate ? new Date(endDate) : new Date();
+    let referenceDateObj = endDate ? new Date(endDate) : new Date();
+    if (referenceDateObj > new Date()) referenceDateObj = new Date();
 
     res.json({
       employees: employeesJson,
@@ -662,6 +672,20 @@ export const getHRShiftNotices = async (req, res) => {
   try {
     const notices = await ShiftNotice.find().sort({ createdAt: -1 }).lean();
     res.json(notices);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteLeaveApproval = async (req, res) => {
+  try {
+    const leave = await LeaveRequest.findById(req.params.id);
+    if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+    
+    leave.hiddenForAdmins = true;
+    await leave.save();
+    
+    res.json({ message: 'Leave history deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

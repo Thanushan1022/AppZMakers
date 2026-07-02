@@ -18,6 +18,7 @@ export function useCompanyController(companyId, updateAuth) {
   const [weeklyData, setWeeklyData] = useState([]);
   const [presentCount, setPresentCount] = useState(0);
   const [absentCount, setAbsentCount] = useState(0);
+  const [onLeaveCount, setOnLeaveCount] = useState(0);
   const [pendingLeaves, setPendingLeaves] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
 
@@ -200,6 +201,7 @@ export function useCompanyController(companyId, updateAuth) {
         setWeeklyData(data.weeklyData || []);
         setPresentCount(data.stats?.presentCount || 0);
         setAbsentCount(data.stats?.absentCount || 0);
+        setOnLeaveCount(data.stats?.onLeaveCount || 0);
         setPendingLeaves(data.stats?.pendingLeaves || 0);
         setTotalHours(data.stats?.totalHours || 0);
       }
@@ -261,6 +263,7 @@ export function useCompanyController(companyId, updateAuth) {
     weeklyData,
     presentCount,
     absentCount,
+    onLeaveCount,
     pendingLeaves,
     totalHours,
     searchQuery,

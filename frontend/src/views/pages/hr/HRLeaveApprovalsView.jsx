@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, Clock, Calendar, Search } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Calendar, Search, Trash2 } from 'lucide-react';
 
 const typeColors = {
   annual: 'bg-indigo-50 text-indigo-700 border-indigo-100',
@@ -21,6 +21,7 @@ export function HRLeaveApprovalsView({
   leaveAction,
   setLeaveAction,
   handleConfirmLeaveAction,
+  handleDeleteLeaveApproval,
   filteredLeaves,
   leaveCounts,
   leaveMonthFilter,
@@ -172,6 +173,16 @@ export function HRLeaveApprovalsView({
                   className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
                 >
                   <XCircle className="w-4 h-4" />Reject
+                </button>
+              </div>
+            )}
+            {(leave.status === 'approved' || leave.status === 'rejected') && (
+              <div className="mt-4 pt-4 border-t border-border flex items-center justify-end gap-3 relative z-10">
+                <button
+                  onClick={() => handleDeleteLeaveApproval(leave.id)}
+                  className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />Delete History
                 </button>
               </div>
             )}

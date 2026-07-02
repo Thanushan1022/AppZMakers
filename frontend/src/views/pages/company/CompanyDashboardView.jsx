@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { Users, CheckCircle2, Clock, TrendingUp, Calendar } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function CompanyDashboardView({
@@ -10,6 +10,7 @@ export function CompanyDashboardView({
   presentCount,
   absentCount,
   pendingLeaves,
+  onLeaveCount = 0,
   totalHours,
   shiftNotices = [],
   handleCreateShiftNotice,
@@ -38,11 +39,12 @@ export function CompanyDashboardView({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
         {[
           { label: 'Total Employees', value: myEmployees.length, icon: Users, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-200 dark:border-indigo-800', sub: `${myEmployees.filter(e => e.status === 'active').length} active` },
           { label: 'Present Today', value: presentCount, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800', sub: `${myEmployees.length > 0 ? Math.round((presentCount / myEmployees.length) * 100) : 0}% attendance` },
-          { label: 'Absent Today', value: absentCount, icon: Clock, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30', border: 'border-rose-200 dark:border-rose-800', sub: `${pendingLeaves} leaves pending` },
+          { label: 'On Leave Today', value: onLeaveCount, icon: Calendar, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900/30', border: 'border-purple-200 dark:border-purple-800', sub: `${pendingLeaves} leaves pending` },
+          { label: 'Absent Today', value: absentCount, icon: Clock, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30', border: 'border-rose-200 dark:border-rose-800', sub: `${myEmployees.length > 0 ? Math.round((absentCount / myEmployees.length) * 100) : 0}% absent` },
           { label: 'Total Hours', value: `${totalHours.toFixed(0)}h`, icon: TrendingUp, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-100 dark:bg-sky-900/30', border: 'border-sky-200 dark:border-sky-800', sub: 'This period' },
         ].map(s => {
           const Icon = s.icon;
@@ -75,6 +77,7 @@ export function CompanyDashboardView({
               <YAxis tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
               <Tooltip cursor={{ fill: '#f8fafc', opacity: 0.1 }} contentStyle={{ background: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e2e8f0', borderRadius: '16px', fontSize: 13, fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
               <Bar dataKey="present" name="Present" fill="#10b981" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="onLeave" name="On Leave" fill="#0ea5e9" radius={[6, 6, 0, 0]} />
               <Bar dataKey="absent" name="Absent" fill="#ef4444" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

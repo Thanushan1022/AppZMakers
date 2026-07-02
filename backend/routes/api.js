@@ -28,6 +28,7 @@ router.get('/hr/dashboard', hrController.getDashboard);
 router.get('/hr/reports', hrController.getReports);
 router.get('/hr/leaves', hrController.getLeaves);
 router.post('/hr/leaves/:id/review', hrController.reviewLeave);
+router.delete('/hr/leaves/:id', hrController.deleteLeaveApproval);
 router.get('/hr/employees', hrController.getEmployees);
 router.get('/hr/employees/:id', hrController.getEmployeeDetail);
 router.post('/hr/employees', hrController.createEmployee);
@@ -56,6 +57,7 @@ router.delete('/companies/:id/shift-notices/:noticeId', companyController.delete
 router.get('/admin/dashboard', adminController.getDashboard);
 router.get('/admin/leaves', adminController.getLeaves);
 router.post('/admin/leaves/:id/review', adminController.reviewLeave);
+router.delete('/admin/leaves/:id', adminController.deleteLeaveApproval);
 router.post('/admin/hr', adminController.createHR);
 router.post('/admin/companies', adminController.createCompany);
 router.put('/admin/employees/:id', adminController.updateEmployee);

@@ -126,8 +126,8 @@ export function HRDashboardView({
               <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }} />
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
               <Bar dataKey="present" name="Present" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="onLeave" name="On Leave" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
               <Bar dataKey="absent" name="Absent" fill="#ef4444" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="onLeave" name="On Leave" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

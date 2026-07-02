@@ -15,6 +15,7 @@ const leaveRequestSchema = new mongoose.Schema(
     hrNote: { type: String },
     rejectionReason: { type: String },
     hiddenForEmployee: { type: Boolean, default: false },
+    hiddenForAdmins: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -1,3 +1,5 @@
+import Attendance from '../models/Attendance.js';
+
 export const getSecsFromTime = (tStr) => {
   if (!tStr) return 0;
   const parts = tStr.split(':').map(Number);
@@ -56,7 +58,10 @@ export const autoEndOverdueTeaBreaks = async (records, settings) => {
              activeTeaBreak.end = getTimeStringFromSecs(getSecsFromTime('00:00:00') + (teaDuration * 60));
           }
           record.onTeaBreak = false;
-          await record.save();
+          await Attendance.updateOne(
+            { _id: record._id },
+            { $set: { onTeaBreak: false, breaks: record.breaks } }
+          );
         }
       }
     }

@@ -111,7 +111,8 @@ export const getReports = async (req, res) => {
         : 0;
     const totalHours = allStats.reduce((sum, s) => sum + s.hours, 0);
 
-    const referenceDateObj = endDate ? new Date(endDate) : new Date();
+    let referenceDateObj = endDate ? new Date(endDate) : new Date();
+    if (referenceDateObj > new Date()) referenceDateObj = new Date();
 
     res.json({
       employees: employeesJson,

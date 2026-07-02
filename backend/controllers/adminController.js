@@ -26,8 +26,8 @@ import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveServi
 
 export const getDashboard = async (req, res) => {
   try {
-    await autoRejectPassedLeaves();
-    await syncCompanyEmployeeCounts();
+    autoRejectPassedLeaves().catch(console.error);
+    syncCompanyEmployeeCounts().catch(console.error);
     let targetDateObj = new Date();
     if (req.query.date) {
       const [year, month, day] = req.query.date.split('-').map(Number);
@@ -36,16 +36,29 @@ export const getDashboard = async (req, res) => {
     const today = getTodayString(targetDateObj);
     const todayLabel = formatDisplayDate(targetDateObj);
 
-    const companies = (await Company.find().select('-avatar').sort({ createdAt: -1 })).map(toCompanyJSON);
-    const hrUsers = (await HRUser.find().select('-avatar').sort({ createdAt: -1 })).map(toHRJSON);
-    const employees = (await Employee.find().sort({ createdAt: -1 })).map(toEmployeeJSON);
-    const pendingLeaves = (await LeaveRequest.find({ status: 'pending' })).map(toLeaveJSON);
-    const activeEmployees = employees.filter((e) => e.status === 'active');
+    const [
+      companiesRaw,
+      hrUsersRaw,
+      employeesRaw,
+      attendanceRecords,
+      leaveRequests
+    ] = await Promise.all([
+      Company.find().select('-avatar').sort({ createdAt: -1 }),
+      HRUser.find().select('-avatar').sort({ createdAt: -1 }),
+      Employee.find().sort({ createdAt: -1 }),
+      Attendance.find(),
+      LeaveRequest.find({ hiddenForAdmins: { $ne: true } })
+    ]);
 
-    const attendanceRecords = await Attendance.find();
-    const attJson = attendanceRecords.map(toAttendanceJSON);
-    const leaveRequests = await LeaveRequest.find();
+    const companies = companiesRaw.map(toCompanyJSON);
+    const hrUsers = hrUsersRaw.map(toHRJSON);
+    const employees = employeesRaw.map(toEmployeeJSON);
+    
     const leavesJson = leaveRequests.map(toLeaveJSON);
+    const pendingLeaves = leavesJson.filter(l => l.status === 'pending');
+    
+    const activeEmployees = employees.filter((e) => e.status === 'active');
+    const attJson = attendanceRecords.map(toAttendanceJSON);
 
     const todayAttendance = getTodayAttendanceForEmployees(activeEmployees, attJson, today, leavesJson);
     const present = todayAttendance.filter((a) => a.status === 'present' || a.status === 'late').length;
@@ -84,8 +97,8 @@ export const getDashboard = async (req, res) => {
       pendingLeaves,
       leaveCounts: {
         pending: pendingLeaves.length,
-        approved: await LeaveRequest.countDocuments({ status: 'approved' }),
-        rejected: await LeaveRequest.countDocuments({ status: 'rejected' }),
+        approved: leavesJson.filter(l => l.status === 'approved').length,
+        rejected: leavesJson.filter(l => l.status === 'rejected').length,
       },
     });
   } catch (error) {
@@ -96,7 +109,7 @@ export const getDashboard = async (req, res) => {
 export const getLeaves = async (req, res) => {
   try {
     await autoRejectPassedLeaves();
-    const leaves = await LeaveRequest.find().sort({ createdAt: -1 });
+    const leaves = await LeaveRequest.find({ hiddenForAdmins: { $ne: true } }).sort({ createdAt: -1 });
     res.json(leaves.map(toLeaveJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -735,6 +748,20 @@ export const updateEmployeeStatus = async (req, res) => {
       message: `Employee account status updated to ${status} successfully.`,
       employee: { id: emp.legacyId || emp._id.toString(), status: emp.status },
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteLeaveApproval = async (req, res) => {
+  try {
+    const leave = await LeaveRequest.findById(req.params.id);
+    if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+    
+    leave.hiddenForAdmins = true;
+    await leave.save();
+    
+    res.json({ message: 'Leave history deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

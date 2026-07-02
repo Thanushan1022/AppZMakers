@@ -697,6 +697,22 @@ export function useAdminController(adminId, updateAuth) {
     setShowModal(true);
   };
 
+  const handleDeleteLeaveApproval = async (leaveId) => {
+    if (!window.confirm('Are you sure you want to delete this leave history?')) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/leaves/${leaveId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setLeavesList(prev => prev.filter(l => l.id !== leaveId));
+        fetchData();
+      } else {
+        alert('Failed to delete leave history.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting leave history.');
+    }
+  };
+
   const handleConfirmLeaveAction = async () => {
     if (!selectedLeave) return;
     try {
@@ -866,6 +882,7 @@ export function useAdminController(adminId, updateAuth) {
     leaveAction,
     setLeaveAction,
     handleConfirmLeaveAction,
+    handleDeleteLeaveApproval,
 
     leaveTabFilter,
     setLeaveTabFilter,

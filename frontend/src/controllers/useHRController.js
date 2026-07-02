@@ -375,6 +375,22 @@ export function useHRController(hrId, updateAuth) {
   const getEmployeeStats = (empId) =>
     employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
 
+  const handleDeleteLeaveApproval = async (leaveId) => {
+    if (!window.confirm('Are you sure you want to delete this leave history?')) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/hr/leaves/${leaveId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setLeavesList(prev => prev.filter(l => l.id !== leaveId));
+        fetchData();
+      } else {
+        alert('Failed to delete leave history.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting leave history.');
+    }
+  };
+
   const handleConfirmLeaveAction = async () => {
     if (!selectedLeave) return;
 
@@ -609,6 +625,7 @@ export function useHRController(hrId, updateAuth) {
     leaveAction,
     setLeaveAction,
     handleConfirmLeaveAction,
+    handleDeleteLeaveApproval,
     filteredLeaves,
     leaveCounts,
 

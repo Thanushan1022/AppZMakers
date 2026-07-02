@@ -686,6 +686,7 @@ export function CompanyReportsView({
                 <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
                 <Bar dataKey="present" name="Present" fill="#10b981" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="onLeave" name="On Leave" fill="#0ea5e9" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="absent" name="Absent" fill="#ef4444" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -845,7 +846,6 @@ export function CompanyReportsView({
                 { label: 'Approved', value: leavesList.filter((l) => l.status === 'approved').length, color: 'text-emerald-600' },
                 { label: 'Rejected', value: leavesList.filter((l) => l.status === 'rejected').length, color: 'text-red-500' },
                 { label: 'Pending', value: leavesList.filter((l) => l.status === 'pending').length, color: 'text-amber-600' },
-                { label: 'Total Days Off', value: leavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0), color: 'text-indigo-600' },
               ].map((s) => (
                 <div key={s.label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                   <span className="text-slate-500 text-sm">{s.label}</span>

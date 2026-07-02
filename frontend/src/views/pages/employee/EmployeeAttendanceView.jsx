@@ -32,6 +32,8 @@ export function EmployeeAttendanceView({ mySalary,
   setShowCheckoutConfirm,
   handleBreak,
   handleTeaBreak,
+  sessionConfirmLevel = 0,
+  handleSessionContinue,
   todayTasks = [],
   handleAddTask,
   handleEditTask,
@@ -67,6 +69,8 @@ export function EmployeeAttendanceView({ mySalary,
   setSelectedMonthNum,
   showGoodbye,
   todaySummary,
+  showSessionOverModal,
+  setShowSessionOverModal,
 }) {
   const [isTaskBoxExpanded, setIsTaskBoxExpanded] = useState(false);
   const [taskDesc, setTaskDesc] = useState('');
@@ -1074,16 +1078,29 @@ export function EmployeeAttendanceView({ mySalary,
               <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-6 shadow-inner mx-auto border border-transparent dark:border-amber-800/50">
                 <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-500" />
               </div>
-              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black text-center mb-2 tracking-tight">Almost done!</h3>
+              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black text-center mb-2 tracking-tight">
+                {sessionConfirmLevel > 0 ? "Session Confirmation" : "Almost done!"}
+              </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm text-center mb-8 font-medium">
-                {(onBreak || onTeaBreak) 
+                {sessionConfirmLevel === 1 && "You have been working for 10 hours. Are you still working?"}
+                {sessionConfirmLevel === 2 && "Reminder: Are you still working? (1st warning)"}
+                {sessionConfirmLevel === 3 && "Final Reminder: You will be automatically checked out in 10 minutes."}
+                {sessionConfirmLevel === 0 && ((onBreak || onTeaBreak) 
                   ? "You are currently on a break. Checking out now will automatically end your break. Are you sure you want to proceed?" 
-                  : "Would you like to take a break before leaving, or proceed directly to check-out?"}
+                  : "Would you like to take a break before leaving, or proceed directly to check-out?")}
               </p>
               
               <div className="space-y-4">
+                {sessionConfirmLevel > 0 && (
+                   <button
+                     onClick={handleSessionContinue}
+                     className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer shadow-lg shadow-indigo-500/25 active:scale-95 tracking-widest uppercase"
+                   >
+                     YES, CONTINUE WORKING
+                   </button>
+                )}
                 {/* Take Meal Break button */}
-                {checkedIn && !onBreak && !mealBreakLimitReached && !isBreakOver && (
+                {checkedIn && !onBreak && !mealBreakLimitReached && !isBreakOver && sessionConfirmLevel === 0 && (
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);
@@ -1113,10 +1130,10 @@ export function EmployeeAttendanceView({ mySalary,
                 {/* Proceed to Check-out */}
                 <button
                   onClick={confirmCheckOut}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer shadow-lg shadow-red-500/25 active:scale-95 tracking-widest uppercase"
+                  className={`w-full flex items-center justify-center gap-3 ${sessionConfirmLevel > 0 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700' : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/25'} font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer active:scale-95 tracking-widest uppercase`}
                 >
                   <LogOut className="w-5 h-5" />
-                  PROCEED TO CHECK-OUT
+                  {sessionConfirmLevel > 0 ? 'CHECK OUT' : 'PROCEED TO CHECK-OUT'}
                 </button>
 
                 {/* Cancel */}
@@ -1190,6 +1207,29 @@ export function EmployeeAttendanceView({ mySalary,
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session Over Modal */}
+      {showSessionOverModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+            <div className="p-8 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-blue-200 dark:border-blue-800">
+                <AlertCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+              </div>
+              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">Session Over</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
+                Today's section is over. If you need further details, please contact HR.
+              </p>
+              <button
+                onClick={() => setShowSessionOverModal(false)}
+                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black tracking-wider py-4 px-6 rounded-2xl shadow-lg shadow-blue-500/30 transition-all duration-200 text-sm active:scale-95"
+              >
+                GOT IT
+              </button>
             </div>
           </div>
         </div>

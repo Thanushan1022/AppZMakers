@@ -43,6 +43,8 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   const [checkedIn, setCheckedIn] = useState(false);
   const [hasAttendedToday, setHasAttendedToday] = useState(false);
   const [showCheckoutConfirm, setShowCheckoutConfirm] = useState(false);
+  const [sessionConfirmLevel, setSessionConfirmLevel] = useState(0); // 0=none, 1=10h, 2=reminder1, 3=reminder2
+  const [workerRef, setWorkerRef] = useState(null);
   const [onBreak, setOnBreak] = useState(false);
   const [onTeaBreak, setOnTeaBreak] = useState(false);
   const [sessionSecs, setSessionSecs] = useState(0);
@@ -214,6 +216,13 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
       window.removeEventListener('refresh_attendance', handleRefresh);
     };
   }, [userId]);
+
+  // Request notification permission
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   // Sync timers dynamically relative to absolute check-in time and actual breaks
   useEffect(() => {
@@ -516,6 +525,71 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Web Worker for reliable background session timing
+  useEffect(() => {
+    let worker = null;
+    if (checkedIn && checkInTime) {
+      try {
+        worker = new Worker(new URL('../workers/timerWorker.js', import.meta.url));
+        
+        const showNotification = (title, body) => {
+          if (document.visibilityState === 'hidden' && 'Notification' in window && Notification.permission === 'granted') {
+            const notification = new Notification(title, { body });
+            notification.onclick = () => {
+              window.focus();
+            };
+          }
+        };
+
+        worker.onmessage = (e) => {
+          const { type } = e.data;
+          if (type === 'SHOW_CONFIRM') {
+            setSessionConfirmLevel(1);
+            setShowCheckoutConfirm(true);
+            showNotification('Session Confirmation', 'You have been working for 10 hours. Are you still working?');
+          } else if (type === 'REMINDER_1') {
+            setSessionConfirmLevel(2);
+            setShowCheckoutConfirm(true);
+            showNotification('Session Reminder', 'Reminder: Are you still working? (1st warning)');
+          } else if (type === 'REMINDER_2') {
+            setSessionConfirmLevel(3);
+            setShowCheckoutConfirm(true);
+            showNotification('Final Reminder', 'Final Reminder: You will be automatically checked out in 10 minutes.');
+          } else if (type === 'AUTO_CHECKOUT') {
+            showNotification('Auto Checkout', 'You have been automatically checked out due to inactivity.');
+            confirmCheckOut(); 
+          }
+        };
+
+        worker.postMessage({ action: 'START', payload: { checkInTime } });
+        setWorkerRef(worker);
+      } catch (e) {
+         console.warn("Failed to initialize timer worker", e);
+      }
+    } else {
+        setSessionConfirmLevel(0);
+        if (workerRef) {
+           workerRef.postMessage({ action: 'STOP' });
+        }
+    }
+    
+    return () => {
+      if (worker) {
+        worker.postMessage({ action: 'STOP' });
+        worker.terminate();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkedIn, checkInTime]);
+
+  const handleSessionContinue = () => {
+      setSessionConfirmLevel(0);
+      setShowCheckoutConfirm(false);
+      if (workerRef) {
+          workerRef.postMessage({ action: 'RESET_INTERVAL' });
+      }
   };
 
   const handleBreak = async () => {
@@ -909,6 +983,8 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     confirmCheckOut,
     showCheckoutConfirm,
     setShowCheckoutConfirm,
+    sessionConfirmLevel,
+    handleSessionContinue,
     handleBreak,
     handleTeaBreak,
     handleLeaveSubmit,
