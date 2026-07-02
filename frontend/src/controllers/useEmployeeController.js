@@ -535,10 +535,14 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
         worker = new Worker(new URL('../workers/timerWorker.js', import.meta.url));
         
         const showNotification = (title, body) => {
-          if (document.visibilityState === 'hidden' && 'Notification' in window && Notification.permission === 'granted') {
-            const notification = new Notification(title, { body });
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const notification = new Notification(title, { 
+                body,
+                requireInteraction: true 
+            });
             notification.onclick = () => {
               window.focus();
+              notification.close();
             };
           }
         };

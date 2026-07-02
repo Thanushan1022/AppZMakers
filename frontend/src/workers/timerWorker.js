@@ -27,15 +27,15 @@ function checkTime() {
         if (reminderLevel === 0) {
             self.postMessage({ type: 'SHOW_CONFIRM' });
             reminderLevel = 1;
-            targetElapsedSecs += TEN_MINS_SECS;
+            targetElapsedSecs = elapsed + TEN_MINS_SECS;
         } else if (reminderLevel === 1) {
             self.postMessage({ type: 'REMINDER_1' });
             reminderLevel = 2;
-            targetElapsedSecs += TEN_MINS_SECS;
+            targetElapsedSecs = elapsed + TEN_MINS_SECS;
         } else if (reminderLevel === 2) {
             self.postMessage({ type: 'REMINDER_2' });
             reminderLevel = 3;
-            targetElapsedSecs += TEN_MINS_SECS;
+            targetElapsedSecs = elapsed + TEN_MINS_SECS;
         } else if (reminderLevel === 3) {
             self.postMessage({ type: 'AUTO_CHECKOUT' });
             // Stop checking until restarted or stopped
