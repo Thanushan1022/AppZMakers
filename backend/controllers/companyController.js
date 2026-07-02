@@ -50,7 +50,7 @@ export const getDashboard = async (req, res) => {
         { startDate: { $lte: startDateStr }, endDate: { $gte: endDateStr } }
       ]
     }).lean();
-    const leavesJson = allLeaves.map((l) => l.toObject());
+    const leavesJson = allLeaves;
     
     const todayRecs = getTodayAttendanceForEmployees(employeesJson, attJson, today, leavesJson);
 
