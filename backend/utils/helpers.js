@@ -10,7 +10,17 @@ export const formatDisplayDate = (date = new Date()) =>
 
 export const getTodayAttendanceForEmployees = (employees, attendanceRecords, date = getTodayString(), allLeaves = []) =>
   employees.map((emp) => {
-    const rec = attendanceRecords.find((r) => r.employeeId === emp.id && r.date === date);
+    let rec = attendanceRecords.find((r) => r.employeeId === emp.id && r.date === date);
+    
+    if (!rec) {
+      const activePreviousRec = attendanceRecords
+        .filter((r) => r.employeeId === emp.id && r.date < date && !r.checkOut)
+        .sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+      if (activePreviousRec) {
+        rec = activePreviousRec;
+      }
+    }
+
     let teaBreakCount = 0;
     let teaBreakMinutes = 0;
     if (rec && rec.breaks) {
@@ -48,7 +58,7 @@ export const getTodayAttendanceForEmployees = (employees, attendanceRecords, dat
       employeeId: emp.id,
       employeeName: emp.name,
       department: emp.department,
-      date,
+      date: rec?.date || date, // Use record's actual date so we know if it carried over
       status: finalStatus,
       checkIn: rec?.checkIn || null,
       checkOut: rec?.checkOut || null,

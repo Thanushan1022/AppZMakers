@@ -4,7 +4,7 @@ import { KeyRound, Lock, Eye, EyeOff, CheckCircle2, AlertTriangle, ArrowLeft } f
 import logoImg from '../../assets/APPZ New Logo.png';
 import bgVideo from '../../assets/Employee_Enters_Office_Lobby_GIF.mp4';
 
-const BACKEND_URL = 'https://appzmakers-production.up.railway.app/api/auth';
+import { BACKEND_URL } from '../../config';
 
 export function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -33,7 +33,7 @@ export function ResetPassword() {
       }
 
       try {
-        const response = await fetch(`${BACKEND_URL}/verify-token?token=${token}`);
+        const response = await fetch(`${BACKEND_URL}/auth/verify-token?token=${token}`);
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.error || 'Token is invalid or has expired.');
@@ -68,7 +68,7 @@ export function ResetPassword() {
     setError('');
 
     try {
-      const response = await fetch(`${BACKEND_URL}/reset-password`, {
+      const response = await fetch(`${BACKEND_URL}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),
