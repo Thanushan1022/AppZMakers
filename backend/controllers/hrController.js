@@ -284,7 +284,7 @@ export const getDashboard = async (req, res) => {
     const todayLabel = formatDisplayDate(targetDateObj);
 
     const startOfWeek = new Date(targetDateObj);
-    startOfWeek.setDate(startOfWeek.getDate() - 7); 
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
     const startDateStr = getTodayString(startOfWeek);
 
     const endOfWeek = new Date(targetDateObj);
@@ -300,7 +300,7 @@ export const getDashboard = async (req, res) => {
       Employee.find().select('-cvData -cvName').sort({ createdAt: -1 }).lean(),
       getSettings(),
       Attendance.find({ date: { $gte: startDateStr, $lte: endDateStr } }).lean(),
-      LeaveRequest.find({ 
+      LeaveRequest.find({
         hiddenForAdmins: { $ne: true },
         $or: [
           { startDate: { $gte: startDateStr, $lte: endDateStr } },
@@ -312,9 +312,9 @@ export const getDashboard = async (req, res) => {
 
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
-    
+
     await autoEndOverdueTeaBreaks(attendanceRecords, settings);
-    
+
     const attJson = attendanceRecords.map(toAttendanceJSON);
     const leavesJson = leaveRequests.map(toLeaveJSON);
 
@@ -482,7 +482,7 @@ export const updateProfile = async (req, res) => {
 export const adjustAttendance = async (req, res) => {
   try {
     const { id } = req.params;
-    const { checkIn, checkOut, status, reason, adjustedBy, breakMinutes } = req.body;
+    const { checkIn, checkOut, checkOutDate, status, reason, adjustedBy, breakMinutes } = req.body;
 
     const record = await Attendance.findById(id);
     if (!record) return res.status(404).json({ error: 'Attendance record not found' });
@@ -501,6 +501,10 @@ export const adjustAttendance = async (req, res) => {
         });
       }
       finalizeClockOut(record, checkOut, settings);
+
+      if (checkOutDate) {
+        record.checkOutDate = checkOutDate;
+      }
     } else {
       record.checkOut = null;
       record.totalHours = 0;
@@ -699,10 +703,10 @@ export const deleteLeaveApproval = async (req, res) => {
   try {
     const leave = await LeaveRequest.findById(req.params.id);
     if (!leave) return res.status(404).json({ error: 'Leave request not found' });
-    
+
     leave.hiddenForAdmins = true;
     await leave.save();
-    
+
     res.json({ message: 'Leave history deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

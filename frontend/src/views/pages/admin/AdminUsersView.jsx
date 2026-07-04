@@ -602,71 +602,71 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                     {filteredHR.map(mgr => (
                       <tr key={mgr.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedHRId === mgr.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : ''}`}>
                         <td className={`py-3 px-4 cursor-pointer ${selectedHRId === mgr.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-transparent'} group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 min-w-[200px]`} onClick={() => setSelectedHRId(selectedHRId === mgr.id ? null : mgr.id)}>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-xs font-bold flex-shrink-0 overflow-hidden">
-                          {mgr.avatar && mgr.avatar.startsWith('data:image/') ? (
-                            <img src={mgr.avatar} alt={mgr.name} className="w-full h-full object-cover" />
-                          ) : (
-                            mgr.avatar || (mgr.name ? mgr.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{mgr.name}</div>
-                          <div className="text-slate-400 dark:text-slate-500 text-xs break-all break-words">{mgr.email}</div>
-                          <div className="text-slate-400 dark:text-slate-500 text-[10px] whitespace-nowrap">Joined: {mgr.joinDate || 'N/A'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${mgr.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{mgr.status}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => handleEditClick(mgr, 'hr')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
-                        <button type="button" onClick={() => handleDeleteHR(mgr.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredHR.length === 0 && <tr><td colSpan={3} className="py-8 text-center text-slate-400 text-sm">No HR accounts found</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      {selectedHR && (
-        <div className="lg:col-span-1 space-y-4 min-w-0">
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-colors duration-500"></div>
-            <div className="flex items-center gap-4 mb-5 relative z-10">
-              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold overflow-hidden flex-shrink-0">
-                {selectedHR.avatar && selectedHR.avatar.startsWith('data:image/') ? (
-                  <img src={selectedHR.avatar} alt={selectedHR.name} className="w-full h-full object-cover" />
-                ) : (
-                  selectedHR.avatar || (selectedHR.name ? selectedHR.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
-                )}
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-xs font-bold flex-shrink-0 overflow-hidden">
+                              {mgr.avatar && mgr.avatar.startsWith('data:image/') ? (
+                                <img src={mgr.avatar} alt={mgr.name} className="w-full h-full object-cover" />
+                              ) : (
+                                mgr.avatar || (mgr.name ? mgr.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
+                              )}
+                            </div>
+                            <div>
+                              <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{mgr.name}</div>
+                              <div className="text-slate-400 dark:text-slate-500 text-xs break-all break-words">{mgr.email}</div>
+                              <div className="text-slate-400 dark:text-slate-500 text-[10px] whitespace-nowrap">Joined: {mgr.joinDate || 'N/A'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${mgr.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{mgr.status}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => handleEditClick(mgr, 'hr')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={() => handleDeleteHR(mgr.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredHR.length === 0 && <tr><td colSpan={3} className="py-8 text-center text-slate-400 text-sm">No HR accounts found</td></tr>}
+                  </tbody>
+                </table>
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-slate-800 truncate">{selectedHR.name}</div>
-                <div className="text-slate-400 text-xs truncate">{selectedHR.department || 'Human Resources'}</div>
-              </div>
-              <button onClick={() => setSelectedHRId(null)} className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-100">
-                Close
-              </button>
-            </div>
-            <div className="space-y-2 text-sm relative z-10">
-              <div className="flex items-center gap-2 text-slate-500"><Mail className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedHR.email}</span></div>
-              <div className="flex items-center gap-2 text-slate-500"><Calendar className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">Joined: {selectedHR.joinDate || 'N/A'}</span></div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-slate-100 relative z-10">
-              <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedHR.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{selectedHR.status}</span>
             </div>
           </div>
+          {selectedHR && (
+            <div className="lg:col-span-1 space-y-4 min-w-0">
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
+                <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-colors duration-500"></div>
+                <div className="flex items-center gap-4 mb-5 relative z-10">
+                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold overflow-hidden flex-shrink-0">
+                    {selectedHR.avatar && selectedHR.avatar.startsWith('data:image/') ? (
+                      <img src={selectedHR.avatar} alt={selectedHR.name} className="w-full h-full object-cover" />
+                    ) : (
+                      selectedHR.avatar || (selectedHR.name ? selectedHR.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-slate-800 truncate">{selectedHR.name}</div>
+                    <div className="text-slate-400 text-xs truncate">{selectedHR.department || 'Human Resources'}</div>
+                  </div>
+                  <button onClick={() => setSelectedHRId(null)} className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-100">
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-2 text-sm relative z-10">
+                  <div className="flex items-center gap-2 text-slate-500"><Mail className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedHR.email}</span></div>
+                  <div className="flex items-center gap-2 text-slate-500"><Calendar className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">Joined: {selectedHR.joinDate || 'N/A'}</span></div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100 relative z-10">
+                  <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedHR.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{selectedHR.status}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
-    </div>
-  )}
 
       {/* Clients/Leads table */}
       {activeTab === 'companies' && (
@@ -676,96 +676,96 @@ export const AdminUsersView = React.memo(function AdminUsersView({
               <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
                 <table className="w-full text-sm min-w-[800px]">
                   <thead className="z-10">
-                <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[200px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Client/Lead</th>
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Industry</th>
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Contact</th>
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Employees</th>
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Joined</th>
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Status</th>
-                  <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border dark:divide-slate-700/50">
-                {filteredCompanies.map(co => (
-                  <tr key={co.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : ''}`}>
-                    <td className={`py-3 px-4 cursor-pointer ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-transparent'} group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 min-w-[200px]`} onClick={() => setSelectedCompanyId(selectedCompanyId === co.id ? null : co.id)}>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold flex-shrink-0 overflow-hidden">
-                          {(co.avatar || co.logo) && (co.avatar || co.logo).startsWith('data:image/') ? (
-                            <img src={co.avatar || co.logo} alt={co.name} className="w-full h-full object-cover" />
-                          ) : (
-                            (co.avatar || co.logo) || (co.name ? co.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
-                          )}
-                        </div>
-                        <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{co.name}</div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-slate-500">
-                      <div className="break-all break-words">{co.industry}</div>
-                    </td>
-                    <td className="py-3 px-4 text-slate-500">
-                      <div className="break-all break-words">{co.contact}</div>
-                    </td>
-                    <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                      {employees.filter(e => e.companyId === co.id).length}
-                    </td>
-                    <td className="py-3 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{co.joinedDate}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${co.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{co.status}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => setAssigningCompany(co)} title="Assign Employees" className="w-7 h-7 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors">
-                          <UserPlus className="w-3.5 h-3.5" />
-                        </button>
-                        <button type="button" onClick={() => handleEditClick(co, 'company')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
-                        <button type="button" onClick={() => handleDeleteCompany(co.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredCompanies.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No clients/leads found</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      {selectedCompany && (
-        <div className="lg:col-span-1 space-y-4 min-w-0">
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/20 dark:bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/30 transition-colors duration-500"></div>
-            <div className="flex items-center gap-4 mb-5 relative z-10">
-              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-bold overflow-hidden flex-shrink-0">
-                {(selectedCompany.avatar || selectedCompany.logo) && (selectedCompany.avatar || selectedCompany.logo).startsWith('data:image/') ? (
-                  <img src={selectedCompany.avatar || selectedCompany.logo} alt={selectedCompany.name} className="w-full h-full object-cover" />
-                ) : (
-                  (selectedCompany.avatar || selectedCompany.logo) || (selectedCompany.name ? selectedCompany.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
-                )}
+                    <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[200px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Client/Lead</th>
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Industry</th>
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Contact</th>
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Employees</th>
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Joined</th>
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Status</th>
+                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border dark:divide-slate-700/50">
+                    {filteredCompanies.map(co => (
+                      <tr key={co.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : ''}`}>
+                        <td className={`py-3 px-4 cursor-pointer ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-transparent'} group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 min-w-[200px]`} onClick={() => setSelectedCompanyId(selectedCompanyId === co.id ? null : co.id)}>
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold flex-shrink-0 overflow-hidden">
+                              {(co.avatar || co.logo) && (co.avatar || co.logo).startsWith('data:image/') ? (
+                                <img src={co.avatar || co.logo} alt={co.name} className="w-full h-full object-cover" />
+                              ) : (
+                                (co.avatar || co.logo) || (co.name ? co.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
+                              )}
+                            </div>
+                            <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{co.name}</div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-500">
+                          <div className="break-all break-words">{co.industry}</div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-500">
+                          <div className="break-all break-words">{co.contact}</div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                          {employees.filter(e => e.companyId === co.id).length}
+                        </td>
+                        <td className="py-3 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{co.joinedDate}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${co.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{co.status}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => setAssigningCompany(co)} title="Assign Employees" className="w-7 h-7 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors">
+                              <UserPlus className="w-3.5 h-3.5" />
+                            </button>
+                            <button type="button" onClick={() => handleEditClick(co, 'company')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={() => handleDeleteCompany(co.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredCompanies.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No clients/leads found</td></tr>}
+                  </tbody>
+                </table>
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-slate-800 truncate">{selectedCompany.name}</div>
-                <div className="text-slate-400 text-xs truncate">{selectedCompany.industry}</div>
-              </div>
-              <button onClick={() => setSelectedCompanyId(null)} className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-100">
-                Close
-              </button>
-            </div>
-            <div className="space-y-2 text-sm relative z-10">
-              <div className="flex items-center gap-2 text-slate-500"><User className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedCompany.contact}</span></div>
-              <div className="flex items-center gap-2 text-slate-500"><Mail className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedCompany.email}</span></div>
-              <div className="flex items-center gap-2 text-slate-500"><Phone className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedCompany.phone || 'N/A'}</span></div>
-              <div className="flex items-center gap-2 text-slate-500"><Calendar className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">Joined: {selectedCompany.joinedDate || 'N/A'}</span></div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-slate-100 relative z-10">
-              <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedCompany.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{selectedCompany.status}</span>
             </div>
           </div>
+          {selectedCompany && (
+            <div className="lg:col-span-1 space-y-4 min-w-0">
+              <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group">
+                <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/20 dark:bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/30 transition-colors duration-500"></div>
+                <div className="flex items-center gap-4 mb-5 relative z-10">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-bold overflow-hidden flex-shrink-0">
+                    {(selectedCompany.avatar || selectedCompany.logo) && (selectedCompany.avatar || selectedCompany.logo).startsWith('data:image/') ? (
+                      <img src={selectedCompany.avatar || selectedCompany.logo} alt={selectedCompany.name} className="w-full h-full object-cover" />
+                    ) : (
+                      (selectedCompany.avatar || selectedCompany.logo) || (selectedCompany.name ? selectedCompany.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-slate-800 truncate">{selectedCompany.name}</div>
+                    <div className="text-slate-400 text-xs truncate">{selectedCompany.industry}</div>
+                  </div>
+                  <button onClick={() => setSelectedCompanyId(null)} className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-100">
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-2 text-sm relative z-10">
+                  <div className="flex items-center gap-2 text-slate-500"><User className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedCompany.contact}</span></div>
+                  <div className="flex items-center gap-2 text-slate-500"><Mail className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedCompany.email}</span></div>
+                  <div className="flex items-center gap-2 text-slate-500"><Phone className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">{selectedCompany.phone || 'N/A'}</span></div>
+                  <div className="flex items-center gap-2 text-slate-500"><Calendar className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" /><span className="truncate text-xs">Joined: {selectedCompany.joinedDate || 'N/A'}</span></div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100 relative z-10">
+                  <div className="text-xs text-slate-400 font-semibold mb-2">Account Status</div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedCompany.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{selectedCompany.status}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
-    </div>
-  )}
 
       {/* Add/Edit Employee Modal - Liquid Glass */}
       {showModal && activeTab === 'employees' && (
@@ -773,7 +773,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
           <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {/* Subtle liquid glow inside */}
             <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
-            
+
             <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
@@ -886,7 +886,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
           <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {/* Subtle liquid glow inside */}
             <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
-            
+
             <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
@@ -966,7 +966,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
           <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {/* Subtle emerald liquid glow for companies */}
             <div className="absolute -inset-24 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
-            
+
             <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
@@ -1162,12 +1162,12 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 
                 const now = new Date();
                 const checkInDate = new Date(`${adjustingRec.date}T${adjustForm.checkIn}`);
-                
+
                 if (checkInDate > now) {
                   alert('Check In time cannot be in the future.');
                   return;
                 }
-                
+
                 if (adjustForm.checkOut) {
                   const checkOutDateObj = new Date(`${adjustingRec.date}T${adjustForm.checkOut}`);
                   if (adjustForm.checkOut < adjustForm.checkIn) {
@@ -1284,12 +1284,12 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 
                 const now = new Date();
                 const checkInDate = new Date(`${createForm.date}T${createForm.checkIn}`);
-                
+
                 if (checkInDate > now) {
                   alert('Check In time cannot be in the future.');
                   return;
                 }
-                
+
                 if (createForm.checkOut) {
                   const checkOutDateObj = new Date(`${createForm.date}T${createForm.checkOut}`);
                   if (createForm.checkOut < createForm.checkIn) {

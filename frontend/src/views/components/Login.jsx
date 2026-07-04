@@ -59,10 +59,10 @@ export function Login({
   };
 
   return (
-    <div className="h-screen w-full flex flex-col-reverse lg:flex-row bg-[#090d16] overflow-hidden relative" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div className="min-h-[100dvh] w-full flex flex-col-reverse lg:flex-row bg-[#090d16] relative" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
 
       {/* Full Page Video Background Element */}
-      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
         <video
           className="absolute inset-0 w-full h-full object-cover"
           src={bgVideo}
@@ -125,7 +125,7 @@ export function Login({
       </div>
 
       {/* RIGHT PANEL (56% width on desktop) — Glassmorphic box form side */}
-      <div className="flex-1 p-6 sm:p-12 lg:p-16 flex items-center justify-center h-screen z-10 bg-transparent overflow-y-auto">
+      <div className="flex-1 p-6 sm:p-12 lg:p-16 flex items-center justify-center min-h-[100dvh] lg:min-h-0 lg:h-screen z-10 bg-transparent overflow-y-auto">
 
         {/* Blurred Login Box Container */}
         <div className="w-full max-w-lg bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[32px] p-8 sm:p-10 space-y-8 my-auto relative overflow-hidden group">

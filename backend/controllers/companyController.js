@@ -31,11 +31,11 @@ export const getDashboard = async (req, res) => {
     const compEmployees = await Employee.find({ companyId: cid }).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = compEmployees.map(toEmployeeJSON);
     const employeeIds = employeesJson.map((e) => e.id);
-    
+
     let targetDateObj = new Date();
     const today = getTodayString(targetDateObj);
     const startOfWeek = new Date(targetDateObj);
-    startOfWeek.setDate(startOfWeek.getDate() - 7); 
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
     const startDateStr = getTodayString(startOfWeek);
     const endOfWeek = new Date(targetDateObj);
     endOfWeek.setDate(endOfWeek.getDate() + 7);
@@ -51,7 +51,7 @@ export const getDashboard = async (req, res) => {
       ]
     }).lean();
     const leavesJson = allLeaves;
-    
+
     const todayRecs = getTodayAttendanceForEmployees(employeesJson, attJson, today, leavesJson);
 
     const presentCount = todayRecs.filter((r) => r.status === 'present' || r.status === 'late').length;
@@ -478,11 +478,11 @@ export const deleteShiftNotice = async (req, res) => {
     }
 
     await ShiftNotice.findByIdAndDelete(noticeId);
-    
+
     if (req.io) {
       req.io.emit('attendance_update', { action: 'shift_notice_deleted', time: new Date().toISOString() });
     }
-    
+
     res.json({ message: 'Shift notice deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

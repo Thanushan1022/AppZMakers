@@ -511,7 +511,7 @@ export function HREmployeesView({
           <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {/* Subtle liquid glow inside */}
             <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
-            
+
             <div className="flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-md relative z-10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
@@ -636,12 +636,12 @@ export function HREmployeesView({
 
                 const now = new Date();
                 const checkInDate = new Date(`${adjustingRec.date}T${adjustForm.checkIn}`);
-                
+
                 if (checkInDate > now) {
                   alert('Check In time cannot be in the future.');
                   return;
                 }
-                
+
                 if (adjustForm.checkOut) {
                   const checkOutDateObj = new Date(`${adjustingRec.date}T${adjustForm.checkOut}`);
                   if (adjustForm.checkOut < adjustForm.checkIn) {
@@ -757,12 +757,12 @@ export function HREmployeesView({
 
                 const now = new Date();
                 const checkInDate = new Date(`${createForm.date}T${createForm.checkIn}`);
-                
+
                 if (checkInDate > now) {
                   alert('Check In time cannot be in the future.');
                   return;
                 }
-                
+
                 if (createForm.checkOut) {
                   const checkOutDateObj = new Date(`${createForm.date}T${createForm.checkOut}`);
                   if (createForm.checkOut < createForm.checkIn) {

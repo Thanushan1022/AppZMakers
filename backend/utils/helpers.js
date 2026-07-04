@@ -11,7 +11,7 @@ export const formatDisplayDate = (date = new Date()) =>
 export const getTodayAttendanceForEmployees = (employees, attendanceRecords, date = getTodayString(), allLeaves = []) =>
   employees.map((emp) => {
     let rec = attendanceRecords.find((r) => r.employeeId === emp.id && r.date === date);
-    
+
     if (!rec) {
       const activePreviousRec = attendanceRecords
         .filter((r) => r.employeeId === emp.id && r.date < date && !r.checkOut)
@@ -62,6 +62,7 @@ export const getTodayAttendanceForEmployees = (employees, attendanceRecords, dat
       status: finalStatus,
       checkIn: rec?.checkIn || null,
       checkOut: rec?.checkOut || null,
+      checkOutDate: rec?.checkOutDate || null,
       totalHours: rec?.totalHours || 0,
       breakMinutes: rec?.breakMinutes || 0,
       extraHours: rec?.extraHours || 0,
@@ -87,7 +88,7 @@ export const computeEmployeeStats = (employeeId, attendanceRecords) => {
   const pct = total > 0 ? Math.round((present / total) * 100) : 0;
 
   const mealBreakMinutes = records.reduce((sum, r) => sum + (r.breakMinutes || 0), 0);
-  
+
   let teaBreakMinutes = 0;
   records.forEach((r) => {
     if (r.breaks) {
@@ -104,14 +105,14 @@ export const computeEmployeeStats = (employeeId, attendanceRecords) => {
     }
   });
 
-  return { 
-    present, 
-    late, 
-    absent, 
-    total, 
-    hours, 
-    extraHours, 
-    lessHours, 
+  return {
+    present,
+    late,
+    absent,
+    total,
+    hours,
+    extraHours,
+    lessHours,
     pct,
     mealBreakMinutes,
     teaBreakMinutes

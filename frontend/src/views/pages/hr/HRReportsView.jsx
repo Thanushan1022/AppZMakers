@@ -383,8 +383,8 @@ export function HRReportsView({
           tableHeaders = [['Date', 'Check In', 'Check Out', 'Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Status']];
           tableRows = filteredEmployeeAttendanceData.map((a) => [
             a.date,
-            a.checkIn || '—',
-            a.checkOut || '—',
+            a.checkIn ? `date: ${a.date}\ntime: ${a.checkIn}` : '—',
+            a.checkOut ? `date: ${a.checkOutDate || a.date}\ntime: ${a.checkOut}` : '—',
             formatMin(a.breakMinutes || 0),
             formatHrMin(a.totalHours || 0),
             a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—',
@@ -526,7 +526,7 @@ export function HRReportsView({
       if (reportType === 'attendance') {
         if (selectedEmployeeFilter !== 'all') {
           tableHeaders = ['Date', 'Check In', 'Check Out', 'Break', 'Total Hours', 'Extra Hours', 'Less Hours', 'Status'];
-          colWidths = [15, 12, 12, 10, 12, 12, 12, 15];
+          colWidths = [15, 20, 20, 10, 12, 12, 12, 15];
           let sumBreak = 0, sumHrs = 0, sumExtra = 0, sumLess = 0;
           tableRows = filteredEmployeeAttendanceData.map((a) => {
             sumBreak += (a.breakMinutes || 0);
@@ -535,8 +535,8 @@ export function HRReportsView({
             sumLess += (a.lessHours || 0);
             return [
               a.date,
-              a.checkIn || '—',
-              a.checkOut || '—',
+              a.checkIn ? `date: ${a.date}\ntime: ${a.checkIn}` : '—',
+              a.checkOut ? `date: ${a.checkOutDate || a.date}\ntime: ${a.checkOut}` : '—',
               formatMin(a.breakMinutes || 0),
               formatHrMin(a.totalHours || 0),
               a.extraHours > 0 ? `+${formatHrMin(a.extraHours)}` : '—',
@@ -988,14 +988,28 @@ export function HRReportsView({
                   {selectedEmployeeFilter !== 'all' ? (
                     filteredEmployeeAttendanceData.length === 0 ? (
                       <tr>
-                        <td colSpan="8" className="py-8 text-center text-slate-500">No attendance records found for this period.</td>
+                        <td colSpan="9" className="py-8 text-center text-slate-500">No attendance records found for this period.</td>
                       </tr>
                     ) : (
                       filteredEmployeeAttendanceData.map((a) => (
                         <tr key={a._id || a.id} className="group hover:bg-slate-50/50">
                           <td className="py-3 px-4 bg-white dark:bg-slate-900 group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap min-w-[200px]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.date}</td>
-                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkIn || '—'}</td>
-                          <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkOut || '—'}</td>
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                            {a.checkIn ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-xs text-slate-400 uppercase tracking-wider">date: <span className="text-indigo-600 dark:text-indigo-400 font-bold">{a.date}</span></span>
+                                <span className="text-xs text-slate-400 uppercase tracking-wider">time: <span className="text-indigo-600 dark:text-indigo-400 font-bold">{a.checkIn}</span></span>
+                              </div>
+                            ) : '—'}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                            {a.checkOut ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-xs text-slate-400 uppercase tracking-wider">date: <span className="text-purple-600 dark:text-purple-400 font-bold">{a.checkOutDate || a.date}</span></span>
+                                <span className="text-xs text-slate-400 uppercase tracking-wider">time: <span className="text-purple-600 dark:text-purple-400 font-bold">{a.checkOut}</span></span>
+                              </div>
+                            ) : '—'}
+                          </td>
                           <td
                             className="py-3 px-4 text-amber-600 font-medium cursor-pointer hover:text-amber-700 hover:underline transition-colors"
                             style={{ fontFamily: 'JetBrains Mono, monospace' }}
@@ -1247,8 +1261,22 @@ export function HRReportsView({
                   {selectedPresentDetails.records.map((a, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                       <td className="py-3 px-4 text-slate-800 font-bold whitespace-nowrap">{a.date}</td>
-                      <td className="py-3 px-4 text-indigo-600 font-bold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkIn || '—'}</td>
-                      <td className="py-3 px-4 text-purple-600 font-bold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{a.checkOut || '—'}</td>
+                      <td className="py-3 px-4 text-indigo-600 font-bold whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                        {a.checkIn ? (
+                          <div className="flex flex-col gap-0.5 font-normal">
+                            <span className="text-xs text-slate-400 uppercase tracking-wider">date: <span className="text-indigo-600 dark:text-indigo-400 font-bold">{a.date}</span></span>
+                            <span className="text-xs text-slate-400 uppercase tracking-wider">time: <span className="text-indigo-600 dark:text-indigo-400 font-bold">{a.checkIn}</span></span>
+                          </div>
+                        ) : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-purple-600 font-bold whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                        {a.checkOut ? (
+                          <div className="flex flex-col gap-0.5 font-normal">
+                            <span className="text-xs text-slate-400 uppercase tracking-wider">date: <span className="text-purple-600 dark:text-purple-400 font-bold">{a.checkOutDate || a.date}</span></span>
+                            <span className="text-xs text-slate-400 uppercase tracking-wider">time: <span className="text-purple-600 dark:text-purple-400 font-bold">{a.checkOut}</span></span>
+                          </div>
+                        ) : '—'}
+                      </td>
                       <td
                         className="py-3 px-4 text-amber-600 font-medium cursor-pointer hover:text-amber-700 hover:underline transition-colors"
                         style={{ fontFamily: 'JetBrains Mono, monospace' }}

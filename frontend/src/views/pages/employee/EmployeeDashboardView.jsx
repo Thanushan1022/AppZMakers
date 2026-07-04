@@ -54,6 +54,8 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   todaySummary,
   showSessionOverModal,
   setShowSessionOverModal,
+  sessionConfirmLevel = 0,
+  handleSessionContinue,
 }) {
   const recentAttendance = filteredAttendance.slice(0, 5);
 
