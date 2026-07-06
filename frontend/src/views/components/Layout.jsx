@@ -83,6 +83,8 @@ const rolePrefixes = {
 };
 
 import { BACKEND_URL } from '../../config';
+import logoImg from '../../assets/AppZLogo2.png';
+import appzMakersLogo from '../../assets/APPZ New Logo.png';
 
 export function Layout({ role, onLogout, auth, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -228,15 +230,9 @@ export function Layout({ role, onLogout, auth, children }) {
   const Sidebar = () => (
     <div className="flex flex-col flex-1 w-full h-full min-h-0" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-slate-200/60 dark:border-slate-800/60 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 shadow-lg shadow-indigo-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Clock className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="text-slate-800 dark:text-slate-100 font-black text-lg tracking-tight leading-tight">WorkForge</div>
-            <div className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Workforce</div>
-          </div>
+      <div className="px-4 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex-shrink-0">
+        <div className="flex items-center justify-center">
+          <img src={logoImg} alt="AppzMaker Logo" className="w-full max-h-24 h-auto object-contain drop-shadow-sm" />
         </div>
       </div>
 
@@ -299,6 +295,24 @@ export function Layout({ role, onLogout, auth, children }) {
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>
+
+        <div className="mt-4 text-center text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+          Developed By{' '}
+          <div className="relative inline-block group cursor-pointer text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+            AppZ Makers
+            {/* Hover Tooltip Box */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-slate-900/80 backdrop-blur-3xl text-white rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] border border-slate-700/50 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:-translate-y-1 z-50 pointer-events-auto">
+              <div className="flex flex-col items-center text-center gap-3 normal-case tracking-normal">
+                <img src={appzMakersLogo} alt="AppZ Makers" className="h-16 w-auto object-contain drop-shadow-sm mb-1" />
+                <div className="text-[13px] font-extrabold text-white leading-snug">Developed by the<br/>AppZCuberorior Team</div>
+                <a href="https://appzmake.com" target="_blank" rel="noreferrer" className="text-[#40d6a2] font-bold hover:underline text-sm transition-colors hover:text-emerald-400">https://appzmake.com</a>
+                <div className="text-[11px] text-slate-300 font-bold mt-1">Click here to visit our official website.</div>
+              </div>
+              {/* Tooltip Arrow */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[6px] w-3 h-3 bg-slate-900/80 backdrop-blur-3xl rotate-45 transform border-b border-r border-slate-700/50"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

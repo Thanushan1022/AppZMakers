@@ -8,6 +8,8 @@ import { useCompanyController } from './controllers/useCompanyController';
 import { useAdminController } from './controllers/useAdminController';
 import { AlertCircle, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 import { SOCKET_URL } from './config';
+import { Infinity } from 'ldrs/react'
+import 'ldrs/react/Infinity.css'
 
 // Import Layout & Login
 import { Layout } from './views/components/Layout';
@@ -148,6 +150,14 @@ function AppRoutes() {
   const employeeController = useEmployeeController(auth?.role === 'employee' ? auth.userId : null, updateAuth, handleLogout);
 
   const [toasts, setToasts] = React.useState([]);
+  const [initialLoading, setInitialLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   React.useEffect(() => {
     
@@ -244,6 +254,24 @@ function AppRoutes() {
       window.removeEventListener('scroll', handleActivity);
     };
   }, [auth, handleLogout]);
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-indigo-950 transition-colors duration-200 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="relative z-10 flex flex-col items-center">
+          <Infinity
+            size="55"
+            stroke="4"
+            strokeLength="0.15"
+            bgOpacity="0.1"
+            speed="1.3"
+            color="#ffffff" 
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (!auth) {
     return (

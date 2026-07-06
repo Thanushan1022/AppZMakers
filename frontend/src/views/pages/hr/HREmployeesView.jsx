@@ -38,6 +38,7 @@ export function HREmployeesView({
     reason: '',
     breakMinutes: '',
     tasks: ['', '', '', ''],
+    visibleTaskCount: 1,
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -49,6 +50,7 @@ export function HREmployeesView({
     reason: '',
     breakMinutes: '',
     tasks: ['', '', '', ''],
+    visibleTaskCount: 1,
   });
 
   const FormatMultilineName = ({ name }) => {
@@ -417,6 +419,7 @@ export function HREmployeesView({
                           reason: '',
                           breakMinutes: '',
                           tasks: ['', '', '', ''],
+                          visibleTaskCount: 1,
                         });
                         setShowCreateModal(true);
                       }}
@@ -465,8 +468,8 @@ export function HREmployeesView({
                             </div>
                             <div className="space-y-1 pl-0.5">
                               {rec.tasks.map((task, tidx) => (
-                                <div key={task._id || tidx} className="text-xs text-slate-600 bg-white rounded-lg p-2 border border-slate-200/60 shadow-sm">
-                                  <div className="font-semibold text-slate-700">{task.description}</div>
+                                <div key={task._id || tidx} className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-lg p-2 border border-slate-200/60 dark:border-slate-700 shadow-sm">
+                                  <div className="font-semibold text-slate-700 dark:text-slate-200">{task.description}</div>
                                   {task.timeContext && (
                                     <div className="text-[10px] text-slate-400 font-mono mt-0.5">Context: {task.timeContext}</div>
                                   )}
@@ -494,6 +497,7 @@ export function HREmployeesView({
                                       rec.tasks[3]?.description || ''
                                     ]
                                   : ['', '', '', ''],
+                                visibleTaskCount: Math.max(1, (rec.tasks || []).length),
                               });
                             }}
                             className="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold transition-colors cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg"
@@ -725,7 +729,7 @@ export function HREmployeesView({
               <div>
                 <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
                 <div className="space-y-2">
-                  {[0, 1, 2, 3].map(index => (
+                  {[...Array(adjustForm.visibleTaskCount || 1)].map((_, index) => (
                     <input
                       key={index}
                       type="text"
@@ -739,6 +743,15 @@ export function HREmployeesView({
                       className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                     />
                   ))}
+                  {(adjustForm.visibleTaskCount || 1) < 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setAdjustForm(p => ({ ...p, visibleTaskCount: (p.visibleTaskCount || 1) + 1 }))}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors mt-2"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Task
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -839,6 +852,7 @@ export function HREmployeesView({
                       reason: '',
                       breakMinutes: '',
                       tasks: ['', '', '', ''],
+                      visibleTaskCount: 1,
                     });
                   }}
                   required
@@ -896,7 +910,7 @@ export function HREmployeesView({
               <div>
                 <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
                 <div className="space-y-2">
-                  {[0, 1, 2, 3].map(index => (
+                  {[...Array(createForm.visibleTaskCount || 1)].map((_, index) => (
                     <input
                       key={index}
                       type="text"
@@ -910,6 +924,15 @@ export function HREmployeesView({
                       className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                     />
                   ))}
+                  {(createForm.visibleTaskCount || 1) < 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setCreateForm(p => ({ ...p, visibleTaskCount: (p.visibleTaskCount || 1) + 1 }))}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors mt-2"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Task
+                    </button>
+                  )}
                 </div>
               </div>
 

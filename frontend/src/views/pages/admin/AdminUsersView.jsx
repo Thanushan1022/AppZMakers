@@ -44,6 +44,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   handleUpdateEmployeeStatus,
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
+  const [companyAddMode, setCompanyAddMode] = useState('client');
   const [selectedHRId, setSelectedHRId] = useState(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const selectedHR = hrUsers.find(h => h.id === selectedHRId) || null;
@@ -95,6 +96,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
     reason: '',
     breakMinutes: '',
     tasks: ['', '', '', ''],
+    visibleTaskCount: 1,
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -106,6 +108,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
     reason: '',
     breakMinutes: '',
     tasks: ['', '', '', ''],
+    visibleTaskCount: 1,
   });
 
   const FormatMultilineName = ({ name }) => {
@@ -510,6 +513,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                             reason: '',
                             breakMinutes: '',
                             tasks: ['', '', '', ''],
+                            visibleTaskCount: 1,
                           });
                           setShowCreateModal(true);
                         }}
@@ -587,6 +591,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                                         rec.tasks[3]?.description || ''
                                       ]
                                     : ['', '', '', ''],
+                                  visibleTaskCount: Math.max(1, (rec.tasks || []).length),
                                 });
                               }}
                               className="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold transition-colors cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg"
@@ -1002,8 +1007,16 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   {editingItem ? <Edit2 className="w-5 h-5" /> : <Building2 className="w-6 h-6" />}
                 </div>
                 <div>
-                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">{editingItem ? 'Edit Client/Lead Company' : 'Add New Client/Lead Company'}</h3>
-                  <p className="text-white/70 font-bold text-sm mt-0.5">{editingItem ? 'Update company details' : 'Enter details to add new client'}</p>
+                  <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">
+                    {editingItem 
+                      ? 'Edit Client/Team' 
+                      : (companyAddMode === 'client' ? 'Add New Client/Lead Company' : 'Add New Team')}
+                  </h3>
+                  <p className="text-white/70 font-bold text-sm mt-0.5">
+                    {editingItem 
+                      ? 'Update details' 
+                      : (companyAddMode === 'client' ? 'Enter details to add new client' : 'Enter details to add new team')}
+                  </p>
                 </div>
               </div>
               <button
@@ -1015,15 +1028,28 @@ export const AdminUsersView = React.memo(function AdminUsersView({
             </div>
 
             <form onSubmit={handleAddCompany} noValidate className="p-8 space-y-6 relative z-10">
+              {!editingItem && (
+                <div className="flex bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] p-1.5 mb-2">
+                  <button type="button" onClick={() => setCompanyAddMode('client')} className={`flex-1 py-2 text-sm font-bold rounded-[10px] transition-all ${companyAddMode === 'client' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>Client / Lead</button>
+                  <button type="button" onClick={() => setCompanyAddMode('team')} className={`flex-1 py-2 text-sm font-bold rounded-[10px] transition-all ${companyAddMode === 'team' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>Team</button>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-5">
-                {[
+                {(companyAddMode === 'client' ? [
                   { key: 'name', label: 'Company Name', placeholder: 'TechVentures Ltd', type: 'text' },
                   { key: 'industry', label: 'Industry', placeholder: 'Technology', type: 'text' },
                   { key: 'contact', label: 'Contact Person', placeholder: 'Mark Reynolds', type: 'text' },
                   { key: 'email', label: 'Email', placeholder: 'mark@techventures.com', type: 'email' },
                   { key: 'phone', label: 'Phone Number', placeholder: '+1 (555) 100-2000', type: 'text' },
                   { key: 'joinedDate', label: 'Joined Date', placeholder: '', type: 'date' },
-                ].map(f => (
+                ] : [
+                  { key: 'name', label: 'Full Name / Team Name', placeholder: 'Jane Smith', type: 'text' },
+                  { key: 'industry', label: 'Department', placeholder: 'Engineering', type: 'text' },
+                  { key: 'contact', label: 'Position / Role', placeholder: 'Senior Developer', type: 'text' },
+                  { key: 'email', label: 'Email', placeholder: 'jane@company.com', type: 'email' },
+                  { key: 'phone', label: 'Phone Number', placeholder: '+1 (555) 100-2000', type: 'text' },
+                  { key: 'joinedDate', label: 'Join Date', placeholder: '', type: 'date' },
+                ]).map(f => (
                   <div key={f.key} className={f.key === 'name' || f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
                     <input
@@ -1106,7 +1132,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
                 <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
                 <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
-                  {editingItem ? 'Update Client/Lead' : 'Add Client/Lead'}
+                  {editingItem ? 'Update Details' : (companyAddMode === 'client' ? 'Add Client/Lead' : 'Add Team')}
                 </button>
               </div>
             </form>
@@ -1270,7 +1296,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
               <div>
                 <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
                 <div className="space-y-2">
-                  {[0, 1, 2, 3].map(index => (
+                  {[...Array(adjustForm.visibleTaskCount || 1)].map((_, index) => (
                     <input
                       key={index}
                       type="text"
@@ -1284,6 +1310,15 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                     />
                   ))}
+                  {(adjustForm.visibleTaskCount || 1) < 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setAdjustForm(p => ({ ...p, visibleTaskCount: (p.visibleTaskCount || 1) + 1 }))}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors mt-2"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Task
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1384,6 +1419,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       reason: '',
                       breakMinutes: '',
                       tasks: ['', '', '', ''],
+                      visibleTaskCount: 1,
                     });
                   }}
                   required
@@ -1441,7 +1477,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
               <div>
                 <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
                 <div className="space-y-2">
-                  {[0, 1, 2, 3].map(index => (
+                  {[...Array(createForm.visibleTaskCount || 1)].map((_, index) => (
                     <input
                       key={index}
                       type="text"
@@ -1455,6 +1491,15 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                     />
                   ))}
+                  {(createForm.visibleTaskCount || 1) < 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setCreateForm(p => ({ ...p, visibleTaskCount: (p.visibleTaskCount || 1) + 1 }))}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors mt-2"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Task
+                    </button>
+                  )}
                 </div>
               </div>
 

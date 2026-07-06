@@ -3,7 +3,8 @@ import {
   User, IdCard, Briefcase, Shield, Users, Building2,
   Activity, CalendarDays, Mail, Lock, Eye, EyeOff, LogIn
 } from 'lucide-react';
-import logoImg from '../../assets/APPZ New Logo.png';
+import logoImg from '../../assets/AppZLogo.png';
+import appzMakersLogo from '../../assets/APPZ New Logo.png';
 import bgVideo from '../../assets/Employee_Enters_Office_Lobby_GIF.mp4';
 
 const roles = [
@@ -93,9 +94,9 @@ export function Login({
       <div className="hidden lg:flex lg:w-[44%] p-8 sm:p-12 lg:p-16 flex-col justify-between relative overflow-hidden flex-shrink-0 h-screen z-10 bg-transparent">
 
         {/* Top Section: Logo Block & Trust Badges */}
-        <div className="relative z-30 space-y-8">
-          <div className="flex flex-col items-start gap-4">
-            <img src={logoImg} alt="AppzMaker Logo" className="w-50 h-40 object-contain" />
+        <div className="relative z-30 space-y-4">
+          <div className="flex flex-col items-start gap-2">
+            <img src={logoImg} alt="AppzMaker Logo" className="h-36 sm:h-48 lg:h-64 w-auto object-contain max-w-full drop-shadow-xl" />
             <div className="text-[#a59bfb] text-sm uppercase font-extrabold tracking-widest mt-1 pl-1">Workforce Solutions</div>
           </div>
 
@@ -105,8 +106,8 @@ export function Login({
         </div>
 
         {/* Middle Section: Hero Text & Stat Cards */}
-        <div className="relative z-30 my-8 lg:my-0 space-y-10">
-          <div className="space-y-5 max-w-xl">
+        <div className="relative z-30 my-4 lg:my-0 space-y-6">
+          <div className="space-y-4 max-w-xl">
             <h1 className="text-white text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight">
               Unified workforce<br /> operations in a single platform.
             </h1>
@@ -119,7 +120,24 @@ export function Login({
 
         {/* Bottom Section: Footer Copyright */}
         <div className="relative z-30 text-slate-300/90 text-sm pt-4 border-t border-[#2e2880]/50">
-          © 2026 Appzmaker. All rights reserved.
+          <div>© 2026 Appzmaker. All rights reserved.</div>
+          <div className="mt-1">
+            Developed By{' '}
+            <div className="relative inline-block group cursor-pointer text-[#a59bfb] hover:text-white font-semibold transition-colors">
+              AppZ Makers
+              {/* Hover Tooltip Box */}
+              <div className="absolute bottom-full left-0 mb-3 w-64 bg-white/10 backdrop-blur-3xl text-white rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] border border-white/20 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:-translate-y-1 z-50 pointer-events-auto">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <img src={appzMakersLogo} alt="AppZ Makers" className="h-16 w-auto object-contain drop-shadow-sm mb-1" />
+                  <div className="text-[13px] font-extrabold text-white leading-snug">Developed by the<br/>AppZCuberorior Team</div>
+                  <a href="https://appzmake.com" target="_blank" rel="noreferrer" className="text-[#40d6a2] font-bold hover:underline text-sm transition-colors hover:text-emerald-400">https://appzmake.com</a>
+                  <div className="text-[11px] text-white/70 font-bold mt-1">Click here to visit our official website.</div>
+                </div>
+                {/* Tooltip Arrow */}
+                <div className="absolute top-full left-6 -mt-[6px] w-3 h-3 bg-white/10 backdrop-blur-3xl rotate-45 transform border-b border-r border-white/20"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -135,10 +153,8 @@ export function Login({
           <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
           {/* Logo on Mobile */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <div className="w-24 h-24 bg-white/5 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] border border-white/20">
-              <img src={logoImg} alt="AppzMaker Logo" className="w-20 h-20 object-contain" />
-            </div>
+          <div className="lg:hidden flex justify-center mb-6">
+            <img src={logoImg} alt="AppzMaker Logo" className="w-40 sm:w-56 h-auto object-contain drop-shadow-2xl" />
           </div>
 
           {/* Header */}

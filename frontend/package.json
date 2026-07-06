@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build && cp -R dist ../dist || true",
+    "build": "vite build",
     "dev": "vite"
   },
   "dependencies": {
@@ -50,6 +50,7 @@
     "input-otp": "1.4.2",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "ldrs": "^1.1.9",
     "lucide-react": "0.487.0",
     "motion": "12.23.24",
     "next-themes": "0.4.6",
