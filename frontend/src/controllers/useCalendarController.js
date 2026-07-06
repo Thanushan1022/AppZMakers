@@ -5,7 +5,6 @@ import { BACKEND_URL } from '../config';
 export function useCalendarController(role, employeeId, companyId) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [importing, setImporting] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const fetchEvents = async () => {
@@ -93,31 +92,6 @@ export function useCalendarController(role, employeeId, companyId) {
     }
   };
 
-  const handleImportHolidays = async (country) => {
-    try {
-      setImporting(true);
-      const res = await fetch(`${BACKEND_URL}/calendar/import-holidays`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ country }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        fetchEvents();
-        alert(data.message || `Successfully imported holidays for ${country}`);
-        return { success: true };
-      } else {
-        alert(data.error || 'Failed to import holidays');
-        return { success: false, error: data.error };
-      }
-    } catch (err) {
-      console.error(err);
-      alert('An error occurred during import.');
-      return { success: false, error: err.message };
-    } finally {
-      setImporting(false);
-    }
-  };
 
   useEffect(() => {
     let active = true;
@@ -161,13 +135,11 @@ export function useCalendarController(role, employeeId, companyId) {
   return {
     events,
     loading,
-    importing,
     currentDate,
     setCurrentDate,
     fetchEvents,
     handleCreateEvent,
     handleUpdateEvent,
     handleDeleteEvent,
-    handleImportHolidays,
   };
 }

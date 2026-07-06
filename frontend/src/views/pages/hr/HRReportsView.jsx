@@ -360,15 +360,15 @@ export function HRReportsView({
       doc.text('TOTAL EMPLOYEES', 20, currentY + 6);
       doc.text('TOTAL HOURS', 65, currentY + 6);
       doc.text('LEAVES USED', 105, currentY + 6);
-      
+
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(30, 41, 59);
-      
+
       const sumVal1 = String(dynamicSummary?.totalEmployees ?? filteredEmployeesList.length ?? 0);
       const sumVal2 = `${Math.round(dynamicSummary?.totalHours ?? totalHours ?? 0)}h`;
       const sumVal3 = String(dynamicSummary?.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0) ?? 0);
-      
+
       doc.text(sumVal1, 20, currentY + 14);
       doc.text(sumVal2, 65, currentY + 14);
       doc.text(sumVal3, 105, currentY + 14);
@@ -628,7 +628,7 @@ export function HRReportsView({
       headerRow.values = tableHeaders;
       headerRow.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
       headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-      
+
       tableHeaders.forEach((header, index) => {
         const cell = headerRow.getCell(index + 1);
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
@@ -646,10 +646,10 @@ export function HRReportsView({
         row.values = rowData;
         row.font = { name: 'Arial', size: 10, color: { argb: 'FF334155' } };
         row.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-        
+
         // Alternate row colors
         const bgColor = index % 2 === 0 ? 'FFF8FAFC' : 'FFFFFFFF';
-        
+
         rowData.forEach((val, cIndex) => {
           const cell = row.getCell(cIndex + 1);
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
@@ -664,7 +664,7 @@ export function HRReportsView({
           if (typeof val === 'number' || val?.includes('%') || ['Status', 'Date', 'From', 'To', 'Join Date', 'Present', 'Days'].includes(tableHeaders[cIndex])) {
             cell.alignment = { vertical: 'middle', horizontal: 'center' };
           }
-          
+
           // Color code status if applicable
           if (tableHeaders[cIndex] === 'Status') {
             const statusStr = String(val).toLowerCase();
@@ -672,7 +672,7 @@ export function HRReportsView({
             if (statusStr === 'present' || statusStr === 'active' || statusStr === 'approved') statusColor = 'FF10B981'; // emerald
             else if (statusStr === 'absent' || statusStr === 'rejected') statusColor = 'FFEF4444'; // red
             else if (statusStr === 'late' || statusStr === 'pending') statusColor = 'FFF59E0B'; // amber
-            
+
             cell.font = { ...row.font, color: { argb: statusColor }, bold: true };
           }
 
@@ -707,11 +707,11 @@ export function HRReportsView({
       }
 
       const filename = `AppzMaker_${reportType}_Report_${suffix}${empNameSuffix}.xlsx`;
-      
+
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       saveAs(blob, filename);
-      
+
     } catch (err) {
       console.error('Excel generation error:', err);
       alert('Error generating Excel report. Please try again.');

@@ -119,12 +119,10 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
     handleCreateEvent,
     handleUpdateEvent,
     handleDeleteEvent,
-    handleImportHolidays,
   } = useCalendarController(role, employeeId, companyId);
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [editingEventId, setEditingEventId] = useState(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState(null);
   const [validationError, setValidationError] = useState('');
@@ -142,8 +140,6 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   const titleWordsCount = eventForm.title.trim().split(/\s+/).filter(Boolean).length;
   const descWordsCount = eventForm.description.trim().split(/\s+/).filter(Boolean).length;
   const todayStr = new Date().toISOString().split('T')[0];
-
-  const [importCountry, setImportCountry] = useState('Sri Lanka');
 
   const todayRef = useRef(null);
 
@@ -362,15 +358,6 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         </div>
         {canManageEvents && (
           <div className="flex gap-3">
-            {role === 'superadmin' && (
-              <button
-                onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 backdrop-blur-md"
-              >
-                <Globe className="w-4 h-4 text-indigo-500" />
-                Import Holidays
-              </button>
-            )}
             <button
               onClick={() => {
                 const todayStr = new Date().toISOString().split('T')[0];
@@ -789,67 +776,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
           </div>
         </div>
       )}
-      {/* Import Holidays Modal */}
-      {showImportModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-2 tracking-tight">Import Public Holidays</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-              Fetch and import official public holidays from Google's calendar service.
-            </p>
 
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const res = await handleImportHolidays(importCountry);
-                if (res && res.success) {
-                  setShowImportModal(false);
-                }
-              }}
-              className="space-y-5"
-            >
-              <div className="flex flex-col gap-2">
-                <label className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest">Select Country</label>
-                <select
-                  value={importCountry}
-                  onChange={e => setImportCountry(e.target.value)}
-                  className="w-full border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 font-bold transition-all appearance-none cursor-pointer"
-                >
-                  <option value="Sri Lanka">Sri Lanka</option>
-                  <option value="USA">USA (United States)</option>
-                  <option value="UK">UK (United Kingdom)</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Australia">Australia</option>
-                </select>
-              </div>
-
-              <div className="flex gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="submit"
-                  disabled={importing}
-                  className="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 disabled:opacity-50 text-white py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 active:scale-95"
-                >
-                  {importing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Importing...
-                    </>
-                  ) : (
-                    'Import'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowImportModal(false)}
-                  className="flex-1 border border-slate-200 dark:border-slate-700 py-3 rounded-2xl text-sm font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer active:scale-95"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Day Events Modal */}
       {selectedDayEvents && (

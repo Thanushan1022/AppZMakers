@@ -94,6 +94,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
     status: 'present',
     reason: '',
     breakMinutes: '',
+    tasks: ['', '', '', ''],
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -104,6 +105,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
     status: 'present',
     reason: '',
     breakMinutes: '',
+    tasks: ['', '', '', ''],
   });
 
   const FormatMultilineName = ({ name }) => {
@@ -507,6 +509,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                             status: 'present',
                             reason: '',
                             breakMinutes: '',
+                            tasks: ['', '', '', ''],
                           });
                           setShowCreateModal(true);
                         }}
@@ -547,6 +550,24 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                               <div className="text-amber-800">Reason: {rec.adjustedReason || 'Manual entry'}</div>
                             </div>
                           )}
+
+                          {rec.tasks && rec.tasks.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-slate-200/50 space-y-1.5">
+                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                📋 Logged Tasks ({rec.tasks.length})
+                              </div>
+                              <div className="space-y-1 pl-0.5">
+                                {rec.tasks.map((task, tidx) => (
+                                  <div key={task._id || tidx} className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-lg p-2 border border-slate-200/60 dark:border-slate-700 shadow-sm">
+                                    <div className="font-semibold text-slate-700 dark:text-slate-200">{task.description}</div>
+                                    {task.timeContext && (
+                                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">Context: {task.timeContext}</div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           <div className="flex justify-end gap-2 mt-1 pt-1.5 border-t border-slate-200/50">
                             <button
                               type="button"
@@ -558,6 +579,14 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                                   status: rec.status || 'present',
                                   reason: '',
                                   breakMinutes: rec.breakMinutes || '',
+                                  tasks: (rec.tasks && rec.tasks.length > 0)
+                                    ? [
+                                        rec.tasks[0]?.description || '',
+                                        rec.tasks[1]?.description || '',
+                                        rec.tasks[2]?.description || '',
+                                        rec.tasks[3]?.description || ''
+                                      ]
+                                    : ['', '', '', ''],
                                 });
                               }}
                               className="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold transition-colors cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg"
@@ -1146,7 +1175,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
       {/* Attendance Adjustment Modal */}
       {adjustingRec && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
             <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Adjust Attendance</h3>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
               Manually modify the attendance details for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong> on <strong className="text-slate-600 dark:text-slate-300 font-semibold">{adjustingRec.date}</strong>.
@@ -1179,7 +1208,12 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   }
                 }
 
-                const res = await handleAdjustAttendance(adjustingRec.id, adjustForm);
+                const payload = {
+                  ...adjustForm,
+                  tasks: adjustForm.tasks.filter(t => t.trim()).map(t => ({ description: t, timeContext: '' }))
+                };
+
+                const res = await handleAdjustAttendance(adjustingRec.id, payload);
                 if (res && res.success) {
                   setAdjustingRec(null);
                 } else {
@@ -1234,6 +1268,26 @@ export const AdminUsersView = React.memo(function AdminUsersView({
               </div>
 
               <div>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
+                <div className="space-y-2">
+                  {[0, 1, 2, 3].map(index => (
+                    <input
+                      key={index}
+                      type="text"
+                      placeholder={`Task ${index + 1} (optional)`}
+                      value={adjustForm.tasks[index] || ''}
+                      onChange={(e) => {
+                        const newTasks = [...adjustForm.tasks];
+                        newTasks[index] = e.target.value;
+                        setAdjustForm(p => ({ ...p, tasks: newTasks }));
+                      }}
+                      className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Reason for Adjustment</label>
                 <textarea
                   placeholder="e.g. Power outage, forgot to clock out, etc."
@@ -1268,7 +1322,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
       {/* Create Manual Attendance Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
             <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Add Missed Attendance</h3>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
               Manually create a new attendance record for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong>.
@@ -1301,7 +1355,12 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   }
                 }
 
-                const res = await handleCreateManualAttendance(selectedEmployee.id, createForm);
+                const payload = {
+                  ...createForm,
+                  tasks: createForm.tasks.filter(t => t.trim()).map(t => ({ description: t, timeContext: '' }))
+                };
+
+                const res = await handleCreateManualAttendance(selectedEmployee.id, payload);
                 if (res && res.success) {
                   setShowCreateModal(false);
                 } else {
@@ -1324,6 +1383,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       status: 'present',
                       reason: '',
                       breakMinutes: '',
+                      tasks: ['', '', '', ''],
                     });
                   }}
                   required
@@ -1376,6 +1436,26 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   <option value="half-day">Half Day</option>
                   <option value="absent">Absent</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
+                <div className="space-y-2">
+                  {[0, 1, 2, 3].map(index => (
+                    <input
+                      key={index}
+                      type="text"
+                      placeholder={`Task ${index + 1} (optional)`}
+                      value={createForm.tasks[index] || ''}
+                      onChange={(e) => {
+                        const newTasks = [...createForm.tasks];
+                        newTasks[index] = e.target.value;
+                        setCreateForm(p => ({ ...p, tasks: newTasks }));
+                      }}
+                      className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
+                    />
+                  ))}
+                </div>
               </div>
 
               <div>

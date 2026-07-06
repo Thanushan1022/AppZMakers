@@ -37,6 +37,7 @@ export function HREmployeesView({
     status: 'present',
     reason: '',
     breakMinutes: '',
+    tasks: ['', '', '', ''],
   });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -47,6 +48,7 @@ export function HREmployeesView({
     status: 'present',
     reason: '',
     breakMinutes: '',
+    tasks: ['', '', '', ''],
   });
 
   const FormatMultilineName = ({ name }) => {
@@ -414,6 +416,7 @@ export function HREmployeesView({
                           status: 'present',
                           reason: '',
                           breakMinutes: '',
+                          tasks: ['', '', '', ''],
                         });
                         setShowCreateModal(true);
                       }}
@@ -483,6 +486,14 @@ export function HREmployeesView({
                                 status: rec.status || 'present',
                                 reason: '',
                                 breakMinutes: rec.breakMinutes || 0,
+                                tasks: (rec.tasks && rec.tasks.length > 0)
+                                  ? [
+                                      rec.tasks[0]?.description || '',
+                                      rec.tasks[1]?.description || '',
+                                      rec.tasks[2]?.description || '',
+                                      rec.tasks[3]?.description || ''
+                                    ]
+                                  : ['', '', '', ''],
                               });
                             }}
                             className="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold transition-colors cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg"
@@ -620,7 +631,7 @@ export function HREmployeesView({
       {/* Attendance Adjustment Modal */}
       {adjustingRec && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
             <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Adjust Attendance</h3>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
               Manually modify the attendance details for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong> on <strong className="text-slate-600 dark:text-slate-300 font-semibold">{adjustingRec.date}</strong>.
@@ -653,7 +664,12 @@ export function HREmployeesView({
                   }
                 }
 
-                const res = await handleAdjustAttendance(adjustingRec.id, adjustForm);
+                const payload = {
+                  ...adjustForm,
+                  tasks: adjustForm.tasks.filter(t => t.trim()).map(t => ({ description: t, timeContext: '' }))
+                };
+
+                const res = await handleAdjustAttendance(adjustingRec.id, payload);
                 if (res && res.success) {
                   setAdjustingRec(null);
                 } else {
@@ -707,6 +723,26 @@ export function HREmployeesView({
               </div>
 
               <div>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
+                <div className="space-y-2">
+                  {[0, 1, 2, 3].map(index => (
+                    <input
+                      key={index}
+                      type="text"
+                      placeholder={`Task ${index + 1} (optional)`}
+                      value={adjustForm.tasks[index] || ''}
+                      onChange={(e) => {
+                        const newTasks = [...adjustForm.tasks];
+                        newTasks[index] = e.target.value;
+                        setAdjustForm(p => ({ ...p, tasks: newTasks }));
+                      }}
+                      className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Reason for Adjustment</label>
                 <textarea
                   placeholder="e.g. Power outage, forgot to clock out, etc."
@@ -741,7 +777,7 @@ export function HREmployeesView({
       {/* Create Manual Attendance Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-in fade-in duration-200 border border-transparent dark:border-slate-800">
             <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-lg mb-1">Add Missed Attendance</h3>
             <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
               Manually create a new attendance record for <strong className="text-slate-600 dark:text-slate-300 font-semibold">{selectedEmployee.name}</strong>.
@@ -774,7 +810,12 @@ export function HREmployeesView({
                   }
                 }
 
-                const res = await handleCreateManualAttendance(selectedEmployee.id, createForm);
+                const payload = {
+                  ...createForm,
+                  tasks: createForm.tasks.filter(t => t.trim()).map(t => ({ description: t, timeContext: '' }))
+                };
+
+                const res = await handleCreateManualAttendance(selectedEmployee.id, payload);
                 if (res && res.success) {
                   setShowCreateModal(false);
                 } else {
@@ -797,6 +838,7 @@ export function HREmployeesView({
                       status: 'present',
                       reason: '',
                       breakMinutes: '',
+                      tasks: ['', '', '', ''],
                     });
                   }}
                   required
@@ -849,6 +891,26 @@ export function HREmployeesView({
                   <option value="half-day">Half Day</option>
                   <option value="absent">Absent</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1.5">Today's Work Log (Tasks) <span className="text-slate-400 font-normal">(Max 4)</span></label>
+                <div className="space-y-2">
+                  {[0, 1, 2, 3].map(index => (
+                    <input
+                      key={index}
+                      type="text"
+                      placeholder={`Task ${index + 1} (optional)`}
+                      value={createForm.tasks[index] || ''}
+                      onChange={(e) => {
+                        const newTasks = [...createForm.tasks];
+                        newTasks[index] = e.target.value;
+                        setCreateForm(p => ({ ...p, tasks: newTasks }));
+                      }}
+                      className="w-full border border-border dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
+                    />
+                  ))}
+                </div>
               </div>
 
               <div>

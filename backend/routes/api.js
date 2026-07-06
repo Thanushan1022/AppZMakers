@@ -77,7 +77,6 @@ router.put('/admin/:id/profile', adminController.updateProfile);
 // ==========================================
 router.get('/calendar', calendarController.getEvents);
 router.post('/calendar', calendarController.createEvent);
-router.post('/calendar/import-holidays', calendarController.importHolidays);
 router.put('/calendar/:id', calendarController.updateEvent);
 router.delete('/calendar/:id', calendarController.deleteEvent);
 

@@ -482,7 +482,7 @@ export const updateProfile = async (req, res) => {
 export const adjustAttendance = async (req, res) => {
   try {
     const { id } = req.params;
-    const { checkIn, checkOut, checkOutDate, status, reason, adjustedBy, breakMinutes } = req.body;
+    const { checkIn, checkOut, checkOutDate, status, reason, adjustedBy, breakMinutes, tasks } = req.body;
 
     const record = await Attendance.findById(id);
     if (!record) return res.status(404).json({ error: 'Attendance record not found' });
@@ -536,6 +536,8 @@ export const adjustAttendance = async (req, res) => {
       }
     }
 
+    if (tasks !== undefined) record.tasks = tasks;
+
     record.adjusted = true;
     record.adjustedBy = adjustedBy || 'HR Manager';
     record.adjustedReason = reason || 'Manual adjustment';
@@ -553,7 +555,7 @@ export const adjustAttendance = async (req, res) => {
 
 export const createManualAttendance = async (req, res) => {
   try {
-    const { employeeId, date, checkIn, checkOut, status, reason, adjustedBy, breakMinutes, isAdmin } = req.body;
+    const { employeeId, date, checkIn, checkOut, status, reason, adjustedBy, breakMinutes, isAdmin, tasks } = req.body;
 
     const existingRecord = await Attendance.findOne({ employeeId, date });
     if (existingRecord) {
@@ -604,6 +606,8 @@ export const createManualAttendance = async (req, res) => {
         }
       }
 
+      if (tasks !== undefined) existingRecord.tasks = tasks;
+
       existingRecord.adjusted = true;
       existingRecord.adjustedBy = adjustedBy || 'Administrator';
       existingRecord.adjustedReason = reason || 'Manual override';
@@ -627,6 +631,7 @@ export const createManualAttendance = async (req, res) => {
       adjustedBy: adjustedBy || 'HR Manager',
       adjustedReason: reason || 'Manual entry',
       breaks: [],
+      tasks: tasks || [],
     });
 
     if (checkOut) {

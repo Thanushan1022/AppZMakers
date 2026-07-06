@@ -87,7 +87,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
   // Filter attendance logs based on search and status
   const filteredHistory = resolvedLogs.filter(rec => {
     const emp = myEmployees.find(e => e.id === rec.employeeId);
-    
+
     // Search query matches employee name or position
     const matchesSearch = search === '' || (emp && (
       emp.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -118,16 +118,16 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
     return [...filteredHistory].sort((recA, recB) => {
       const isPresentA = recA && recA.status !== 'absent';
       const isPresentB = recB && recB.status !== 'absent';
-      
+
       if (isPresentA && !isPresentB) return -1;
       if (!isPresentA && isPresentB) return 1;
-      
+
       if (isPresentA && isPresentB) {
         const timeA = recA.checkIn || '99:99:99';
         const timeB = recB.checkIn || '99:99:99';
         return timeA.localeCompare(timeB);
       }
-      
+
       const empA = myEmployees.find(e => e.id === recA.employeeId);
       const empB = myEmployees.find(e => e.id === recB.employeeId);
       if (empA && empB) {
@@ -155,7 +155,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
     const teaBreaks = breaks?.filter(b => b.type === 'tea') || [];
     const count = teaBreaks.length;
     if (count === 0) return '—';
-    
+
     const getSecsFromTime = (tStr) => {
       if (!tStr) return 0;
       const parts = tStr.split(':').map(Number);
@@ -164,7 +164,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
       const s = parts[2] || 0;
       return h * 3600 + m * 60 + s;
     };
-    
+
     let totalSecs = 0;
     teaBreaks.forEach(b => {
       if (b.start) {
@@ -183,7 +183,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
         totalSecs += (bOut - bIn);
       }
     });
-    
+
     const totalMins = Math.round(totalSecs / 60);
     return `${count}-${totalMins} min`;
   };
@@ -217,7 +217,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
             className="w-full pl-12 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800 placeholder:text-slate-400 transition-all font-medium"
           />
         </div>
-        
+
         <div className="flex flex-wrap sm:flex-nowrap gap-4">
           <div className="relative flex-1 sm:flex-none">
             <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
@@ -286,7 +286,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
         <div className="p-6 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
           <span className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-widest">{filteredHistory.length} logs found</span>
         </div>
-        
+
         <div
           ref={containerRef}
           onMouseDown={handleMouseDown}
@@ -313,7 +313,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                   <tr key={rec.id} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="py-4 px-6 bg-white dark:bg-slate-900 group-hover:bg-slate-50/80 dark:group-hover:bg-slate-800/50 min-w-[250px] transition-colors">
                       {emp ? (
-                        <div 
+                        <div
                           className="flex items-center gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 p-2 -ml-2 rounded-xl transition-all"
                           onClick={() => setSelectedRecordDetail({ rec, emp })}
                         >
@@ -340,26 +340,26 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
                       {isAbsent ? <span className="text-slate-300 dark:text-slate-600 font-bold font-mono">Null</span> : (
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black"><LogIn className="w-3.5 h-3.5"/></span>
+                            <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black"><LogIn className="w-3.5 h-3.5" /></span>
                             <span className="text-slate-700 font-mono font-bold">{rec.checkIn || '—'}</span>
                           </div>
                           {rec.checkOut ? (
-                             <div className="flex items-center gap-2">
-                               <span className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-[10px] font-black"><LogOut className="w-3.5 h-3.5"/></span>
-                               <span className="text-slate-700 font-mono font-bold">
-                                 {rec.checkOutDate && rec.checkOutDate !== rec.date && (
-                                   <span className="text-[10px] text-slate-400 dark:text-slate-500 mr-1 font-sans tracking-wider uppercase">{rec.checkOutDate}</span>
-                                 )}
-                                 {rec.checkOut}
-                               </span>
-                             </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-[10px] font-black"><LogOut className="w-3.5 h-3.5" /></span>
+                              <span className="text-slate-700 font-mono font-bold">
+                                {rec.checkOutDate && rec.checkOutDate !== rec.date && (
+                                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mr-1 font-sans tracking-wider uppercase">{rec.checkOutDate}</span>
+                                )}
+                                {rec.checkOut}
+                              </span>
+                            </div>
                           ) : rec.checkIn ? (
-                             <div className="flex items-center gap-2">
-                               <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black"><Clock className="w-3.5 h-3.5 animate-pulse"/></span>
-                               <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">
-                                 {isOnMealBreak ? 'Meal Break' : isOnTeaBreak ? 'Tea Break' : 'Active'}
-                               </span>
-                             </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black"><Clock className="w-3.5 h-3.5 animate-pulse" /></span>
+                              <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">
+                                {isOnMealBreak ? 'Meal Break' : isOnTeaBreak ? 'Tea Break' : 'Active'}
+                              </span>
+                            </div>
                           ) : null}
                         </div>
                       )}

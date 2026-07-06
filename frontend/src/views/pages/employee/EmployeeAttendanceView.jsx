@@ -162,7 +162,7 @@ export function EmployeeAttendanceView({ mySalary,
     const teaBreaks = breaks?.filter(b => b.type === 'tea') || [];
     const count = teaBreaks.length;
     if (count === 0) return '—';
-    
+
     const getSecsFromTime = (tStr) => {
       if (!tStr) return 0;
       const parts = tStr.split(':').map(Number);
@@ -171,7 +171,7 @@ export function EmployeeAttendanceView({ mySalary,
       const s = parts[2] || 0;
       return h * 3600 + m * 60 + s;
     };
-    
+
     let totalSecs = 0;
     teaBreaks.forEach(b => {
       if (b.start) {
@@ -190,7 +190,7 @@ export function EmployeeAttendanceView({ mySalary,
         totalSecs += (bOut - bIn);
       }
     });
-    
+
     const totalMins = Math.round(totalSecs / 60);
     return `${totalMins} min (${count} break${count !== 1 ? 's' : ''})`;
   };
@@ -208,7 +208,7 @@ export function EmployeeAttendanceView({ mySalary,
       }
       return '—';
     }
-    
+
     const getSecsFromTime = (tStr) => {
       if (!tStr) return 0;
       const parts = tStr.split(':').map(Number);
@@ -217,7 +217,7 @@ export function EmployeeAttendanceView({ mySalary,
       const s = parts[2] || 0;
       return h * 3600 + m * 60 + s;
     };
-    
+
     let totalSecs = 0;
     mealBreaks.forEach(b => {
       if (b.start) {
@@ -236,12 +236,12 @@ export function EmployeeAttendanceView({ mySalary,
         totalSecs += (bOut - bIn);
       }
     });
-    
+
     const totalMins = Math.round(totalSecs / 60);
-    
+
     const h = Math.floor(totalMins / 60);
     const m = totalMins % 60;
-    
+
     if (h > 0) {
       return `${h}h ${m}m (${count} break${count !== 1 ? 's' : ''})`;
     }
@@ -325,13 +325,13 @@ export function EmployeeAttendanceView({ mySalary,
 
       {/* Main clock - Glassmorphism Redesign */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 shadow-2xl shadow-indigo-900/20 group">
-        
+
         {/* Background Video */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
           className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-screen pointer-events-none z-0"
         >
           <source src={sessionVideo} type="video/mp4" />
@@ -339,7 +339,7 @@ export function EmployeeAttendanceView({ mySalary,
 
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 opacity-10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000 z-0"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 opacity-10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000 z-0"></div>
-        
+
         <div className="relative z-10 p-10 text-center">
           <p className="text-indigo-300 font-bold tracking-widest text-xs uppercase mb-4">Current Session Timer</p>
           <div className="text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-white mb-4 drop-shadow-lg text-5xl sm:text-6xl md:text-[4.5rem] leading-none md:leading-[4.5rem] tracking-normal md:tracking-[0.05em]" style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800 }}>
@@ -395,13 +395,12 @@ export function EmployeeAttendanceView({ mySalary,
                 <button
                   onClick={handleBreak}
                   disabled={onTeaBreak || (!onBreak && (mealBreakLimitReached || isBreakOver))}
-                  className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 border-2 shadow-lg ${
-                    onBreak
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'
-                      : (mealBreakLimitReached || isBreakOver)
+                  className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 border-2 shadow-lg ${onBreak
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'
+                    : (mealBreakLimitReached || isBreakOver)
                       ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed shadow-none'
                       : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40 shadow-white/5'
-                  }`}
+                    }`}
                 >
                   <Utensils className={`w-5 h-5 ${onBreak ? 'text-amber-400' : (mealBreakLimitReached || isBreakOver) ? 'text-slate-500' : 'text-indigo-300'}`} />
                   {onBreak ? `End Meal Break (${mealBreakCount}-${mealBreakMax})` : (mealBreakLimitReached || isBreakOver) ? `Meal Limit Reached` : `Start Meal Break (${mealBreakCount}-${mealBreakMax})`}
@@ -486,9 +485,8 @@ export function EmployeeAttendanceView({ mySalary,
       <div id="work-log-section" className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300">
         <button
           onClick={() => setIsTaskBoxExpanded(!isTaskBoxExpanded)}
-          className={`w-full flex items-center justify-between p-6 md:p-8 transition-all text-left cursor-pointer ${
-            isTaskBoxExpanded ? 'bg-indigo-50/50 dark:bg-indigo-900/30 border-b border-indigo-100 dark:border-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'
-          }`}
+          className={`w-full flex items-center justify-between p-6 md:p-8 transition-all text-left cursor-pointer ${isTaskBoxExpanded ? 'bg-indigo-50/50 dark:bg-indigo-900/30 border-b border-indigo-100 dark:border-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'
+            }`}
         >
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-lg shadow-indigo-500/30 flex items-center justify-center transform transition-transform group-hover:scale-105">
@@ -500,12 +498,12 @@ export function EmployeeAttendanceView({ mySalary,
             </div>
           </div>
           <div className="flex items-center gap-4">
-             <span className="hidden sm:inline-block px-3 py-1 bg-indigo-100 text-indigo-700 font-bold rounded-lg text-xs tracking-wider uppercase">
-               {todayTasks.length} Logged
-             </span>
-             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isTaskBoxExpanded ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-               {isTaskBoxExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-             </div>
+            <span className="hidden sm:inline-block px-3 py-1 bg-indigo-100 text-indigo-700 font-bold rounded-lg text-xs tracking-wider uppercase">
+              {todayTasks.length} Logged
+            </span>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isTaskBoxExpanded ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              {isTaskBoxExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </div>
           </div>
         </button>
 
@@ -536,7 +534,7 @@ export function EmployeeAttendanceView({ mySalary,
                     {taskError && <span className="text-rose-500 font-bold">{taskError}</span>}
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <div className="flex-1 relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -601,18 +599,18 @@ export function EmployeeAttendanceView({ mySalary,
                               className="flex-1 text-base border border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 bg-slate-50 text-slate-800 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 font-medium transition-all"
                             />
                             <div className="flex gap-2">
-                               <button
-                                 onClick={() => setEditingTaskId(null)}
-                                 className="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl text-sm transition-colors active:scale-95"
-                               >
-                                 Cancel
-                               </button>
-                               <button
-                                 onClick={submitEditTask}
-                                 className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl text-sm transition-colors active:scale-95 shadow-md shadow-indigo-600/20"
-                               >
-                                 Save
-                               </button>
+                              <button
+                                onClick={() => setEditingTaskId(null)}
+                                className="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl text-sm transition-colors active:scale-95"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={submitEditTask}
+                                className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl text-sm transition-colors active:scale-95 shadow-md shadow-indigo-600/20"
+                              >
+                                Save
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -621,10 +619,10 @@ export function EmployeeAttendanceView({ mySalary,
                           <div className="space-y-3 flex-1">
                             <p className="text-slate-700 dark:text-slate-300 font-medium text-base leading-relaxed">{task.description}</p>
                             <div className="flex items-center gap-2">
-                               <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/50 px-3 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800 flex items-center gap-1.5 font-mono shadow-sm">
-                                 <Clock className="w-3.5 h-3.5" /> 
-                                 {task.timeContext || new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
-                               </span>
+                              <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/50 px-3 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800 flex items-center gap-1.5 font-mono shadow-sm">
+                                <Clock className="w-3.5 h-3.5" />
+                                {task.timeContext || new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                              </span>
                             </div>
                           </div>
                           <button
@@ -656,14 +654,14 @@ export function EmployeeAttendanceView({ mySalary,
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-slate-100 dark:border-slate-700/50 pb-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
-               <Calendar className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              <Calendar className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-               <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight">Attendance History</h3>
-               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-0.5">View and filter your past records</p>
+              <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight">Attendance History</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-0.5">View and filter your past records</p>
             </div>
           </div>
-          
+
           {/* Filter Type Swapper - Pill shape */}
           <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl items-center shadow-inner self-start lg:self-auto border border-slate-200/50 dark:border-slate-700/50">
             {[
@@ -674,11 +672,10 @@ export function EmployeeAttendanceView({ mySalary,
               <button
                 key={tab.id}
                 onClick={() => setFilterType(tab.id)}
-                className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 cursor-pointer ${
-                  filterType === tab.id
-                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md transform scale-105'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
+                className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 cursor-pointer ${filterType === tab.id
+                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md transform scale-105'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
               >
                 {tab.label}
               </button>
@@ -803,11 +800,11 @@ export function EmployeeAttendanceView({ mySalary,
               </div>
             </div>
             <div className="w-full md:w-auto flex-1 max-w-md">
-               <div className="h-4 bg-white/60 dark:bg-slate-800/80 rounded-full overflow-hidden border border-indigo-100 dark:border-slate-700 mb-3 shadow-inner">
-                 <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-indigo-400 to-blue-500 relative" style={{ width: `${Math.min(100, (weeklyTotalHours / 40) * 100)}%` }}>
-                   <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)_50%,rgba(255,255,255,.15)_75%,transparent_75%,transparent)] bg-[length:10px_10px] animate-[stripe_1s_linear_infinite] opacity-50"></div>
-                 </div>
-               </div>
+              <div className="h-4 bg-white/60 dark:bg-slate-800/80 rounded-full overflow-hidden border border-indigo-100 dark:border-slate-700 mb-3 shadow-inner">
+                <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-indigo-400 to-blue-500 relative" style={{ width: `${Math.min(100, (weeklyTotalHours / 40) * 100)}%` }}>
+                  <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)_50%,rgba(255,255,255,.15)_75%,transparent_75%,transparent)] bg-[length:10px_10px] animate-[stripe_1s_linear_infinite] opacity-50"></div>
+                </div>
+              </div>
               <div className="flex items-center justify-end">
                 {weeklyTotalHours >= 40 ? (
                   <span className="text-emerald-600 text-sm font-bold flex items-center gap-2">
@@ -844,26 +841,26 @@ export function EmployeeAttendanceView({ mySalary,
                     <td className="py-4 px-5 whitespace-nowrap">
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black"><LogIn className="w-3.5 h-3.5"/></span>
+                          <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black"><LogIn className="w-3.5 h-3.5" /></span>
                           <span className="text-slate-700 font-mono font-bold">{rec.checkIn || '—'}</span>
                         </div>
                         {rec.checkOut ? (
-                           <div className="flex items-center gap-2">
-                             <span className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-[10px] font-black"><LogOut className="w-3.5 h-3.5"/></span>
-                             <span className="text-slate-700 font-mono font-bold">{rec.checkOut}</span>
-                           </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-[10px] font-black"><LogOut className="w-3.5 h-3.5" /></span>
+                            <span className="text-slate-700 font-mono font-bold">{rec.checkOut}</span>
+                          </div>
                         ) : rec.checkIn ? (
-                           <div className="flex items-center gap-2">
-                             <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black"><Clock className="w-3.5 h-3.5 animate-pulse"/></span>
-                             <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">Active</span>
-                           </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black"><Clock className="w-3.5 h-3.5 animate-pulse" /></span>
+                            <span className="text-blue-500 text-xs font-bold uppercase tracking-wider animate-pulse">Active</span>
+                          </div>
                         ) : null}
                       </div>
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap">
-                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-[11px] border border-amber-100">
-                         <Utensils className="w-3.5 h-3.5 opacity-70" /> {getMealBreakDetails(rec.breaks, rec.breakMinutes, rec.checkOut)}
-                       </span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-mono font-bold text-[11px] border border-amber-100">
+                        <Utensils className="w-3.5 h-3.5 opacity-70" /> {getMealBreakDetails(rec.breaks, rec.breakMinutes, rec.checkOut)}
+                      </span>
                     </td>
                     {teaBreakEnabled && teaBreakAllowed && (
                       <td className="py-4 px-5 whitespace-nowrap">
@@ -873,9 +870,9 @@ export function EmployeeAttendanceView({ mySalary,
                       </td>
                     )}
                     <td className="py-4 px-5 whitespace-nowrap">
-                       <span className="text-indigo-700 font-black text-base bg-indigo-50 px-3 py-1.5 rounded-lg" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                         {formatDecimalHours(rec.totalHours)}
-                       </span>
+                      <span className="text-indigo-700 font-black text-base bg-indigo-50 px-3 py-1.5 rounded-lg" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                        {formatDecimalHours(rec.totalHours)}
+                      </span>
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap text-emerald-600 font-bold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                       {rec.extraHours > 0 ? `+${formatDecimalHours(rec.extraHours)}` : <span className="text-slate-300">—</span>}
@@ -906,8 +903,8 @@ export function EmployeeAttendanceView({ mySalary,
                 <tr>
                   <td colSpan={teaBreakEnabled && teaBreakAllowed ? 9 : 8} className="py-12 text-center text-slate-400 text-sm font-medium">
                     <div className="flex flex-col items-center justify-center gap-3">
-                       <Calendar className="w-10 h-10 text-slate-200" />
-                       No records found for the selected period.
+                      <Calendar className="w-10 h-10 text-slate-200" />
+                      No records found for the selected period.
                     </div>
                   </td>
                 </tr>
@@ -978,7 +975,7 @@ export function EmployeeAttendanceView({ mySalary,
                   </div>
                   <div className="font-mono text-slate-800 dark:text-slate-100 font-black text-xl">{selectedRecord.checkOut || (selectedRecord.checkIn ? <span className="text-blue-500 animate-pulse">Active</span> : '—')}</div>
                 </div>
-                
+
                 <div className="col-span-2 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-2xl p-5 shadow-sm dark:shadow-none">
                   <div className="text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Utensils className="w-3.5 h-3.5" /> Meal Break
@@ -1013,56 +1010,55 @@ export function EmployeeAttendanceView({ mySalary,
                     )}
                   </div>
                 )}
-                
-                <div className="col-span-2 sm:col-span-4 grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
-                   <div className="bg-blue-50/80 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-2xl p-4">
-                     <div className="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Net Hours</div>
-                     <div className="font-mono text-blue-900 dark:text-blue-100 font-black text-lg">{formatDecimalHours(selectedRecord.totalHours)}</div>
-                   </div>
-                   <div className="bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-2xl p-4">
-                     <div className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Extra Hrs</div>
-                     <div className="font-mono text-emerald-700 dark:text-emerald-400 font-bold text-lg">{selectedRecord.extraHours > 0 ? `+${formatDecimalHours(selectedRecord.extraHours)}` : '—'}</div>
-                   </div>
-                   <div className="bg-rose-50/80 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-4">
-                     <div className="text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Less Hrs</div>
-                     <div className="font-mono text-rose-700 dark:text-rose-400 font-bold text-lg">{formatDecimalHours(selectedRecord.lessHours)}</div>
-                   </div>
-                   <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-center items-start">
-                     <div className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Status</div>
-                     <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider ${
-                        selectedRecord.status === 'present' ? 'bg-emerald-100 text-emerald-700' :
-                        selectedRecord.status === 'absent' ? 'bg-rose-100 text-rose-700' :
-                        selectedRecord.status === 'late' ? 'bg-amber-100 text-amber-700' :
-                        'bg-sky-100 text-sky-700'
-                     }`}>
-                        {selectedRecord.status}
-                     </span>
-                   </div>
 
-                   {/* Completed Tasks Card */}
-                   {selectedRecord.tasks && selectedRecord.tasks.length > 0 && (
-                     <div className="col-span-2 sm:col-span-4 bg-white/50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 mt-2">
-                       <div className="text-indigo-500 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
-                         <ClipboardList className="w-3.5 h-3.5" />
-                         Completed Tasks ({selectedRecord.tasks.length})
-                       </div>
-                       <div className="space-y-3">
-                         {selectedRecord.tasks.map((task, idx) => (
-                           <div key={task._id || idx} className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm shadow-sm transition-all hover:shadow-md">
-                             <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{task.description}</p>
-                             {task.timeContext && (
-                               <div className="mt-2 flex items-center gap-2">
-                                 <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1 font-mono">
-                                   <Clock className="w-3 h-3" /> 
-                                   {task.timeContext}
-                                 </span>
-                               </div>
-                             )}
-                           </div>
-                         ))}
-                       </div>
-                     </div>
-                   )}
+                <div className="col-span-2 sm:col-span-4 grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
+                  <div className="bg-blue-50/80 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-2xl p-4">
+                    <div className="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Net Hours</div>
+                    <div className="font-mono text-blue-900 dark:text-blue-100 font-black text-lg">{formatDecimalHours(selectedRecord.totalHours)}</div>
+                  </div>
+                  <div className="bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-2xl p-4">
+                    <div className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Extra Hrs</div>
+                    <div className="font-mono text-emerald-700 dark:text-emerald-400 font-bold text-lg">{selectedRecord.extraHours > 0 ? `+${formatDecimalHours(selectedRecord.extraHours)}` : '—'}</div>
+                  </div>
+                  <div className="bg-rose-50/80 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-4">
+                    <div className="text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Less Hrs</div>
+                    <div className="font-mono text-rose-700 dark:text-rose-400 font-bold text-lg">{formatDecimalHours(selectedRecord.lessHours)}</div>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-center items-start">
+                    <div className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Status</div>
+                    <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider ${selectedRecord.status === 'present' ? 'bg-emerald-100 text-emerald-700' :
+                      selectedRecord.status === 'absent' ? 'bg-rose-100 text-rose-700' :
+                        selectedRecord.status === 'late' ? 'bg-amber-100 text-amber-700' :
+                          'bg-sky-100 text-sky-700'
+                      }`}>
+                      {selectedRecord.status}
+                    </span>
+                  </div>
+
+                  {/* Completed Tasks Card */}
+                  {selectedRecord.tasks && selectedRecord.tasks.length > 0 && (
+                    <div className="col-span-2 sm:col-span-4 bg-white/50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 mt-2">
+                      <div className="text-indigo-500 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <ClipboardList className="w-3.5 h-3.5" />
+                        Completed Tasks ({selectedRecord.tasks.length})
+                      </div>
+                      <div className="space-y-3">
+                        {selectedRecord.tasks.map((task, idx) => (
+                          <div key={task._id || idx} className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm shadow-sm transition-all hover:shadow-md">
+                            <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{task.description}</p>
+                            {task.timeContext && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1 font-mono">
+                                  <Clock className="w-3 h-3" />
+                                  {task.timeContext}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1085,19 +1081,19 @@ export function EmployeeAttendanceView({ mySalary,
                 {sessionConfirmLevel === 1 && "You have been working for 8 hours. Are you still working?"}
                 {sessionConfirmLevel === 2 && "Reminder: Are you still working? (1st warning)"}
                 {sessionConfirmLevel === 3 && "Final Reminder: You will be automatically checked out in 10 minutes."}
-                {sessionConfirmLevel === 0 && ((onBreak || onTeaBreak) 
-                  ? "You are currently on a break. Checking out now will automatically end your break. Are you sure you want to proceed?" 
+                {sessionConfirmLevel === 0 && ((onBreak || onTeaBreak)
+                  ? "You are currently on a break. Checking out now will automatically end your break. Are you sure you want to proceed?"
                   : "Would you like to take a break before leaving, or proceed directly to check-out?")}
               </p>
-              
+
               <div className="space-y-4">
                 {sessionConfirmLevel > 0 && (
-                   <button
-                     onClick={handleSessionContinue}
-                     className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer shadow-lg shadow-indigo-500/25 active:scale-95 tracking-widest uppercase"
-                   >
-                     YES, CONTINUE WORKING
-                   </button>
+                  <button
+                    onClick={handleSessionContinue}
+                    className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer shadow-lg shadow-indigo-500/25 active:scale-95 tracking-widest uppercase"
+                  >
+                    YES, CONTINUE WORKING
+                  </button>
                 )}
                 {/* Take Meal Break button */}
                 {checkedIn && !onBreak && !mealBreakLimitReached && !isBreakOver && sessionConfirmLevel === 0 && (
@@ -1179,12 +1175,12 @@ export function EmployeeAttendanceView({ mySalary,
                     <div key={task._id || idx} className="p-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-2xl text-sm space-y-3 shadow-sm hover:shadow-md transition-shadow">
                       <p className="text-slate-700 dark:text-slate-300 font-medium text-base leading-relaxed">{task.description}</p>
                       {task.timeContext && (
-                         <div className="flex items-center gap-2">
-                           <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5 font-mono shadow-sm w-fit">
-                             <Clock className="w-3.5 h-3.5" /> 
-                             {task.timeContext}
-                           </span>
-                         </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5 font-mono shadow-sm w-fit">
+                            <Clock className="w-3.5 h-3.5" />
+                            {task.timeContext}
+                          </span>
+                        </div>
                       )}
                     </div>
                   ))

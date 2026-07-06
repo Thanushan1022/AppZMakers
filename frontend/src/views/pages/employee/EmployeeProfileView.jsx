@@ -275,7 +275,7 @@ export function EmployeeProfileView({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Employment details */}
-        <div className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white dark:border-slate-800 p-6 md:p-8 shadow-2xl shadow-indigo-100/50 dark:shadow-none hover:shadow-indigo-200/50 transition-shadow">
+        <div className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white dark:border-slate-800 p-6 md:p-8 shadow-2xl shadow-indigo-100/50 dark:shadow-none hover:shadow-indigo-200/50 transition-shadow lg:col-span-2">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl"></div>
           <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-6 flex items-center gap-3 tracking-tight">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/50 flex items-center justify-center border border-indigo-100 dark:border-indigo-800 shadow-sm">

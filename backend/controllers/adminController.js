@@ -51,8 +51,8 @@ export const getDashboard = async (req, res) => {
       attendanceRecords,
       leaveRequests
     ] = await Promise.all([
-      Company.find().select('-avatar').sort({ createdAt: -1 }).lean(),
-      HRUser.find().select('-avatar').sort({ createdAt: -1 }).lean(),
+      Company.find().sort({ createdAt: -1 }).lean(),
+      HRUser.find().sort({ createdAt: -1 }).lean(),
       Employee.find().select('-cvData -cvName').sort({ createdAt: -1 }).lean(),
       Attendance.find({ date: { $gte: startDateStr, $lte: endDateStr } }).lean(),
       LeaveRequest.find({ 
@@ -133,7 +133,7 @@ export const getLeaves = async (req, res) => {
 
 export const getCompanies = async (req, res) => {
   try {
-    const companies = await Company.find().select('-avatar').sort({ createdAt: -1 }).lean();
+    const companies = await Company.find().sort({ createdAt: -1 }).lean();
     res.json(companies.map(toCompanyJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -142,7 +142,7 @@ export const getCompanies = async (req, res) => {
 
 export const getHRUsers = async (req, res) => {
   try {
-    const hrs = await HRUser.find().select('-avatar').sort({ createdAt: -1 }).lean();
+    const hrs = await HRUser.find().sort({ createdAt: -1 }).lean();
     res.json(hrs.map(toHRJSON));
   } catch (error) {
     res.status(500).json({ error: error.message });

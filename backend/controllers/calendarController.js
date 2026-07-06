@@ -441,52 +441,7 @@ export const deleteEvent = async (req, res) => {
   }
 };
 
-/**
- * Import holidays for a country from Google public calendars
- */
-export const importHolidays = async (req, res) => {
-  try {
-    const { country } = req.body;
-    if (!country) {
-      return res.status(400).json({ error: 'Country is required' });
-    }
 
-    const holidays = await fetchHolidaysFromGoogle(country);
-
-    let importedCount = 0;
-    for (const holiday of holidays) {
-      const exists = await CompanyEvent.findOne({
-        $or: [
-          { googleEventId: holiday.googleEventId },
-          { title: holiday.title, start: holiday.start }
-        ]
-      });
-
-      if (!exists) {
-        const newEvent = new CompanyEvent({
-          title: holiday.title,
-          description: holiday.description,
-          start: holiday.start,
-          end: holiday.end,
-          type: 'holiday',
-          targetLocation: 'country',
-          targetValue: country,
-          googleEventId: holiday.googleEventId,
-          createdBy: 'Google Calendar Sync',
-        });
-        await newEvent.save();
-        importedCount++;
-      }
-    }
-
-    res.json({
-      success: true,
-      message: `Successfully imported ${importedCount} holidays for ${country}`,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 
 

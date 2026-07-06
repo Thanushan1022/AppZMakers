@@ -362,7 +362,7 @@ export function CompanyReportsView({
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(14);
       doc.setTextColor(30, 41, 59);
-      
+
       const sumVal1 = String(dynamicSummary?.totalEmployees ?? filteredEmployeesList.length ?? 0);
       const sumVal2 = `${Math.round(dynamicSummary?.totalHours ?? totalHours ?? 0)}h`;
       const sumVal3 = String(dynamicSummary?.leaveDaysUsed ?? filteredLeavesList.filter((l) => l.status === 'approved').reduce((s, l) => s + l.days, 0) ?? 0);
