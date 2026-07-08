@@ -1,47 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
-
-const faqs = [
-  { question: "I forgot my password. What should I do?", answer: "Click the Forgot Password link on the login page and follow the instructions to reset your password." },
-  { question: "How is my password generated?", answer: "A temporary password is automatically generated when your account is created. You should change it after your first login if the system allows." },
-  { question: "Can I change my password?", answer: "Yes. You can change your password from your profile or account settings if the feature is available." },
-  { question: "Can I check in more than once a day?", answer: "No. The system allows only one check-in and one check-out per working day unless otherwise configured." },
-  { question: "What happens if I forget to check in or check out?", answer: "Contact your HR department. HR or the Super Admin can add missed attendance records if approved." },
-  { question: "If I forget to check in for the day, what should I do?", answer: "Only HR and Super Admin users have permission to add missed attendance." },
-  { question: "If I need to work after checking out for the day, what should I do?", answer: "Working hours are calculated based on your check-in time, check-out time, and recorded break durations. Contact HR if additional work needs to be recorded." },
-  { question: "What happens if I forget to click the End Tea Break button?", answer: "Click the Tea Break button before leaving your workstation and end the break when you return. If you forget, contact HR if a correction is required." },
-  { question: "Why is my Tea Break button not enabled?", answer: "Verify that you are checked in and not already on a break. If the issue continues, contact HR or the System Administrator." },
-  { question: "Can I cancel a leave request?", answer: "Yes. You can cancel a pending leave request before it is approved." },
-  { question: "Which file formats are supported for CV upload?", answer: "PDF, DOC, and DOCX formats are generally supported, depending on system configuration." },
-  { question: "Is there a file size limit for CV uploads?", answer: "Yes. The maximum file size depends on the system settings." },
-  { question: "What should I do if I receive an \"Access Denied\" message?", answer: "Contact your HR department or System Administrator to verify your permissions." },
-  { question: "How do I log out?", answer: "Click your profile icon and select Logout to securely end your session." },
-  { question: "What happens if my session expires?", answer: "You will be automatically logged out and redirected to the login page for security reasons." },
-  { question: "Can I use the system on my mobile phone?", answer: "Yes, if the application supports responsive web design or has a mobile version." },
-  { question: "Who should I contact if I experience technical issues?", answer: "Contact your HR department, System Administrator, or IT Support team for assistance." },
-  { question: "Why am I unable to log in?", answer: "Ensure your email, password, and selected role are correct. If the issue continues, contact your administrator." },
-  { question: "What should I do if I don't receive the OTP?", answer: "Verify your registered mobile number and request that the OTP be resent." },
-  { question: "Can I use my old password after changing it?", answer: "No, depending on your organization's password policy." },
-  { question: "Why am I automatically logged out?", answer: "Your session expired due to inactivity for security reasons." },
-  { question: "Can I update my phone number?", answer: "Yes, if profile editing is permitted." },
-  { question: "What time should I check in?", answer: "Follow your organization's assigned working hours." },
-  { question: "How can I change my shift?", answer: "You do not have permission to change your shift. Only HR or the Super Admin can modify it." },
-  { question: "What happens if the internet disconnects during check-in?", answer: "Verify your attendance history after reconnecting and try again if necessary. If the check-in was not recorded, contact HR." },
-  { question: "Can working hours be modified?", answer: "Yes, but only by authorized administrators." },
-  { question: "What should I do if I suspect unauthorized access?", answer: "Change your password immediately and contact your System Administrator." },
-  { question: "Does the system support mobile devices?", answer: "Yes, if the application is mobile responsive." },
-  { question: "Who should I contact for login issues?", answer: "Contact HR or the System Administrator." },
-  { question: "Can HR view my uploaded CV?", answer: "Yes. HR can view your uploaded CV as part of the recruitment or employee management process." },
-  { question: "Why did my file or image upload fail?", answer: "The file may be too large or in an unsupported format." },
-  { question: "Can I cancel my leave request?", answer: "Yes, as long as it has not yet been approved." },
-  { question: "Can I edit an approved leave request?", answer: "No. Contact HR if changes are required." },
-  { question: "Can I request attendance correction?", answer: "Yes. Contact HR if changes are required" },
-  { question: "Can I access the system while on leave?", answer: "Yes" },
-  { question: "How can I inform my leave request even pending yet now still there is no acceptance/rejection?", answer: "Contact HR if changes are required." }
-];
+import { BACKEND_URL } from '../../../config';
 
 export function EmployeeFAQView() {
   const [openIndex, setOpenIndex] = useState(null);
+  const [faqs, setFaqs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/faqs?targetRole=employee`);
+        if (res.ok) {
+          const data = await res.json();
+          setFaqs(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFaqs();
+  }, []);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);

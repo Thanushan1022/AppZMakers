@@ -10,6 +10,7 @@ export function useAdminController(adminId, updateAuth) {
   const [dashboardStats, setDashboardStats] = useState({});
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [adminProfile, setAdminProfile] = useState(null);
+  const [faqs, setFaqs] = useState([]);
 
   const fetchAdminProfile = async () => {
     if (!adminId) return;
@@ -851,6 +852,78 @@ export function useAdminController(adminId, updateAuth) {
 
 
 
+  const fetchFaqs = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/faqs`);
+      if (res.ok) {
+        setFaqs(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const handleCreateFaq = async (faqData) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/faqs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(faqData),
+      });
+      if (res.ok) {
+        fetchFaqs();
+        return { success: true };
+      } else {
+        const data = await res.json();
+        return { success: false, error: data.error };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: 'Server error' };
+    }
+  };
+
+  const handleUpdateFaq = async (faqId, faqData) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/faqs/${faqId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(faqData),
+      });
+      if (res.ok) {
+        fetchFaqs();
+        return { success: true };
+      } else {
+        const data = await res.json();
+        return { success: false, error: data.error };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: 'Server error' };
+    }
+  };
+
+  const handleDeleteFaq = async (faqId) => {
+    if (!window.confirm("Are you sure you want to delete this FAQ?")) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/faqs/${faqId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchFaqs();
+        return { success: true };
+      } else {
+        const data = await res.json();
+        return { success: false, error: data.error };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: 'Server error' };
+    }
+  };
+
   return {
     adminProfile,
     handleUpdateProfile: handleUpdateAdminProfile,
@@ -958,5 +1031,10 @@ export function useAdminController(adminId, updateAuth) {
     deptData,
     todayLabel,
     selectedEmployeeDetail,
+    
+    faqs,
+    handleCreateFaq,
+    handleUpdateFaq,
+    handleDeleteFaq,
   };
 }

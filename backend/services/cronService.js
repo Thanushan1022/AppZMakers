@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Attendance from '../models/Attendance.js';
 import Employee from '../models/Employee.js';
 import SystemSettings from '../models/SystemSettings.js';
@@ -20,7 +21,12 @@ export const startCronJobs = () => {
 
       for (const attendance of activeAttendances) {
         try {
-          const employee = await Employee.findOne({ employeeId: attendance.employeeId });
+          let employee = null;
+          if (mongoose.Types.ObjectId.isValid(attendance.employeeId)) {
+            employee = await Employee.findOne({ $or: [{ _id: attendance.employeeId }, { legacyId: attendance.employeeId }] });
+          } else {
+            employee = await Employee.findOne({ legacyId: attendance.employeeId });
+          }
           if (!employee) continue;
 
           // Find rule for this department

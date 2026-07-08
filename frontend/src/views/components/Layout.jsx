@@ -45,6 +45,7 @@ const navByRole = {
     { id: 'reports', label: 'System Reports', icon: FileText },
     { id: 'companies', label: 'Clients/Leads', icon: Building2 },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'faqs', label: 'FAQ Management', icon: HelpCircle },
     { id: 'settings', label: 'Settings', icon: Settings },
   ],
 };

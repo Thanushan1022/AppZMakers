@@ -58,6 +58,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   const [todayTasks, setTodayTasks] = useState([]);
   const [shiftNotices, setShiftNotices] = useState([]);
   const [overtimeState, setOvertimeState] = useState({ status: 'idle', confirmedHours: 0, nextConfirmDueAt: null });
+  const [nextShiftStartInfo, setNextShiftStartInfo] = useState(null);
   
   // Checkout Summary State
   const [showGoodbye, setShowGoodbye] = useState(false);
@@ -95,13 +96,17 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     if (!userId) return;
     try {
       setLoading(true);
+      let localEmployee = null;
+      let localSettings = null;
       // Fetch Employee Profile & Leave Balance
       const empRes = await fetch(`${BACKEND_URL}/employees/${userId}`);
       if (empRes.ok) {
         const empData = await empRes.json();
+        localEmployee = empData.employee;
         setEmployee(empData.employee);
         setBalance(empData.leaveBalance);
         if (empData.settings) {
+          localSettings = empData.settings;
           setSettings(empData.settings);
         }
       }
@@ -115,10 +120,38 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
         // Detect if already clocked in or active session exists
         const todayStr = getLocalTodayStr();
         let todayRecord = attData.find(a => a.checkIn && !a.checkOut);
-        if (!todayRecord) {
+        
+        let isSessionOverCooldown = false;
+        if (!todayRecord && attData.length > 0) {
+          const lastRecord = attData[0];
+          if (lastRecord && lastRecord.date) {
+            let empShift = localEmployee?.shift || 'morning';
+            let startTimeStr = empShift === 'night' 
+              ? (localSettings?.nightShiftStartTime || '21:00') 
+              : (localSettings?.morningShiftStartTime || '09:00');
+            
+            const [yr, mo, da] = lastRecord.date.split('-');
+            const nextShiftDate = new Date(parseInt(yr, 10), parseInt(mo, 10) - 1, parseInt(da, 10));
+            nextShiftDate.setDate(nextShiftDate.getDate() + 1);
+            
+            const [sh, sm] = startTimeStr.split(':').map(Number);
+            nextShiftDate.setHours(sh || 0, sm || 0, 0, 0);
+            
+            if (new Date() < nextShiftDate) {
+              isSessionOverCooldown = true;
+              todayRecord = lastRecord;
+              setNextShiftStartInfo(nextShiftDate);
+            } else {
+              setNextShiftStartInfo(null);
+            }
+          }
+        }
+
+        if (!todayRecord && !isSessionOverCooldown) {
           todayRecord = attData.find(a => a.date === todayStr);
         }
-        if (todayRecord) {
+
+        if (todayRecord || isSessionOverCooldown) {
           setHasAttendedToday(true);
           setCheckInTime(todayRecord.checkIn);
           setCheckInDate(todayRecord.date);
@@ -460,13 +493,47 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
 
   // Session Over Modal State
   const [showSessionOverModal, setShowSessionOverModal] = useState(false);
+  const [sessionOverModalType, setSessionOverModalType] = useState('cooldown'); // 'cooldown' | 'tooEarly'
 
   // Actions
   const handleCheckIn = async () => {
     if (hasAttendedToday) {
+      setSessionOverModalType('cooldown');
       setShowSessionOverModal(true);
       return;
     }
+
+    // Local validation for early checkin
+    const empShift = employee?.shift || 'morning';
+    const startTimeStr = empShift === 'night' 
+      ? (settings?.nightShiftStartTime || '21:00') 
+      : (settings?.morningShiftStartTime || '09:00');
+    
+    const now = new Date();
+    const [sh, sm] = startTimeStr.split(':').map(Number);
+    const startSecs = (sh * 3600) + ((sm || 0) * 60);
+    const nowSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+    
+    let isTooEarly = false;
+    if (empShift === 'night') {
+      if (nowSecs < startSecs && nowSecs > 43200) { // Afternoon/evening check
+        isTooEarly = true;
+      }
+    } else {
+      if (nowSecs < startSecs) {
+        isTooEarly = true;
+      }
+    }
+
+    if (isTooEarly) {
+      const shiftDate = new Date();
+      shiftDate.setHours(sh, sm || 0, 0, 0);
+      setNextShiftStartInfo(shiftDate);
+      setSessionOverModalType('tooEarly');
+      setShowSessionOverModal(true);
+      return;
+    }
+
     const todayStr = getLocalTodayStr();
     const timeNow = getTimeString();
 
@@ -943,6 +1010,8 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     todaySummary,
     showSessionOverModal,
     setShowSessionOverModal,
+    sessionOverModalType,
+    nextShiftStartInfo,
 
     // Calculated statistics
     presentDays,

@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
-const faqs = [
-  { question: "How will I receive my login credentials?", answer: "Your account is created by the System Administrator, and your login credentials are sent to your registered email address." },
-  { question: "I forgot my password. What should I do?", answer: "Click the Forgot Password link on the login page and follow the instructions to reset your password securely." },
-  { question: "Can I change my password?", answer: "Yes. You can change your password from the Profile or Account Settings page after logging in." },
-  { question: "Why am I unable to log in?", answer: "Ensure your email address, password, and selected role are correct. Also check your internet connection. If the problem continues, contact the System Administrator." },
-  { question: "What should I do if I don't receive the OTP?", answer: "Verify your registered email address or mobile number and request a new OTP. If you still do not receive it, contact the System Administrator." },
-  { question: "What happens if my session expires while working?", answer: "Unsaved changes may be lost. Save your work frequently and log in again if your session expires." },
-  { question: "Can I change my registered email address or phone number?", answer: "Yes, subject to your organization's policies. Contact the System Administrator if you cannot edit these details yourself." },
-  { question: "How can I change my assigned employees?", answer: "Navigate to the Projects section to see all projects assigned to your organization or account." },
-  { question: "Which file formats are supported for uploads?", answer: "Commonly supported formats include PDF, DOC, DOCX, XLSX, PPTX, JPG, JPEG, PNG, and ZIP files, depending on system configuration." },
-  { question: "Is there a file size limit for uploads?", answer: "Yes. The maximum file size is determined by the system administrator and server configuration." },
-  { question: "Why did my file upload fail?", answer: "The file may exceed the size limit, be in an unsupported format, or your internet connection may have been interrupted." },
-  { question: "Can I download files shared by the project team?", answer: "Yes. You can download any document that has been shared with you and for which you have permission." },
-  { question: "Can I generate or download reports?", answer: "Yes. Depending on your permissions, you can download project reports, progress summaries, and other available reports." },
-  { question: "Can multiple users from my organization access the portal?", answer: "Yes. Multiple client users can be created with different permission levels, depending on your organization's requirements." },
-  { question: "What should I do if I receive an \"Access Denied\" message?", answer: "Your account may not have permission to access that feature. Contact the System Administrator to verify your access rights." },
-  { question: "Can I access the portal from my mobile phone or tablet?", answer: "Yes. The portal supports modern web browsers on desktop and mobile devices if responsive access is enabled." },
-  { question: "What should I do if I suspect unauthorized access to my account?", answer: "Change your password immediately and notify the System Administrator so your account activity can be reviewed." },
-  { question: "Who should I contact if I need assistance?", answer: "Contact your Project Manager, System Administrator, or the organization's Support Team for technical or project-related assistance." }
-];
+import { BACKEND_URL } from '../../../config';
 
 export function CompanyFAQView() {
   const [openIndex, setOpenIndex] = useState(null);
+  const [faqs, setFaqs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/faqs?targetRole=company`);
+        if (res.ok) {
+          const data = await res.json();
+          setFaqs(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFaqs();
+  }, []);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);

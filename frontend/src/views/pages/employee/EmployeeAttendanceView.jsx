@@ -71,6 +71,8 @@ export function EmployeeAttendanceView({ mySalary,
   todaySummary,
   showSessionOverModal,
   setShowSessionOverModal,
+  sessionOverModalType = 'cooldown',
+  nextShiftStartInfo,
 }) {
   const [isTaskBoxExpanded, setIsTaskBoxExpanded] = useState(false);
   const [taskDesc, setTaskDesc] = useState('');
@@ -1215,9 +1217,20 @@ export function EmployeeAttendanceView({ mySalary,
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-blue-200 dark:border-blue-800">
                 <AlertCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">Session Over</h3>
+              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">
+                {sessionOverModalType === 'tooEarly' ? 'Too Early to Check In' : 'Session Over'}
+              </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
-                Today's section is over. If you need further details, please contact HR.
+                {sessionOverModalType === 'cooldown' && "Today's session is over."}
+                {sessionOverModalType === 'tooEarly' && "You cannot check in before your assigned shift starts."}
+                {nextShiftStartInfo && (
+                  <span className="block mt-2 text-indigo-600 dark:text-indigo-400 font-bold">
+                    Your next shift starts on {nextShiftStartInfo.toLocaleDateString()} at {nextShiftStartInfo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.
+                  </span>
+                )}
+                <span className="block mt-2">
+                  If you need further details, please contact HR.
+                </span>
               </p>
               <button
                 onClick={() => setShowSessionOverModal(false)}

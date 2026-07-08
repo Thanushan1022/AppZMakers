@@ -4,6 +4,7 @@ import * as hrController from '../controllers/hrController.js';
 import * as companyController from '../controllers/companyController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as calendarController from '../controllers/calendarController.js';
+import * as faqController from '../controllers/faqController.js';
 
 const router = express.Router();
 
@@ -81,5 +82,13 @@ router.get('/calendar', calendarController.getEvents);
 router.post('/calendar', calendarController.createEvent);
 router.put('/calendar/:id', calendarController.updateEvent);
 router.delete('/calendar/:id', calendarController.deleteEvent);
+
+// ==========================================
+// FAQ ROUTES
+// ==========================================
+router.get('/faqs', faqController.getFaqs);
+router.post('/admin/faqs', faqController.createFaq);
+router.put('/admin/faqs/:id', faqController.updateFaq);
+router.delete('/admin/faqs/:id', faqController.deleteFaq);
 
 export default router;

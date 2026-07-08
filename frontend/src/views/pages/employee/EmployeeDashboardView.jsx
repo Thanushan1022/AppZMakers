@@ -54,10 +54,12 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   todaySummary,
   showSessionOverModal,
   setShowSessionOverModal,
+  sessionOverModalType = 'cooldown',
   sessionConfirmLevel = 0,
   handleSessionContinue,
   overtimeState = { status: 'idle', confirmedHours: 0, nextConfirmDueAt: null },
   handleConfirmOvertime,
+  nextShiftStartInfo,
 }) {
   const recentAttendance = filteredAttendance.slice(0, 5);
 
@@ -210,7 +212,7 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
     const startSecs = getSecs(shiftStartTime);
     let checkInSecs;
     
-    if (checkedIn && checkInTime) {
+    if (checkInTime) {
       checkInSecs = getSecs(checkInTime);
     } else {
       checkInSecs = currentSecs;
@@ -235,7 +237,7 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* Overtime Confirmation Notification */}
-      {overtimeState.status === 'pending' && (
+      {checkedIn && overtimeState?.status === 'pending' && (
         <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20 backdrop-blur-md border border-amber-200/50 dark:border-amber-800/50 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 text-amber-900 dark:text-amber-100 animate-pulse shadow-xl shadow-amber-500/10">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center border border-amber-200 dark:border-amber-700/50">
@@ -705,9 +707,20 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-blue-200 dark:border-blue-800">
                 <AlertCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">Session Over</h3>
+              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">
+                {sessionOverModalType === 'tooEarly' ? 'Too Early to Check In' : 'Session Over'}
+              </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
-                Today's section is over. If you need further details, please contact HR.
+                {sessionOverModalType === 'cooldown' && "Today's session is over."}
+                {sessionOverModalType === 'tooEarly' && "You cannot check in before your assigned shift starts."}
+                {nextShiftStartInfo && (
+                  <span className="block mt-2 text-indigo-600 dark:text-indigo-400 font-bold">
+                    Your next shift starts on {nextShiftStartInfo.toLocaleDateString()} at {nextShiftStartInfo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.
+                  </span>
+                )}
+                <span className="block mt-2">
+                  If you need further details, please contact HR.
+                </span>
               </p>
               <button
                 onClick={() => setShowSessionOverModal(false)}

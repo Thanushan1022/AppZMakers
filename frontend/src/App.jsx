@@ -47,6 +47,7 @@ import { CompanyFAQView } from './views/pages/company/CompanyFAQView';
 import { AdminDashboardView } from './views/pages/admin/AdminDashboardView';
 import { AdminUsersView } from './views/pages/admin/AdminUsersView';
 import { AdminReportsView } from './views/pages/admin/AdminReportsView';
+import { AdminFAQView } from './views/pages/admin/AdminFAQView';
 import { AdminCompaniesView } from './views/pages/admin/AdminCompaniesView';
 import { AdminSettingsView } from './views/pages/admin/AdminSettingsView';
 import { AdminProfileView } from './views/pages/admin/AdminProfileView';
@@ -398,6 +399,7 @@ function AdminRoutes({ adminId, updateAuth }) {
       <Route path="companies" element={<AdminCompaniesView {...controller} />} />
       <Route path="profile" element={<AdminProfileView {...controller} />} />
       <Route path="settings" element={<AdminSettingsView {...controller} />} />
+      <Route path="faqs" element={<AdminFAQView faqs={controller.faqs} handleCreateFaq={controller.handleCreateFaq} handleUpdateFaq={controller.handleUpdateFaq} handleDeleteFaq={controller.handleDeleteFaq} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );

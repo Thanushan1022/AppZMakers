@@ -85,7 +85,7 @@ export function AdminSettingsView({
             {/* Break Time */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Daily Standard Meal Break Time (Hours)</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   step="any"
@@ -109,7 +109,7 @@ export function AdminSettingsView({
             {/* Meal Break Limit */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Daily Allowed Meal Breaks Limit</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   min={1}
@@ -132,7 +132,7 @@ export function AdminSettingsView({
             {/* Morning Shift Start Time */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Morning Shift Start Time</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   placeholder="HH:MM (24-hour)"
@@ -154,7 +154,7 @@ export function AdminSettingsView({
             {/* Night Shift Start Time */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Night Shift Start Time</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   placeholder="HH:MM (24-hour)"
@@ -176,7 +176,7 @@ export function AdminSettingsView({
             {/* Work Hours */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Standard Daily Work Hours</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   step="any"
@@ -237,7 +237,7 @@ export function AdminSettingsView({
             {/* Max Tea Breaks */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Daily Allowed Tea Breaks</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   min={1}
@@ -258,7 +258,7 @@ export function AdminSettingsView({
             {/* Tea Break Duration */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Tea Break Duration (Minutes)</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   min={1}
@@ -279,7 +279,7 @@ export function AdminSettingsView({
             {/* Tea Break Cooldown/Gap */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Gap Required Between Tea Breaks (Minutes)</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   min={0}
@@ -316,7 +316,7 @@ export function AdminSettingsView({
             {/* Medical Leaves */}
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Medical Leave Allocation (Days)</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   min="0"
@@ -427,7 +427,7 @@ export function AdminSettingsView({
           <div className="max-w-md relative z-10">
             <div className="flex flex-col gap-1.5">
               <label className="text-slate-700 text-sm font-medium">Session Timeout Duration</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
                   min="1"
