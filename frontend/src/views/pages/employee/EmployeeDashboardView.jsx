@@ -177,6 +177,59 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
     return 'Good night';
   };
 
+  const shiftStartTime = useMemo(() => {
+    if (!employee || !settings) return '09:00';
+    return employee.shift === 'night' ? (settings.nightShiftStartTime || '21:00') : (settings.morningShiftStartTime || '09:00');
+  }, [employee, settings]);
+
+  const [currentSecs, setCurrentSecs] = React.useState(() => {
+    const d = new Date();
+    return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+  });
+
+  useEffect(() => {
+    if (!checkedIn) {
+      const interval = setInterval(() => {
+        const d = new Date();
+        setCurrentSecs(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds());
+      }, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [checkedIn]);
+
+  const lateMessage = useMemo(() => {
+    if (!shiftStartTime) return null;
+    
+    const getSecs = (tStr) => {
+      const parts = tStr.split(':').map(Number);
+      return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+    };
+    
+    const startSecs = getSecs(shiftStartTime);
+    let checkInSecs;
+    
+    if (checkedIn && checkInTime) {
+      checkInSecs = getSecs(checkInTime);
+    } else {
+      checkInSecs = currentSecs;
+    }
+    
+    // Handle night shift cross-midnight logic if necessary
+    if (employee?.shift === 'night' && checkInSecs < 43200) { 
+      checkInSecs += 86400;
+    }
+    
+    if (checkInSecs > startSecs) {
+      const diffSecs = checkInSecs - startSecs;
+      const h = Math.floor(diffSecs / 3600);
+      const m = Math.floor((diffSecs % 3600) / 60);
+      if (h > 0 && m > 0) return `${h}h ${m}m late`;
+      if (h > 0) return `${h}h late`;
+      if (m > 0) return `${m}m late`;
+    }
+    return null;
+  }, [checkedIn, checkInTime, shiftStartTime, employee, currentSecs]);
+
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* Exceeded Break Time Notification */}
@@ -206,12 +259,24 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
               <span className="opacity-90">{employee.department}</span>
             </p>
           </div>
-          <div className="flex items-center gap-3 px-5 py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-inner">
-             <Timer className="w-5 h-5 text-indigo-200" />
-             <div className="flex flex-col">
-               <span className="text-xs text-indigo-200 uppercase tracking-wider font-bold">Target Break</span>
-               <span className="text-sm font-semibold">{settings?.breakTime || '1 hour'}</span>
-             </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex items-center gap-3 px-5 py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-inner min-w-[160px]">
+               <CalendarDays className="w-5 h-5 text-indigo-200" />
+               <div className="flex flex-col">
+                 <span className="text-xs text-indigo-200 uppercase tracking-wider font-bold">Shift Start</span>
+                 <div className="flex items-baseline gap-2">
+                   <span className="text-sm font-semibold">{shiftStartTime}</span>
+                   {lateMessage && <span className="text-[10px] text-rose-300 font-bold bg-rose-900/40 px-1.5 py-0.5 rounded-md">{lateMessage}</span>}
+                 </div>
+               </div>
+            </div>
+            <div className="flex items-center gap-3 px-5 py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-inner min-w-[160px]">
+               <Timer className="w-5 h-5 text-indigo-200" />
+               <div className="flex flex-col">
+                 <span className="text-xs text-indigo-200 uppercase tracking-wider font-bold">Target Break</span>
+                 <span className="text-sm font-semibold">{settings?.breakTime || '1 hour'}</span>
+               </div>
+            </div>
           </div>
         </div>
       </div>

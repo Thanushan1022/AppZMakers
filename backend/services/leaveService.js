@@ -13,21 +13,24 @@ import { getSettings } from './settingsService.js';
 export async function syncLeaveBalance(employeeId, joinDate) {
   if (!employeeId) throw new Error('employeeId is required for syncLeaveBalance');
 
-  // Find all approved leave requests
-  const approvedLeaves = await LeaveRequest.find({ employeeId, status: 'approved' });
+  // Find all approved and pending leave requests
+  const activeLeaves = await LeaveRequest.find({ 
+    employeeId, 
+    status: { $in: ['approved', 'pending'] } 
+  });
 
   const casualPeriodStart = getCasualLeavePeriodStart(joinDate);
   
   // Calculate total days used per type
-  const casualUsed = approvedLeaves
+  const casualUsed = activeLeaves
     .filter(l => l.type === 'casual' && (!casualPeriodStart || l.startDate >= casualPeriodStart))
     .reduce((sum, l) => sum + Number(l.days), 0);
 
-  const annualUsed = approvedLeaves
+  const annualUsed = activeLeaves
     .filter(l => l.type === 'annual')
     .reduce((sum, l) => sum + Number(l.days), 0);
 
-  const medicalUsed = approvedLeaves
+  const medicalUsed = activeLeaves
     .filter(l => l.type === 'medical')
     .reduce((sum, l) => sum + Number(l.days), 0);
 

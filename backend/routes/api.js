@@ -16,6 +16,7 @@ router.post('/employees/:id/attendance', employeeController.logAttendance);
 router.get('/employees/:id/leaves', employeeController.getLeaves);
 router.post('/employees/:id/leaves', employeeController.createLeaveRequest);
 router.delete('/employees/:id/leaves/:leaveId', employeeController.deleteLeaveRequest);
+router.put('/employees/:id/leaves/:leaveId/cancel', employeeController.cancelLeaveRequest);
 router.put('/employees/:id/client', employeeController.updateClient);
 router.put('/employees/:id/shift', employeeController.updateShift);
 router.put('/employees/:id/profile', employeeController.updateProfile);

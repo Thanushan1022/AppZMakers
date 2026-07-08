@@ -1,4 +1,5 @@
 import { Plus, CheckCircle2, XCircle, Clock, Calendar, FileText, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 const leaveTypes = ['annual', 'casual', 'medical'];
 const typeColors = {
@@ -25,7 +26,11 @@ export function EmployeeLeaveView({
   filteredLeaves,
   handleLeaveSubmit,
   handleDeleteLeave,
+  handleCancelLeave
 }) {
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   const availableYears = [];
   for (let y = 2030; y >= 2024; y--) {
     availableYears.push(y);
@@ -373,9 +378,20 @@ export function EmployeeLeaveView({
                         {st.icon}
                       </div>
                       
+                      {(leave.status === 'pending' || leave.status === 'approved') && handleCancelLeave && (
+                        <button 
+                          onClick={() => setConfirmCancelId(leave._id || leave.id)} 
+                          className="flex items-center gap-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider"
+                          title="Cancel leave request"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span className="md:hidden">Cancel</span>
+                        </button>
+                      )}
+
                       {leave.status !== 'pending' && handleDeleteLeave && (
                         <button 
-                          onClick={() => handleDeleteLeave(leave._id || leave.id)} 
+                          onClick={() => setConfirmDeleteId(leave._id || leave.id)} 
                           className="flex items-center gap-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider"
                           title="Remove leave history"
                         >
@@ -396,6 +412,60 @@ export function EmployeeLeaveView({
           </div>
         )}
       </div>
+
+      {/* Modern Confirmation Modals */}
+      {confirmCancelId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">Cancel Leave</h3>
+            <p className="text-slate-500 dark:text-slate-400 font-medium mb-6">Are you sure you want to cancel this leave request? This action cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setConfirmCancelId(null)}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              >
+                No, keep it
+              </button>
+              <button 
+                onClick={() => {
+                  handleCancelLeave(confirmCancelId);
+                  setConfirmCancelId(null);
+                }}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 transition-all"
+              >
+                Yes, cancel leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">Remove Leave</h3>
+            <p className="text-slate-500 dark:text-slate-400 font-medium mb-6">Are you sure you want to hide this leave entry from your dashboard?</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setConfirmDeleteId(null)}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              >
+                No, keep it
+              </button>
+              <button 
+                onClick={() => {
+                  handleDeleteLeave(confirmDeleteId);
+                  setConfirmDeleteId(null);
+                }}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all"
+              >
+                Yes, remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -915,10 +915,9 @@ export function EmployeeAttendanceView({ mySalary,
 
         {/* Summary row */}
         {filteredAttendance.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: 'Present Days', value: filteredAttendance.filter(r => r.status === 'present' || r.status === 'late').length },
-              { label: 'Absent Days', value: filteredAttendance.filter(r => r.status === 'absent').length },
               { label: 'Total Hours', value: formatDecimalHours(filteredAttendance.reduce((s, r) => s + r.totalHours, 0)) },
               { label: 'Extra Hours', value: formatDecimalHours(filteredAttendance.reduce((s, r) => s + (r.extraHours || 0), 0)) },
               { label: 'Less Hours', value: formatDecimalHours(filteredAttendance.reduce((s, r) => s + (r.lessHours || 0), 0)) },

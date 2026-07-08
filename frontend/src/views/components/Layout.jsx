@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import {
   LayoutDashboard, Clock, CalendarDays, User, Users, CheckSquare,
   FileText, Building2, ShieldCheck, DollarSign, Settings,
-  Bell, LogOut, Menu, X, ChevronRight, BarChart3, Sun, Moon
+  Bell, LogOut, Menu, X, ChevronRight, BarChart3, Sun, Moon, HelpCircle
 } from 'lucide-react';
 
 const navByRole = {
@@ -14,6 +14,7 @@ const navByRole = {
     { id: 'calendar', label: 'Calendar', icon: CalendarDays },
     { id: 'profile', label: 'My Profile', icon: User },
     { id: 'client-notifications', label: 'Client/Lead Notification', icon: Bell },
+    { id: 'faq', label: 'FAQ', icon: HelpCircle },
   ],
   hr: [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -33,6 +34,7 @@ const navByRole = {
     { id: 'calendar', label: 'Calendar', icon: CalendarDays },
     { id: 'shift-notices', label: 'Shift Messages', icon: Bell },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'faq', label: 'FAQ', icon: HelpCircle },
   ],
   superadmin: [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },

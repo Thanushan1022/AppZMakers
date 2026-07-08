@@ -23,6 +23,7 @@ import { EmployeeAttendanceView } from './views/pages/employee/EmployeeAttendanc
 import { EmployeeLeaveView } from './views/pages/employee/EmployeeLeaveView';
 import { EmployeeProfileView } from './views/pages/employee/EmployeeProfileView';
 import { EmployeeClientNotificationsView } from './views/pages/employee/EmployeeClientNotificationsView';
+import { EmployeeFAQView } from './views/pages/employee/EmployeeFAQView';
 
 // HR
 import { HRDashboardView } from './views/pages/hr/HRDashboardView';
@@ -40,6 +41,7 @@ import { CompanyAttendanceView } from './views/pages/company/CompanyAttendanceVi
 import { CompanyCalendarView } from './views/pages/company/CompanyCalendarView';
 import { CompanyShiftNoticesView } from './views/pages/company/CompanyShiftNoticesView';
 import { CompanyReportsView } from './views/pages/company/CompanyReportsView';
+import { CompanyFAQView } from './views/pages/company/CompanyFAQView';
 
 // Admin
 import { AdminDashboardView } from './views/pages/admin/AdminDashboardView';
@@ -342,6 +344,7 @@ function EmployeeRoutes({ controller }) {
       <Route path="leave" element={<EmployeeLeaveView {...controller} />} />
       <Route path="calendar" element={<CompanyCalendarView role="employee" employeeId={controller.employee?.id} />} />
       <Route path="profile" element={<EmployeeProfileView {...controller} />} />
+      <Route path="faq" element={<EmployeeFAQView />} />
       <Route path="client-notifications" element={<EmployeeClientNotificationsView {...controller} />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
@@ -376,6 +379,7 @@ function CompanyRoutes({ companyId, updateAuth }) {
       <Route path="calendar" element={<CompanyCalendarView role="company" companyId={companyId} />} />
       <Route path="shift-notices" element={<CompanyShiftNoticesView {...controller} />} />
       <Route path="profile" element={<CompanyProfileView {...controller} />} />
+      <Route path="faq" element={<CompanyFAQView />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );

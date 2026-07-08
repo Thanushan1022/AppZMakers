@@ -424,9 +424,24 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
 
   const [showTaskWarning, setShowTaskWarning] = useState(false);
 
+  const handleCancelLeave = async (leaveId) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${userId}/leaves/${leaveId}/cancel`, {
+        method: 'PUT',
+      });
+      if (res.ok) {
+        fetchData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to cancel leave request');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleDeleteLeave = async (leaveId) => {
     try {
-      if (!window.confirm('Are you sure you want to hide this leave entry from your dashboard?')) return;
       const res = await fetch(`${BACKEND_URL}/employees/${userId}/leaves/${leaveId}`, {
         method: 'DELETE',
       });
@@ -527,67 +542,6 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     }
   };
 
-  // Web Worker for reliable background session timing
-  useEffect(() => {
-    let worker = null;
-    if (checkedIn && checkInTime) {
-      try {
-        worker = new Worker(new URL('../workers/timerWorker.js', import.meta.url));
-        
-        const showNotification = (title, body) => {
-          if ('Notification' in window && Notification.permission === 'granted') {
-            const notification = new Notification(title, { 
-                body,
-                requireInteraction: true 
-            });
-            notification.onclick = () => {
-              window.focus();
-              notification.close();
-            };
-          }
-        };
-
-        worker.onmessage = (e) => {
-          const { type } = e.data;
-          if (type === 'SHOW_CONFIRM') {
-            setSessionConfirmLevel(1);
-            setShowCheckoutConfirm(true);
-            showNotification('Session Confirmation', 'You have been working for 8 hours. Are you still working?');
-          } else if (type === 'REMINDER_1') {
-            setSessionConfirmLevel(2);
-            setShowCheckoutConfirm(true);
-            showNotification('Session Reminder', 'Reminder: Are you still working? (1st warning)');
-          } else if (type === 'REMINDER_2') {
-            setSessionConfirmLevel(3);
-            setShowCheckoutConfirm(true);
-            showNotification('Final Reminder', 'Final Reminder: You will be automatically checked out in 10 minutes.');
-          } else if (type === 'AUTO_CHECKOUT') {
-            showNotification('Auto Checkout', 'You have been automatically checked out due to inactivity.');
-            confirmCheckOut(); 
-          }
-        };
-
-        worker.postMessage({ action: 'START', payload: { checkInTime } });
-        setWorkerRef(worker);
-      } catch (e) {
-         console.warn("Failed to initialize timer worker", e);
-      }
-    } else {
-        setSessionConfirmLevel(0);
-        if (workerRef) {
-           workerRef.postMessage({ action: 'STOP' });
-        }
-    }
-    
-    return () => {
-      if (worker) {
-        worker.postMessage({ action: 'STOP' });
-        worker.terminate();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkedIn, checkInTime]);
-
   const handleSessionContinue = () => {
       setSessionConfirmLevel(0);
       setShowCheckoutConfirm(false);
@@ -686,7 +640,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     const newEnd = end.getTime();
 
     const hasOverlap = allLeaves.some(l => {
-      if (l.status === 'rejected') return false; // Rejected leaves don't block new ones
+      if (l.status === 'rejected' || l.status === 'cancelled') return false; // Rejected/cancelled leaves don't block new ones
       const existingStart = new Date(l.startDate).getTime();
       const existingEnd = new Date(l.endDate).getTime();
       return (newStart <= existingEnd && newEnd >= existingStart);
@@ -816,12 +770,15 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     }
   };
 
-  // Calculations for profile
-  const presentDays = myAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
-  const absentDays = myAttendance.filter(a => a.status === 'absent').length;
-  const totalWorkingDays = myAttendance.length;
+  // Filter for current month's records for dashboard stats
+  const currentMonthPrefix = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+  const currentMonthRecords = myAttendance.filter(a => a.date && a.date.startsWith(currentMonthPrefix));
+
+  const presentDays = currentMonthRecords.filter(a => a.status === 'present' || a.status === 'late').length;
+  const absentDays = currentMonthRecords.filter(a => a.status === 'absent').length;
+  const totalWorkingDays = currentMonthRecords.length;
   const attendancePct = totalWorkingDays > 0 ? Math.round((presentDays / totalWorkingDays) * 100) : 0;
-  const monthlyHours = myAttendance.reduce((sum, a) => sum + (a.totalHours || 0), 0);
+  const monthlyHours = currentMonthRecords.reduce((sum, a) => sum + (a.totalHours || 0), 0);
 
   const totalLeaveUsed = (balance.annual?.used || 0) + (balance.casual?.used || 0) + (balance.medical?.used || 0);
   const totalLeave = (balance.annual?.total || 0) + (balance.casual?.total || 0) + (balance.medical?.total || 0);
@@ -848,8 +805,8 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   }
   const targetWorkSecs = stdHours * 3600;
 
-  const totalExtraHours = myAttendance.reduce((sum, a) => sum + (a.extraHours || 0), 0);
-  const totalLessHours = myAttendance.reduce((sum, a) => sum + (a.lessHours || 0), 0);
+  const totalExtraHours = currentMonthRecords.reduce((sum, a) => sum + (a.extraHours || 0), 0);
+  const totalLessHours = currentMonthRecords.reduce((sum, a) => sum + (a.lessHours || 0), 0);
 
   const isDateInCompanyMonth = (dateStr, companyMonthStr) => {
     const [yr, mo] = companyMonthStr.split('-').map(Number);
@@ -1023,6 +980,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     customEndDate,
     setCustomEndDate,
     getWeekRange,
-    shiftNotices
+    shiftNotices,
+    handleCancelLeave
   };
 }

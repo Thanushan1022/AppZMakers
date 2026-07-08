@@ -59,11 +59,7 @@ export const getAttendance = async (req, res) => {
     if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
     const settings = await getSettings();
-    let targetDateObj = new Date();
-    targetDateObj.setDate(targetDateObj.getDate() - 30);
-    const startDateStr = targetDateObj.toISOString().split('T')[0];
-
-    const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp), date: { $gte: startDateStr } }).sort({ date: -1 }).lean();
+    const records = await Attendance.find({ employeeId: getEmployeeLegacyId(emp) }).sort({ date: -1 }).lean();
     await autoEndOverdueTeaBreaks(records, settings);
     res.json(records.map(toAttendanceJSON));
   } catch (error) {
@@ -329,6 +325,30 @@ export const deleteLeaveRequest = async (req, res) => {
     }
     
     res.json({ message: 'Leave request removed from dashboard' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const cancelLeaveRequest = async (req, res) => {
+  try {
+    const { id, leaveId } = req.params;
+    const leave = await LeaveRequest.findOne({ _id: leaveId, employeeId: id });
+    if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+    
+    leave.status = 'cancelled';
+    await leave.save();
+    
+    const emp = await findEmployee(id);
+    if (emp) {
+      await syncLeaveBalance(getEmployeeLegacyId(emp), emp.joinDate);
+    }
+    
+    if (req.io) {
+      req.io.emit('attendance_update', { action: 'leave_cancelled', time: new Date().toISOString() });
+    }
+    
+    res.json({ message: 'Leave request cancelled successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -14,6 +14,29 @@ const roles = [
   { id: 'superadmin', label: 'Super Admin', icon: Shield },
 ];
 
+const roleContents = {
+  employee: {
+    title: <>Your daily workspace<br /> in a single platform.</>,
+    description: "Access your dashboard, log attendance, request leaves, and view your schedule all in one place."
+  },
+  hr: {
+    title: <>Manage your workforce<br /> seamlessly.</>,
+    description: "Oversee employee records, approve leaves, monitor attendance, and generate reports."
+  },
+  company: {
+    title: <>Client & Lead<br /> operations portal.</>,
+    description: "Stay connected with real-time sync, manage your team accounts, and monitor progress securely."
+  },
+  superadmin: {
+    title: <>Complete system<br /> administration control.</>,
+    description: "Configure portal settings, manage user access across all roles, and oversee platform operations."
+  },
+  default: {
+    title: <>Unified workforce<br /> operations in a single platform.</>,
+    description: "Track attendance, manage leaves, configure client/lead accounts, and synchronize shifts seamlessly across your entire organization."
+  }
+};
+
 export function Login({
   mode,
   setMode,
@@ -58,6 +81,8 @@ export function Login({
       setForgotLoading(false);
     }
   };
+
+  const currentContent = roleContents[selectedRole] || roleContents.default;
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col-reverse lg:flex-row bg-[#090d16] relative" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -109,10 +134,10 @@ export function Login({
         <div className="relative z-30 my-4 lg:my-0 space-y-6">
           <div className="space-y-4 max-w-xl">
             <h1 className="text-white text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight">
-              Unified workforce<br /> operations in a single platform.
+              {currentContent.title}
             </h1>
             <p className="text-[#40d6a2] text-base sm:text-lg leading-relaxed">
-              Track attendance, manage leaves, configure client/lead accounts, and synchronize shifts seamlessly across your entire organization.
+              {currentContent.description}
             </p>
           </div>
 
@@ -161,7 +186,7 @@ export function Login({
           <div className="space-y-2">
             <span className="text-[#a59bfb] text-[10px] font-extrabold uppercase tracking-widest block">Welcome back</span>
             <h2 className="text-white text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-md">
-              {isForgot ? 'Reset Password' : 'Sign in to your AppZ Makers'}
+              {isForgot ? 'Reset Password' : 'Sign in to your AppZ TeamorA'}
             </h2>
             <p className="text-white/70 text-sm">
               {isForgot ? 'Enter your email address to get a password reset link' : 'Select your role and sign in to continue'}

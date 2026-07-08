@@ -18,6 +18,7 @@ import {
   computeLeaveTypeData,
   computeMonthlyTrend,
   isEmployeeOnLeave,
+  standardizeDepartment,
 } from '../utils/helpers.js';
 import { findEmployee, findLeave, getEmployeeLegacyId, getNextEmployeeLegacyId, findHRUser } from '../utils/entityLookup.js';
 import { toEmployeeJSON, toLeaveJSON, toLeaveBalanceJSON, toAttendanceJSON, toHRJSON } from '../utils/formatters.js';
@@ -187,7 +188,7 @@ export const createEmployee = async (req, res) => {
       name,
       email: email.toLowerCase(),
       position,
-      department,
+      department: standardizeDepartment(department),
       company: comp ? comp.name : 'General',
       companyId: comp ? comp.legacyId || comp._id.toString() : null,
       avatar: name
@@ -342,6 +343,7 @@ export const getDashboard = async (req, res) => {
         pending: pendingLeaves.length,
         approved: leavesJson.filter((l) => l.status === 'approved').length,
         rejected: leavesJson.filter((l) => l.status === 'rejected').length,
+        cancelled: leavesJson.filter((l) => l.status === 'cancelled').length,
       },
       pendingLeaves,
       stats: {
@@ -451,7 +453,7 @@ export const updateProfile = async (req, res) => {
 
     if (name !== undefined) hr.name = name;
     if (email !== undefined) hr.email = email;
-    if (department !== undefined) hr.department = department;
+    if (department !== undefined) hr.department = standardizeDepartment(department);
     if (avatar !== undefined) hr.avatar = avatar;
 
     await hr.save();

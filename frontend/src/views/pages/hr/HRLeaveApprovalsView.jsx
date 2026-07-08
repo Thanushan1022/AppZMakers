@@ -60,7 +60,7 @@ export function HRLeaveApprovalsView({
       <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xl shadow-slate-200/40 dark:shadow-none">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
-            {['all', 'pending', 'approved', 'rejected'].map(f => (
+            {['all', 'pending', 'approved', 'rejected', 'cancelled'].map(f => (
               <button
                 key={f}
                 onClick={() => setLeaveTabFilter(f)}
@@ -128,7 +128,8 @@ export function HRLeaveApprovalsView({
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-bold shadow-sm ${
                     leave.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
-                    leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                    leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 
+                    leave.status === 'cancelled' ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-amber-50 text-amber-600'
                   }`}>{leave.status}</span>
                 </div>
 
@@ -176,7 +177,7 @@ export function HRLeaveApprovalsView({
                 </button>
               </div>
             )}
-            {(leave.status === 'approved' || leave.status === 'rejected') && (
+            {(leave.status === 'approved' || leave.status === 'rejected' || leave.status === 'cancelled') && (
               <div className="mt-4 pt-4 border-t border-border flex items-center justify-end gap-3 relative z-10">
                 <button
                   onClick={() => handleDeleteLeaveApproval(leave.id)}

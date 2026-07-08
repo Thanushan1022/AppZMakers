@@ -1,4 +1,6 @@
 /** Shape Mongoose documents for frontend (expects `id` string fields). */
+import { standardizeDepartment } from './helpers.js';
+
 export const toEmployeeJSON = (doc) => {
   if (!doc) return null;
   const o = doc.toObject ? doc.toObject() : doc;
@@ -8,7 +10,7 @@ export const toEmployeeJSON = (doc) => {
     name: o.name,
     email: o.email,
     position: o.position,
-    department: o.department,
+    department: standardizeDepartment(o.department),
     company: o.company,
     companyId: o.companyId,
     avatar: o.avatar,
@@ -53,7 +55,7 @@ export const toHRJSON = (doc) => {
     id: o.legacyId || o._id?.toString(),
     name: o.name,
     email: o.email,
-    department: o.department,
+    department: standardizeDepartment(o.department),
     status: o.status,
     joinDate: o.joinDate,
     avatar: o.avatar || '',
@@ -93,7 +95,7 @@ export const toLeaveJSON = (doc) => {
     id: o._id?.toString(),
     employeeId: o.employeeId,
     employeeName: o.employeeName,
-    department: o.department,
+    department: standardizeDepartment(o.department),
     type: o.type,
     startDate: o.startDate,
     endDate: o.endDate,

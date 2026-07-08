@@ -216,3 +216,24 @@ export const isEmployeeOnLeave = (employeeId, leaves, date = getTodayString()) =
       l.startDate <= date &&
       l.endDate >= date
   );
+
+export const standardizeDepartment = (dept) => {
+  if (!dept) return '';
+  
+  const exceptions = { it: 'IT', hr: 'HR', ui: 'UI', ux: 'UX', pr: 'PR', qa: 'QA', ot: 'OT' };
+  
+  // If the entire word is an exception (like "iT", "hr"), return it immediately
+  if (exceptions[dept.trim().toLowerCase()]) {
+    return exceptions[dept.trim().toLowerCase()];
+  }
+  
+  // Convert camelCase or PascalCase to spaced words
+  let processed = dept.trim().replace(/([a-z])([A-Z])/g, '$1 $2');
+  
+  return processed
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map((word) => exceptions[word] || (word.charAt(0).toUpperCase() + word.slice(1)))
+    .join(' ');
+};

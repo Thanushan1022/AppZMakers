@@ -446,6 +446,7 @@ export function useHRController(hrId, updateAuth) {
     pending: leavesList.filter((l) => l.status === 'pending').length,
     approved: leavesList.filter((l) => l.status === 'approved').length,
     rejected: leavesList.filter((l) => l.status === 'rejected').length,
+    cancelled: leavesList.filter((l) => l.status === 'cancelled').length,
   };
 
   const totalEmployees = dashboardStats.totalEmployees || employeesList.length;

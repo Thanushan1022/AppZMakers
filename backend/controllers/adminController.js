@@ -13,7 +13,8 @@ import {
   getWeeklyAttendanceData,
   getDeptAttendanceData,
   isEmployeeOnLeave,
-  formatDisplayDate
+  formatDisplayDate,
+  standardizeDepartment
 } from '../utils/helpers.js';
 import { findEmployee, findHRUser, findCompany, findLeave, getNextHRLegacyId, getNextCompanyLegacyId } from '../utils/entityLookup.js';
 import { toCompanyJSON, toHRJSON, toEmployeeJSON, toLeaveJSON, toAttendanceJSON } from '../utils/formatters.js';
@@ -555,7 +556,7 @@ export const updateEmployee = async (req, res) => {
       if (!/^[a-zA-Z\s.\-()&/,]+$/.test(department)) {
         return res.status(400).json({ error: 'Department contains invalid characters.' });
       }
-      emp.department = department;
+      emp.department = standardizeDepartment(department);
     }
     if (address !== undefined) {
       if (address.trim().length < 5 || address.trim().length > 50) {
@@ -624,7 +625,7 @@ export const updateHR = async (req, res) => {
         await User.updateOne({ _id: hr.userId }, { email: emailLower });
       }
     }
-    if (department !== undefined) hr.department = department;
+    if (department !== undefined) hr.department = standardizeDepartment(department);
     if (joinDate !== undefined) hr.joinDate = joinDate;
     if (dateOfBirth !== undefined) hr.dateOfBirth = dateOfBirth;
 
