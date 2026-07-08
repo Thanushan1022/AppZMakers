@@ -57,6 +57,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   const [teaBreakGapRemainingSecs, setTeaBreakGapRemainingSecs] = useState(0);
   const [todayTasks, setTodayTasks] = useState([]);
   const [shiftNotices, setShiftNotices] = useState([]);
+  const [overtimeState, setOvertimeState] = useState({ status: 'idle', confirmedHours: 0, nextConfirmDueAt: null });
   
   // Checkout Summary State
   const [showGoodbye, setShowGoodbye] = useState(false);
@@ -123,6 +124,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
           setCheckInDate(todayRecord.date);
           setCheckedIn(!!todayRecord.checkIn && !todayRecord.checkOut);
           setTodayTasks(todayRecord.tasks || []);
+          setOvertimeState(todayRecord.overtimeState || { status: 'idle', confirmedHours: 0, nextConfirmDueAt: null });
           const recBreaks = todayRecord.breaks || [];
           const recOnBreak = !!todayRecord.onBreak;
           const recOnTeaBreak = !!todayRecord.onTeaBreak;
@@ -536,6 +538,24 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
         }, 30000);
 
         fetchData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleConfirmOvertime = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${userId}/attendance/confirm-overtime`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOvertimeState(data.record.overtimeState || { status: 'idle', confirmedHours: 0, nextConfirmDueAt: null });
+        fetchData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to confirm overtime');
       }
     } catch (err) {
       console.error(err);
@@ -956,6 +976,8 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     todayTasks,
     showTaskWarning,
     setShowTaskWarning,
+    overtimeState,
+    handleConfirmOvertime,
 
     // Tea break helpers
     teaBreakEnabled: settings.teaBreakEnabled !== false,

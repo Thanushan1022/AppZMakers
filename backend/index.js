@@ -11,6 +11,7 @@ import { seedIfEmpty } from './scripts/seedDatabase.js';
 import { ensureUserProfiles } from './scripts/ensureUserProfiles.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { startCronJobs } from './services/cronService.js';
 
 dotenv.config();
 
@@ -88,6 +89,9 @@ const startServer = async () => {
     await connectDatabase();
     await seedIfEmpty();
     await ensureUserProfiles();
+
+    // Start background cron jobs
+    startCronJobs();
 
     const server = httpServer.listen(PORT, () => {
       console.log(`🚀 WorkForge Server running on port ${PORT}`);

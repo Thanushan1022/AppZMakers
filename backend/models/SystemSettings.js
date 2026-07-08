@@ -19,6 +19,16 @@ const systemSettingsSchema = new mongoose.Schema(
     teaBreaksMax: { type: Number, default: 2 },
     teaBreakDuration: { type: Number, default: 15 },
     teaBreakGap: { type: Number, default: 120 },
+    departmentOvertimeRules: [
+      {
+        department: { type: String, required: true },
+        enabled: { type: Boolean, default: false },
+        intervalMinutes: { type: Number, default: 60 },
+        timeoutMinutes: { type: Number, default: 30 },
+        emailNotification: { type: Boolean, default: true },
+        maxOvertimeHours: { type: Number, default: 4 },
+      }
+    ],
   },
   { timestamps: true }
 );

@@ -11,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import { resolveProfileId, normalizeRole } from '../utils/resolveProfile.js';
 import { getSettings } from '../services/settingsService.js';
 import { getEmployeeLegacyId, getNextEmployeeLegacyId, getNextHRLegacyId, getNextCompanyLegacyId } from '../utils/entityLookup.js';
+import { sendEmail } from '../services/emailService.js';
 
 const VALID_ROLES = ['employee', 'hr', 'company', 'superadmin'];
 
@@ -279,44 +280,33 @@ export const forgotPassword = async (req, res) => {
     // Generate secure random token
     const token = crypto.randomBytes(20).toString('hex');
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 mins
+    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await user.save();
 
-    // Send email via EmailJS REST API
+    // Send email via Nodemailer
     const frontendUrl = process.env.FRONTEND_URL || 'https://app-z-makers.vercel.app';
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
-    const emailjsData = {
-      service_id: process.env.EMAILJS_SERVICE_ID || 'service_6vky48h',
-      template_id: process.env.EMAILJS_FORGOT_TEMPLATE_ID || 'template_phjzjeh',
-      user_id: process.env.EMAILJS_PUBLIC_KEY || 'D_XrZ-PgCv74QQSkm',
-      accessToken: process.env.EMAILJS_PRIVATE_KEY || 'Edi5W8xjfc_J4Q4CDgHJ0',
-      template_params: {
-        to_name: user.name,
-        to_email: user.email.toLowerCase(),
-        user_email: user.email.toLowerCase(),
-        email: user.email.toLowerCase(),
-        reset_link: resetLink,
-        link: resetLink,
-        resetLink: resetLink,
-        reset_url: resetLink,
-        url: resetLink,
-        message: `Please use the following link to reset your password: ${resetLink}`,
-      },
-    };
+    const subject = 'Password Reset Request';
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <p>Hello ${user.name},</p>
+        <p>We received a request to reset the password for your AppZ Makers account.</p>
+        <p>To create a new password, please click the button below:</p>
+        <br>
+        <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+        <br><br>
+        <p>This password reset link will expire in <strong>1 hour</strong> for security reasons.</p>
+        <p>If you did not request a password reset, you can safely ignore this email. Your account will remain secure, and no changes will be made.</p>
+        <p>For your security, AppZ Makers will never ask you to share your password, reset links, or other account details through email.</p>
+        <p>Thank you for using AppZ Makers.</p>
+        <p>Best regards,<br><strong>AppZ Makers Team</strong></p>
+      </div>
+    `;
 
     try {
-      const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailjsData),
-      });
-
-      if (!emailResponse.ok) {
-        const errorText = await emailResponse.text();
-        console.error('EmailJS failed to send forgot password email:', errorText);
-      }
+      await sendEmail(user.email.toLowerCase(), subject, html);
     } catch (emailErr) {
-      console.error('Error occurred while sending forgot password email via EmailJS:', emailErr.message);
+      console.error('Error occurred while sending forgot password email via Nodemailer:', emailErr.message);
     }
 
     res.json({

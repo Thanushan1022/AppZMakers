@@ -25,6 +25,7 @@ import { toEmployeeJSON, toLeaveJSON, toLeaveBalanceJSON, toAttendanceJSON, toHR
 import { getSettings } from '../services/settingsService.js';
 import { syncCompanyEmployeeCounts } from '../services/companyService.js';
 import { syncLeaveBalance, autoRejectPassedLeaves } from '../services/leaveService.js';
+import { sendEmail } from '../services/emailService.js';
 
 export const getLeaves = async (req, res) => {
   try {
@@ -217,45 +218,31 @@ export const createEmployee = async (req, res) => {
 
     await syncCompanyEmployeeCounts();
 
-    // 4. Send email via EmailJS REST API
+    // 4. Send email via Nodemailer
     let emailStatus = 'sent';
     let emailError = null;
 
     try {
-      const emailjsData = {
-        service_id: process.env.EMAILJS_SERVICE_ID || 'service_6vky48h',
-        template_id: process.env.EMAILJS_TEMPLATE_ID || 'template_agg5vl8',
-        user_id: process.env.EMAILJS_PUBLIC_KEY || 'D_XrZ-PgCv74QQSkm',
-        accessToken: process.env.EMAILJS_PRIVATE_KEY || 'Edi5W8xjfc_J4Q4CDgHJ0',
-        template_params: {
-          to_name: name,
-          to_email: email.toLowerCase(),
-          user_email: email.toLowerCase(),
-          user_password: plainPassword,
-          email: email.toLowerCase(),
-          password: plainPassword,
-          PASSWORD: plainPassword,
-          Password: plainPassword,
-          message: `Hello ${name},\n\nYour WorkForge Employee account has been created successfully.\n\nLogin Email: ${email.toLowerCase()}\nLogin Password: ${plainPassword}\n\nPlease log in and change your password.`,
-        },
-      };
+      const subject = 'Your AppZ Makers Account Credentials';
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <p>Hello ${name},</p>
+          <p>To verify your identity and continue with your AppZ Makers account, please use the One-Time Password (OTP) below:</p>
+          <br>
+          <h2>${plainPassword}</h2>
+          <br>
+          <p>Please do not share this code with anyone.</p>
+          <p>If you did not request this verification code, you can safely ignore this email. Your account will remain secure.</p>
+          <p>AppZ Makers will never ask you to share your OTP, password, or other security information through email, phone calls, or messages. Please be aware of phishing attempts.</p>
+          <p>Thank you for using AppZ Makers.</p>
+          <p>Best regards,<br><strong>AppZ Makers Team</strong></p>
+        </div>
+      `;
 
-      const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailjsData),
-      });
-
-      if (!emailResponse.ok) {
-        const errorText = await emailResponse.text();
-        console.error('EmailJS failed to send email:', errorText);
-        emailStatus = 'failed';
-        emailError = errorText;
-      } else {
-        console.log('Email sent successfully via EmailJS');
-      }
+      await sendEmail(email.toLowerCase(), subject, html);
+      console.log('Email sent successfully via Nodemailer');
     } catch (emailErr) {
-      console.error('Error occurred while sending email via EmailJS:', emailErr.message);
+      console.error('Error occurred while sending email via Nodemailer:', emailErr.message);
       emailStatus = 'error';
       emailError = emailErr.message;
     }

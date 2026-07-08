@@ -34,6 +34,11 @@ const attendanceSchema = new mongoose.Schema(
         createdAt: { type: Date, default: Date.now }
       }
     ],
+    overtimeState: {
+      status: { type: String, enum: ['idle', 'pending', 'confirmed'], default: 'idle' },
+      confirmedHours: { type: Number, default: 0 },
+      nextConfirmDueAt: { type: Date, default: null }
+    }
   },
   { timestamps: true }
 );

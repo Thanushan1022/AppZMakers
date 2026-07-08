@@ -56,6 +56,8 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   setShowSessionOverModal,
   sessionConfirmLevel = 0,
   handleSessionContinue,
+  overtimeState = { status: 'idle', confirmedHours: 0, nextConfirmDueAt: null },
+  handleConfirmOvertime,
 }) {
   const recentAttendance = filteredAttendance.slice(0, 5);
 
@@ -232,6 +234,27 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
 
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      {/* Overtime Confirmation Notification */}
+      {overtimeState.status === 'pending' && (
+        <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20 backdrop-blur-md border border-amber-200/50 dark:border-amber-800/50 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 text-amber-900 dark:text-amber-100 animate-pulse shadow-xl shadow-amber-500/10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center border border-amber-200 dark:border-amber-700/50">
+              <Timer className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <div className="font-bold text-lg">Overtime Confirmation Required</div>
+              <div className="text-sm opacity-90 mt-1 max-w-md">You have been working beyond your standard hours. Please confirm if you are still working, or you will be automatically checked out.</div>
+            </div>
+          </div>
+          <button
+            onClick={handleConfirmOvertime}
+            className="w-full md:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-amber-500/30 transition-transform active:scale-95 whitespace-nowrap"
+          >
+            YES, I AM STILL WORKING
+          </button>
+        </div>
+      )}
+
       {/* Exceeded Break Time Notification */}
       {checkedIn && isBreakOver && onBreak && (
         <div className="bg-gradient-to-r from-rose-500/10 to-red-500/10 dark:from-rose-500/20 dark:to-red-500/20 backdrop-blur-md border border-rose-200/50 dark:border-rose-800/50 rounded-2xl p-4 flex items-center gap-3 text-rose-700 dark:text-rose-300 text-sm font-medium animate-pulse shadow-lg shadow-rose-500/5">

@@ -13,6 +13,7 @@ const router = express.Router();
 router.get('/employees/:id', employeeController.getProfile);
 router.get('/employees/:id/attendance', employeeController.getAttendance);
 router.post('/employees/:id/attendance', employeeController.logAttendance);
+router.post('/employees/:id/attendance/confirm-overtime', employeeController.confirmOvertime);
 router.get('/employees/:id/leaves', employeeController.getLeaves);
 router.post('/employees/:id/leaves', employeeController.createLeaveRequest);
 router.delete('/employees/:id/leaves/:leaveId', employeeController.deleteLeaveRequest);

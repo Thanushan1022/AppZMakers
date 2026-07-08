@@ -296,6 +296,43 @@ export const logAttendance = async (req, res) => {
   }
 };
 
+export const confirmOvertime = async (req, res) => {
+  try {
+    const emp = await findEmployee(req.params.id);
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    const empId = getEmployeeLegacyId(emp);
+    const todayRecord = await Attendance.findOne({ employeeId: empId, checkOut: null });
+    
+    if (!todayRecord) {
+      return res.status(400).json({ error: 'Not currently checked in' });
+    }
+
+    if (todayRecord.overtimeState?.status !== 'pending') {
+      return res.status(400).json({ error: 'No overtime confirmation pending' });
+    }
+
+    // Reset status and increment confirmed hours
+    todayRecord.overtimeState.status = 'idle';
+    todayRecord.overtimeState.confirmedHours = (todayRecord.overtimeState.confirmedHours || 0) + 1;
+    todayRecord.overtimeState.nextConfirmDueAt = null;
+    
+    await todayRecord.save();
+
+    if (req.io) {
+      req.io.emit('attendance_update', {
+        employeeId: empId,
+        action: 'confirm-overtime',
+        time: new Date().toISOString()
+      });
+    }
+
+    res.json({ message: 'Overtime confirmed successfully', record: toAttendanceJSON(todayRecord) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getLeaves = async (req, res) => {
   try {
     const emp = await findEmployee(req.params.id);

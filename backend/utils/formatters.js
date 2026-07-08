@@ -85,6 +85,7 @@ export const toAttendanceJSON = (doc) => {
     adjustedBy: o.adjustedBy,
     adjustedReason: o.adjustedReason,
     tasks: o.tasks || [],
+    overtimeState: o.overtimeState || { status: 'idle', confirmedHours: 0, nextConfirmDueAt: null },
   };
 };
 
