@@ -237,7 +237,7 @@ export function Layout({ role, onLogout, auth, children }) {
     <div className="flex flex-col flex-1 w-full h-full min-h-0" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* Logo */}
       <div className="px-4 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex-shrink-0">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center dark:bg-white/95 dark:p-3 dark:rounded-2xl dark:shadow-md">
           <img src={logoImg} alt="AppzMaker Logo" className="w-full max-h-24 h-auto object-contain drop-shadow-sm" />
         </div>
       </div>

@@ -115,7 +115,9 @@ export function ResetPassword() {
       <div className="hidden lg:flex lg:w-[44%] p-8 sm:p-12 lg:p-16 flex-col justify-between relative overflow-hidden flex-shrink-0 h-screen z-10 bg-transparent">
         <div className="relative z-30 space-y-8">
           <div className="flex flex-col items-start gap-4">
-            <img src={logoImg} alt="AppzMaker Logo" className="w-50 h-40 object-contain" />
+            <div className="bg-white/95 p-4 rounded-3xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] backdrop-blur-md border border-white/20">
+              <img src={logoImg} alt="AppzMaker Logo" className="w-48 h-32 object-contain" />
+            </div>
             <div className="text-[#a59bfb] text-sm uppercase font-extrabold tracking-widest mt-1 pl-1">Workforce Solutions</div>
           </div>
           <div className="flex gap-3 pt-2">
