@@ -5,8 +5,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER || 'thanushan1022@gmail.com',
-    pass: process.env.EMAIL_PASS || 'ycqprrfbgohlijeg'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async (to, subject, html) => {
   try {
     const mailOptions = {
-      from: '"WorkForge" <' + (process.env.EMAIL_USER || 'thanushan1022@gmail.com') + '>',
+      from: `"WorkForge" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html
