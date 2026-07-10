@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { BACKEND_URL } from '../config';
 
@@ -142,6 +142,9 @@ export function useAdminController(adminId, updateAuth) {
   const [rejectReason, setRejectReason] = useState('');
   const [hrNote, setHrNote] = useState('');
   const [leaveAction, setLeaveAction] = useState(null);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const [leaveTabFilter, setLeaveTabFilter] = useState('pending');
   const [leaveMonthFilter, setLeaveMonthFilter] = useState('all');
@@ -486,6 +489,9 @@ export function useAdminController(adminId, updateAuth) {
       alert('Please select or enter a working location (country).');
       return;
     }
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     try {
       const isEdit = !!editingItem;
       const url = isEdit ? `${BACKEND_URL}/admin/employees/${editingItem.id}` : `${BACKEND_URL}/hr/employees`;
@@ -513,18 +519,26 @@ export function useAdminController(adminId, updateAuth) {
 
       if (res.ok) {
         const data = await res.json();
-        alert(data.message || (isEdit ? 'Employee updated successfully.' : 'Employee created successfully.'));
+        alert(isEdit ? 'Employee updated successfully.' : 'Employee created successfully.');
         setEmpForm({ name: '', email: '', position: '', department: '', company: 'General', joinDate: '', dateOfBirth: '', address: '', country: '', shift: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
+        setTimeout(() => {
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+        }, 500);
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to save employee');
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
       }
     } catch (err) {
       console.error(err);
       alert('An error occurred while saving the employee.');
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -540,6 +554,9 @@ export function useAdminController(adminId, updateAuth) {
       alert('Join date cannot be a future date.');
       return;
     }
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     try {
       const isEdit = !!editingItem;
       const url = isEdit ? `${BACKEND_URL}/admin/hr/${editingItem.id}` : `${BACKEND_URL}/admin/hr`;
@@ -563,23 +580,33 @@ export function useAdminController(adminId, updateAuth) {
         setEditingItem(null);
         setShowModal(false);
         fetchData();
+        setTimeout(() => {
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+        }, 500);
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to save HR Manager');
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
       }
     } catch (err) {
       console.error(err);
       alert('An error occurred while saving the HR Manager.');
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
-  const handleAddCompany = async (e) => {
+  const handleAddCompany = async (e, isTeamOverride) => {
     if (e) e.preventDefault();
+    const isTeam = isTeamOverride !== undefined ? isTeamOverride : coForm.isTeam;
+
     if (!coForm.name || coForm.name.length > 30) {
       alert('Company Name must be between 2 and 30 characters long.');
       return;
     }
-    if (!coForm.industry || coForm.industry.length > 30) {
+    if (!isTeam && (!coForm.industry || coForm.industry.length > 30)) {
       alert('Industry Sector must be between 2 and 30 characters long.');
       return;
     }
@@ -587,7 +614,7 @@ export function useAdminController(adminId, updateAuth) {
       alert('Contact Person must be between 2 and 30 characters long.');
       return;
     }
-    if (!coForm.phone || !/^\+?[0-9\s\-()]{7,20}$/.test(coForm.phone)) {
+    if (!isTeam && (!coForm.phone || !/^\+?[0-9\s\-()]{7,20}$/.test(coForm.phone))) {
       alert('Please enter a valid phone number (7-20 digits).');
       return;
     }
@@ -596,6 +623,9 @@ export function useAdminController(adminId, updateAuth) {
       alert('Please enter a valid email address.');
       return;
     }
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     try {
       const isEdit = !!editingItem;
       const url = isEdit ? `${BACKEND_URL}/admin/companies/${editingItem.id}` : `${BACKEND_URL}/admin/companies`;
@@ -612,23 +642,32 @@ export function useAdminController(adminId, updateAuth) {
           joinedDate: coForm.joinedDate || new Date().toISOString().split('T')[0],
           address: coForm.address,
           country: coForm.country,
+          isTeam: isTeam,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        alert(data.message || (isEdit ? 'Client updated successfully.' : 'Client created successfully.'));
-        setCoForm({ name: '', industry: '', contact: '', email: '', phone: '', joinedDate: '', address: '', country: '' });
+        alert(isEdit ? 'Client updated successfully.' : 'Client created successfully.');
+        setCoForm({ name: '', industry: '', contact: '', email: '', phone: '' });
         setEditingItem(null);
         setShowModal(false);
         fetchData();
+        setTimeout(() => {
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+        }, 500);
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to save Client');
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
       }
     } catch (err) {
       console.error(err);
       alert('An error occurred while saving the Client.');
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -1036,5 +1075,6 @@ export function useAdminController(adminId, updateAuth) {
     handleCreateFaq,
     handleUpdateFaq,
     handleDeleteFaq,
+    isSubmitting,
   };
 }

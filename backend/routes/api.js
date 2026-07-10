@@ -41,6 +41,7 @@ router.put('/hr/:id/profile', hrController.updateProfile);
 router.put('/hr/attendance/:id', hrController.adjustAttendance);
 router.post('/hr/attendance', hrController.createManualAttendance);
 router.get('/hr/shift-notices', hrController.getHRShiftNotices);
+router.get('/hr/settings', adminController.getSettings);
 
 // ==========================================
 // HIRING COMPANY ROUTES

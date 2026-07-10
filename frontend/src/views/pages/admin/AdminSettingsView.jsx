@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, Shield, CalendarDays, RefreshCw, Check, Coffee } from 'lucide-react';
+import { Clock, Shield, CalendarDays, RefreshCw, Check, Coffee, Plus, Trash2, Building } from 'lucide-react';
 
 export function AdminSettingsView({
   settings,
@@ -13,6 +13,7 @@ export function AdminSettingsView({
   const [saveStatus, setSaveStatus] = useState({});
   const [allocationTab, setAllocationTab] = useState('companies');
   const [filterQuery, setFilterQuery] = useState('');
+  const [newDepartment, setNewDepartment] = useState('');
 
   useEffect(() => {
     const cleanNum = (val) => {
@@ -360,7 +361,7 @@ export function AdminSettingsView({
                 </tr>
               </thead>
               <tbody>
-                {[...new Set(employees.map(e => e.department).filter(Boolean))].map(dept => {
+                {(localSettings.departments || []).map(dept => {
                   const ruleIndex = (localSettings.departmentOvertimeRules || []).findIndex(r => r.department === dept);
                   const rule = ruleIndex >= 0 ? localSettings.departmentOvertimeRules[ruleIndex] : {
                     department: dept, enabled: false, intervalMinutes: 60, timeoutMinutes: 30, emailNotification: true, maxOvertimeHours: 4
@@ -406,7 +407,7 @@ export function AdminSettingsView({
                     </tr>
                   );
                 })}
-                {[...new Set(employees.map(e => e.department).filter(Boolean))].length === 0 && (
+                {(localSettings.departments || []).length === 0 && (
                    <tr><td colSpan="7" className="px-4 py-8 text-center text-slate-400">No departments found. Assign departments to employees first.</td></tr>
                 )}
               </tbody>
@@ -557,6 +558,70 @@ export function AdminSettingsView({
           </div>
         </div>
       )}
+
+      {/* Department Management Card */}
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6 lg:col-span-2">
+        <div className="absolute -top-16 -right-16 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-colors duration-700"></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/50 dark:border-slate-800/50 pb-6 relative z-10">
+          <div>
+            <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 text-lg">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center border border-cyan-100 dark:border-cyan-800/50">
+                <Building className="w-5 h-5 text-cyan-500" />
+              </div>
+              Department Management
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-2">Manage the list of departments available during employee onboarding.</p>
+          </div>
+        </div>
+
+        <div className="relative z-10 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-2 max-w-md">
+            <input
+              type="text"
+              value={newDepartment}
+              onChange={e => setNewDepartment(e.target.value)}
+              placeholder="e.g. Marketing"
+              className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+            />
+            <button
+              onClick={() => {
+                if (!newDepartment.trim()) return;
+                const updatedDepartments = [...(localSettings.departments || []), newDepartment.trim()];
+                handleLocalChange('departments', updatedDepartments);
+                saveKey('departments', updatedDepartments);
+                setNewDepartment('');
+              }}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 min-w-[80px] justify-center shadow-sm shadow-indigo-600/20"
+            >
+              {saveStatus.departments === 'saving' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Add Dept</>}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-4">
+            {(localSettings.departments || []).map((dept, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 bg-white border border-slate-100 shadow-sm rounded-xl hover:border-indigo-100 hover:shadow-md transition-all group">
+                <span className="text-sm font-semibold text-slate-700">{dept}</span>
+                <button
+                  onClick={() => {
+                    const updatedDepartments = localSettings.departments.filter(d => d !== dept);
+                    handleLocalChange('departments', updatedDepartments);
+                    saveKey('departments', updatedDepartments);
+                  }}
+                  className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Remove Department"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            {(localSettings.departments || []).length === 0 && (
+              <div className="col-span-full text-center py-6 text-slate-400 text-sm">
+                No departments added yet.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

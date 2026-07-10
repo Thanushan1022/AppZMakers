@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User, X, MapPin } from 'lucide-react';
 
 export const AdminUsersView = React.memo(function AdminUsersView({
   employees,
@@ -42,6 +42,8 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   handleAssignShift,
   selectedEmployeeDetail,
   handleUpdateEmployeeStatus,
+  isSubmitting,
+  settings,
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
   const [companyAddMode, setCompanyAddMode] = useState('client');
@@ -304,6 +306,8 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       { icon: Phone, value: selectedEmployee.phone || 'N/A' },
                       { icon: Calendar, value: `Joined: ${selectedEmployee.joinDate || 'N/A'}` },
                       { icon: Calendar, value: `DOB: ${selectedEmployee.dateOfBirth || 'N/A'}` },
+                      { icon: MapPin, value: `Location: ${selectedEmployee.country || 'N/A'}` },
+                      { icon: MapPin, value: `Address: ${selectedEmployee.address || 'N/A'}` },
                     ].map(({ icon: Icon, value }) => (
                       <div key={value} className="flex items-center gap-2 text-slate-500">
                         <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
@@ -706,63 +710,73 @@ export const AdminUsersView = React.memo(function AdminUsersView({
       {activeTab === 'companies' && (
         <div className={`grid gap-6 ${selectedCompanyId ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} relative z-10 min-w-0`}>
           <div className={`min-w-0 ${selectedCompanyId ? 'lg:col-span-2' : ''}`}>
-            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10 min-w-0">
-              <div className="overflow-x-auto max-h-[530px] overflow-y-auto">
-                <table className="w-full text-sm min-w-[800px]">
-                  <thead className="z-10">
-                    <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[200px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Client/Lead</th>
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Industry</th>
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Contact</th>
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Employees</th>
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Joined</th>
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Status</th>
-                      <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border dark:divide-slate-700/50">
-                    {filteredCompanies.map(co => (
-                      <tr key={co.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : ''}`}>
-                        <td className={`py-3 px-4 cursor-pointer ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-transparent'} group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 min-w-[200px]`} onClick={() => setSelectedCompanyId(selectedCompanyId === co.id ? null : co.id)}>
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold flex-shrink-0 overflow-hidden">
-                              {(co.avatar || co.logo) && (co.avatar || co.logo).startsWith('data:image/') ? (
-                                <img src={co.avatar || co.logo} alt={co.name} className="w-full h-full object-cover" />
-                              ) : (
-                                (co.avatar || co.logo) || (co.name ? co.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
-                              )}
-                            </div>
-                            <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{co.name}</div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-500">
-                          <div className="break-all break-words">{co.industry}</div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-500">
-                          <div className="break-all break-words">{co.contact}</div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                          {employees.filter(e => e.companyId === co.id).length}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{co.joinedDate}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${co.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{co.status}</span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1">
-                            <button type="button" onClick={() => setAssigningCompany(co)} title="Assign Employees" className="w-7 h-7 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors">
-                              <UserPlus className="w-3.5 h-3.5" />
-                            </button>
-                            <button type="button" onClick={() => handleEditClick(co, 'company')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
-                            <button type="button" onClick={() => handleDeleteCompany(co.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredCompanies.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No clients/leads found</td></tr>}
-                  </tbody>
-                </table>
-              </div>
+            <div className="space-y-8">
+              {[
+                { title: 'Clients', items: filteredCompanies.filter(c => !c.isTeam), type: 'client' },
+                { title: 'Leads / Teams', items: filteredCompanies.filter(c => c.isTeam), type: 'lead' }
+              ].map(group => (
+                <div key={group.title}>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-3">{group.title}</h3>
+                  <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 overflow-hidden shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10 min-w-0">
+                    <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+                      <table className="w-full text-sm min-w-[800px]">
+                        <thead className="z-10">
+                          <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[200px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">{group.type === 'client' ? 'Client' : 'Lead'}</th>
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">{group.type === 'client' ? 'Industry' : 'Department'}</th>
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[150px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Contact</th>
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Employees</th>
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Joined</th>
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[100px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Status</th>
+                            <th className="sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 min-w-[120px] bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)]">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border dark:divide-slate-700/50">
+                          {group.items.map(co => (
+                            <tr key={co.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : ''}`}>
+                              <td className={`py-3 px-4 cursor-pointer ${selectedCompanyId === co.id ? 'bg-indigo-50/50 dark:bg-indigo-900/30' : 'bg-transparent'} group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/50 min-w-[200px]`} onClick={() => setSelectedCompanyId(selectedCompanyId === co.id ? null : co.id)}>
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold flex-shrink-0 overflow-hidden">
+                                    {(co.avatar || co.logo) && (co.avatar || co.logo).startsWith('data:image/') ? (
+                                      <img src={co.avatar || co.logo} alt={co.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      (co.avatar || co.logo) || (co.name ? co.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '')
+                                    )}
+                                  </div>
+                                  <div className="text-slate-700 dark:text-slate-200 font-medium break-all break-words">{co.name}</div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-slate-500">
+                                <div className="break-all break-words">{co.industry === 'General' && group.type === 'lead' ? 'Internal Team' : co.industry}</div>
+                              </td>
+                              <td className="py-3 px-4 text-slate-500">
+                                <div className="break-all break-words">{co.contact}</div>
+                              </td>
+                              <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                                {employees.filter(e => e.companyId === co.id).length}
+                              </td>
+                              <td className="py-3 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{co.joinedDate}</td>
+                              <td className="py-3 px-4">
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${co.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{co.status}</span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-1">
+                                  <button type="button" onClick={() => setAssigningCompany(co)} title="Assign Employees" className="w-7 h-7 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors">
+                                    <UserPlus className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button type="button" onClick={() => handleEditClick(co, 'company')} className="w-7 h-7 bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
+                                  <button type="button" onClick={() => handleDeleteCompany(co.id)} className="w-7 h-7 bg-slate-100 hover:bg-red-100 hover:text-red-500 text-slate-400 rounded-lg flex items-center justify-center transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {group.items.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No {group.title.toLowerCase()} found</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           {selectedCompany && (
@@ -838,36 +852,50 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                 ].map(f => (
                   <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
-                    <input
-                      type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
-                      value={empForm[f.key] || ''}
-                      onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
-                      placeholder={f.placeholder}
-                      required={f.key !== 'dateOfBirth'}
-                      max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
-                      minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={['name', 'position', 'department'].includes(f.key) ? 30 : undefined}
-                      pattern={
-                        f.key === 'name'
-                          ? "^[a-zA-Z\\s.\\-]+$"
-                          : f.key === 'position' || f.key === 'department'
-                            ? "^[a-zA-Z\\s.\\-()&]+$"
-                            : f.key === 'email'
-                              ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-                              : undefined
-                      }
-                      title={
-                        f.key === 'name'
-                          ? "Only letters, spaces, dots, and hyphens are allowed."
-                          : f.key === 'position' || f.key === 'department'
-                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                            : f.key === 'email'
-                              ? "Please enter a valid email address."
-                              : undefined
-                      }
-                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                      style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
-                    />
+                    {f.key === 'department' ? (
+                      <select
+                        required
+                        value={empForm[f.key] || ''}
+                        onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
+                      >
+                        <option value="" disabled>Select Department...</option>
+                        {(settings.departments || []).map(dept => (
+                          <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
+                        value={empForm[f.key] || ''}
+                        onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        placeholder={f.placeholder}
+                        required={f.key !== 'dateOfBirth'}
+                        max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
+                        minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
+                        maxLength={['name', 'position', 'department'].includes(f.key) ? 30 : undefined}
+                        pattern={
+                          f.key === 'name'
+                            ? "^[a-zA-Z\\s.\\-]+$"
+                            : f.key === 'position' || f.key === 'department'
+                              ? "^[a-zA-Z\\s.\\-()&]+$"
+                              : f.key === 'email'
+                                ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                                : undefined
+                        }
+                        title={
+                          f.key === 'name'
+                            ? "Only letters, spaces, dots, and hyphens are allowed."
+                            : f.key === 'position' || f.key === 'department'
+                              ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                              : f.key === 'email'
+                                ? "Please enter a valid email address."
+                                : undefined
+                        }
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                        style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
+                      />
+                    )}
                   </div>
                 ))}
 
@@ -905,9 +933,9 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 
               </div>
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
-                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
-                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
-                  {editingItem ? 'Update Employee' : 'Add Employee'}
+                <button type="button" disabled={isSubmitting} onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? 'Submitting...' : editingItem ? 'Update Employee' : 'Add Employee'}
                 </button>
               </div>
             </form>
@@ -944,50 +972,59 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                 {[
                   { key: 'name', label: 'Full Name', placeholder: 'Amanda Foster', type: 'text' },
                   { key: 'email', label: 'Email', placeholder: 'amanda@company.com', type: 'email' },
-                  { key: 'department', label: 'Department', placeholder: 'Human Resources', type: 'text' },
                   { key: 'joinDate', label: 'Join Date', placeholder: '', type: 'date' },
                   { key: 'dateOfBirth', label: 'Date of Birth', placeholder: '', type: 'date' },
                 ].map(f => (
                   <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
-                    <input
-                      type={f.type}
-                      value={hrForm[f.key] || (f.key === 'department' && !hrForm[f.key] ? 'Human Resources' : '')}
-                      onChange={e => setHrForm(p => ({ ...p, [f.key]: e.target.value }))}
-                      placeholder={f.placeholder}
-                      required={f.key !== 'dateOfBirth' && f.key !== 'department'}
-                      max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
-                      minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={['name', 'department'].includes(f.key) ? 40 : undefined}
-                      pattern={
-                        f.key === 'name'
-                          ? "^[a-zA-Z\\s.\\-]+$"
-                          : f.key === 'department'
-                            ? "^[a-zA-Z\\s.\\-()&]+$"
+                    {f.key === 'department' ? (
+                      <select
+                        required
+                        value={hrForm[f.key] || 'Human Resources'}
+                        onChange={e => setHrForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
+                      >
+                        <option value="" disabled>Select Department...</option>
+                        {(settings.departments || []).map(dept => (
+                          <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={f.type}
+                        value={hrForm[f.key] || ''}
+                        onChange={e => setHrForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        placeholder={f.placeholder}
+                        required={f.key !== 'dateOfBirth'}
+                        max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
+                        minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
+                        maxLength={['name'].includes(f.key) ? 40 : undefined}
+                        pattern={
+                          f.key === 'name'
+                            ? "^[a-zA-Z\\s.\\-]+$"
                             : f.key === 'email'
                               ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
                               : undefined
-                      }
-                      title={
-                        f.key === 'name'
-                          ? "Only letters, spaces, dots, and hyphens are allowed."
-                          : f.key === 'department'
-                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                        }
+                        title={
+                          f.key === 'name'
+                            ? "Only letters, spaces, dots, and hyphens are allowed."
                             : f.key === 'email'
                               ? "Please enter a valid email address."
                               : undefined
-                      }
-                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                      style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
-                    />
+                        }
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                        style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
-                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
-                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
-                  {editingItem ? 'Update HR Manager' : 'Add HR Manager'}
+                <button type="button" disabled={isSubmitting} onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? 'Submitting...' : editingItem ? 'Update HR Manager' : 'Add HR Manager'}
                 </button>
               </div>
             </form>
@@ -1009,13 +1046,13 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                 <div>
                   <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">
                     {editingItem 
-                      ? 'Edit Client/Team' 
-                      : (companyAddMode === 'client' ? 'Add New Client/Lead Company' : 'Add New Team')}
+                      ? 'Edit Details' 
+                      : (companyAddMode === 'client' ? 'Add New Client' : 'Add New Lead')}
                   </h3>
                   <p className="text-white/70 font-bold text-sm mt-0.5">
                     {editingItem 
                       ? 'Update details' 
-                      : (companyAddMode === 'client' ? 'Enter details to add new client' : 'Enter details to add new team')}
+                      : (companyAddMode === 'client' ? 'Enter details to add new client' : 'Enter details to add new lead')}
                   </p>
                 </div>
               </div>
@@ -1027,11 +1064,11 @@ export const AdminUsersView = React.memo(function AdminUsersView({
               </button>
             </div>
 
-            <form onSubmit={handleAddCompany} noValidate className="p-8 space-y-6 relative z-10">
+            <form onSubmit={(e) => handleAddCompany(e, companyAddMode === 'team')} noValidate className="p-8 space-y-6 relative z-10">
               {!editingItem && (
                 <div className="flex bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] p-1.5 mb-2">
-                  <button type="button" onClick={() => setCompanyAddMode('client')} className={`flex-1 py-2 text-sm font-bold rounded-[10px] transition-all ${companyAddMode === 'client' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>Client / Lead</button>
-                  <button type="button" onClick={() => setCompanyAddMode('team')} className={`flex-1 py-2 text-sm font-bold rounded-[10px] transition-all ${companyAddMode === 'team' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>Team</button>
+                  <button type="button" onClick={() => { setCompanyAddMode('client'); setCoForm(p => ({ ...p, isTeam: false })); }} className={`flex-1 py-2 text-sm font-bold rounded-[10px] transition-all ${companyAddMode === 'client' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>Client</button>
+                  <button type="button" onClick={() => { setCompanyAddMode('team'); setCoForm(p => ({ ...p, isTeam: true })); }} className={`flex-1 py-2 text-sm font-bold rounded-[10px] transition-all ${companyAddMode === 'team' ? 'bg-emerald-500 text-white shadow-md' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>Lead</button>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-5">
@@ -1043,15 +1080,36 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   { key: 'phone', label: 'Phone Number', placeholder: '+1 (555) 100-2000', type: 'text' },
                   { key: 'joinedDate', label: 'Joined Date', placeholder: '', type: 'date' },
                 ] : [
-                  { key: 'name', label: 'Full Name / Team Name', placeholder: 'Jane Smith', type: 'text' },
-                  { key: 'industry', label: 'Department', placeholder: 'Engineering', type: 'text' },
-                  { key: 'contact', label: 'Position / Role', placeholder: 'Senior Developer', type: 'text' },
-                  { key: 'email', label: 'Email', placeholder: 'jane@company.com', type: 'email' },
-                  { key: 'phone', label: 'Phone Number', placeholder: '+1 (555) 100-2000', type: 'text' },
+                  { key: 'name', label: 'Team Name', placeholder: 'e.g. Frontend Team', type: 'text' },
+                  { key: 'contact', label: 'Lead Employee', type: 'select_employee' },
                   { key: 'joinedDate', label: 'Join Date', placeholder: '', type: 'date' },
                 ]).map(f => (
                   <div key={f.key} className={f.key === 'name' || f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
+                    {f.type === 'select_employee' ? (
+                      <select
+                        value={coForm[f.key] || ''}
+                        onChange={e => {
+                          const selectedName = e.target.value;
+                          const emp = employees.find(emp => emp.name === selectedName);
+                          setCoForm(p => ({
+                            ...p,
+                            contact: selectedName,
+                            email: emp ? emp.email : '',
+                            phone: emp ? (emp.phone || '') : ''
+                          }));
+                        }}
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                        required
+                      >
+                        <option value="" className="bg-slate-900">Select a Lead...</option>
+                        {employees.map(emp => (
+                          <option key={emp.id} value={emp.name} className="bg-slate-900">
+                            {emp.name} {emp.department ? `(${emp.department})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
                     <input
                       type={f.type}
                       value={coForm[f.key] || ''}
@@ -1093,46 +1151,51 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                       style={f.key === 'joinedDate' ? { colorScheme: 'dark' } : {}}
                     />
+                    )}
                   </div>
                 ))}
 
-                <div className="col-span-2">
-                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Address</label>
-                  <input
-                    type="text"
-                    value={coForm.address || ''}
-                    onChange={e => setCoForm(p => ({ ...p, address: e.target.value }))}
-                    placeholder="123 Main St, Colombo"
-                    required
-                    minLength={5}
-                    maxLength={40}
-                    pattern="^(?!\s*$).+"
-                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                  />
-                </div>
+                {companyAddMode === 'client' && (
+                  <>
+                    <div className="col-span-2">
+                      <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Address</label>
+                      <input
+                        type="text"
+                        value={coForm.address || ''}
+                        onChange={e => setCoForm(p => ({ ...p, address: e.target.value }))}
+                        placeholder="123 Main St, Colombo"
+                        required
+                        minLength={5}
+                        maxLength={40}
+                        pattern="^(?!\s*$).+"
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                      />
+                    </div>
 
-                <div className="col-span-2">
-                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Country</label>
-                  <select
-                    required
-                    value={coForm.country || ''}
-                    onChange={e => setCoForm(p => ({ ...p, country: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
-                  >
-                    <option value="" disabled>Choose Location...</option>
-                    <option value="Sri Lanka">Sri Lanka</option>
-                    <option value="USA">USA</option>
-                    <option value="UK">UK</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Australia">Australia</option>
-                  </select>
-                </div>
+                    <div className="col-span-2">
+                      <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Country</label>
+                      <select
+                        required
+                        value={coForm.country || ''}
+                        onChange={e => setCoForm(p => ({ ...p, country: e.target.value }))}
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
+                      >
+                        <option value="" disabled>Choose Location...</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
-                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
-                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">
-                  {editingItem ? 'Update Details' : (companyAddMode === 'client' ? 'Add Client/Lead' : 'Add Team')}
+                <button type="button" disabled={isSubmitting} onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? 'Submitting...' : editingItem ? 'Update Details' : (companyAddMode === 'client' ? 'Add Client' : 'Add Lead')}
                 </button>
               </div>
             </form>

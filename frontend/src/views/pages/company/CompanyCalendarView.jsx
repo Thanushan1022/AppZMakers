@@ -137,6 +137,8 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
     targetValue: '',
   });
 
+  const [selectedCountryFilter, setSelectedCountryFilter] = useState('All');
+
   const titleWordsCount = eventForm.title.trim().split(/\s+/).filter(Boolean).length;
   const descWordsCount = eventForm.description.trim().split(/\s+/).filter(Boolean).length;
   const todayStr = new Date().toISOString().split('T')[0];
@@ -185,9 +187,29 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
   const getEventsForDay = (day) => {
     if (!day) return [];
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return events.filter(
-      (e) => e.start <= dateStr && e.end >= dateStr
-    );
+    return events.filter((e) => {
+      if (e.start > dateStr || e.end < dateStr) return false;
+      
+      if (selectedCountryFilter !== 'All') {
+        let countryKey = '';
+        if (e.targetValue) {
+          countryKey = e.targetValue.toLowerCase().trim();
+        } else {
+          const match = e.title.match(/^\[(.*?)\]/);
+          if (match) {
+            countryKey = match[1].toLowerCase().trim();
+          }
+        }
+        
+        if (countryKey && countryKey !== selectedCountryFilter.toLowerCase() && countryKey !== 'united states' && countryKey !== 'united kingdom') {
+          // Additional check for aliases
+          if (selectedCountryFilter.toLowerCase() === 'usa' && countryKey === 'united states') return true;
+          if (selectedCountryFilter.toLowerCase() === 'uk' && countryKey === 'united kingdom') return true;
+          return false;
+        }
+      }
+      return true;
+    });
   };
 
 
@@ -356,8 +378,20 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
             }
           </p>
         </div>
-        {canManageEvents && (
-          <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          <select
+            value={selectedCountryFilter}
+            onChange={(e) => setSelectedCountryFilter(e.target.value)}
+            className="border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/20 cursor-pointer shadow-sm"
+          >
+            <option value="All">All Countries</option>
+            <option value="usa">USA</option>
+            <option value="uk">UK</option>
+            <option value="canada">Canada</option>
+            <option value="australia">Australia</option>
+            <option value="sri lanka">Sri Lanka</option>
+          </select>
+          {canManageEvents && (
             <button
               onClick={() => {
                 const todayStr = new Date().toISOString().split('T')[0];
@@ -378,8 +412,8 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
               <Plus className="w-4 h-4" />
               Add Event
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Calendar Grid Container */}

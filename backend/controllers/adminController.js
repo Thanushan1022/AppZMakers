@@ -270,44 +270,46 @@ export const createHR = async (req, res) => {
 
 export const createCompany = async (req, res) => {
   try {
-    const { name, industry, contact, email, phone, joinedDate, joinDate, address, country } = req.body;
+    const { name, industry, contact, email, phone, joinedDate, joinDate, address, country, isTeam } = req.body;
 
     if (!name || name.trim().length < 2 || name.trim().length > 30) {
       return res.status(400).json({ error: 'Company name must be between 2 and 30 characters long.' });
     }
-    if (!industry || industry.trim().length < 2 || industry.trim().length > 30) {
+    if (!isTeam && (!industry || industry.trim().length < 2 || industry.trim().length > 30)) {
       return res.status(400).json({ error: 'Industry sector must be between 2 and 30 characters long.' });
     }
     if (!contact || contact.trim().length < 2 || contact.trim().length > 30) {
       return res.status(400).json({ error: 'Contact person must be between 2 and 30 characters long.' });
     }
-    if (!phone || !/^\+?[0-9\s\-()]{7,20}$/.test(phone)) {
+    if (!isTeam && (!phone || !/^\+?[0-9\s\-()]{7,20}$/.test(phone))) {
       return res.status(400).json({ error: 'Please enter a valid phone number (7-20 digits).' });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
+    if (existingUser && !isTeam) {
       return res.status(400).json({ error: 'This email address is already registered.' });
     }
 
     const legacyId = await getNextCompanyLegacyId();
 
-    // 1. Generate 10-digit password
+    // 1. Generate 10-digit password if not a team
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let plainPassword = '';
-    for (let i = 0; i < 10; i++) {
-      plainPassword += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    if (!isTeam) {
+      for (let i = 0; i < 10; i++) {
+        plainPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
 
-    // 2. Hash password and create User with role: 'company'
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
-    await User.create({
-      name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      role: 'company',
-      profileId: legacyId,
-    });
+      // 2. Hash password and create User with role: 'company'
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+      await User.create({
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        role: 'company',
+        profileId: legacyId,
+      });
+    }
 
     // 3. Create Company
     const newComp = await Company.create({
@@ -322,40 +324,45 @@ export const createCompany = async (req, res) => {
       joinedDate: joinedDate || joinDate || getTodayString(),
       address: address || '',
       country: country || 'Sri Lanka',
+      isTeam: !!isTeam,
     });
 
-    // 4. Send email via Nodemailer
-    let emailStatus = 'sent';
+    // 4. Send email via Nodemailer if not a team
+    let emailStatus = isTeam ? 'skipped' : 'sent';
     let emailError = null;
 
-    try {
-      const subject = 'Your AppZ Makers Account Credentials';
-      const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <p>Hello ${contact || name},</p>
-          <p>To verify your identity and continue with your AppZ Makers account, please use the One-Time Password (OTP) below:</p>
-          <br>
-          <h2>${plainPassword}</h2>
-          <br>
-          <p>Please do not share this code with anyone.</p>
-          <p>If you did not request this verification code, you can safely ignore this email. Your account will remain secure.</p>
-          <p>AppZ Makers will never ask you to share your OTP, password, or other security information through email, phone calls, or messages. Please be aware of phishing attempts.</p>
-          <p>Thank you for using AppZ Makers.</p>
-          <p>Best regards,<br><strong>AppZ Makers Team</strong></p>
-        </div>
-      `;
+    if (!isTeam) {
+      try {
+        const subject = 'Your AppZ Makers Account Credentials';
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <p>Hello ${contact || name},</p>
+            <p>To verify your identity and continue with your AppZ Makers account, please use the One-Time Password (OTP) below:</p>
+            <br>
+            <h2>${plainPassword}</h2>
+            <br>
+            <p>Please do not share this code with anyone.</p>
+            <p>If you did not request this verification code, you can safely ignore this email. Your account will remain secure.</p>
+            <p>AppZ Makers will never ask you to share your OTP, password, or other security information through email, phone calls, or messages. Please be aware of phishing attempts.</p>
+            <p>Thank you for using AppZ Makers.</p>
+            <p>Best regards,<br><strong>AppZ Makers Team</strong></p>
+          </div>
+        `;
 
-      await sendEmail(email.toLowerCase(), subject, html);
-    } catch (emailErr) {
-      console.error('Error occurred while sending email via Nodemailer:', emailErr.message);
-      emailStatus = 'error';
-      emailError = emailErr.message;
+        await sendEmail(email.toLowerCase(), subject, html);
+      } catch (emailErr) {
+        console.error('Error occurred while sending email via Nodemailer:', emailErr.message);
+        emailStatus = 'error';
+        emailError = emailErr.message;
+      }
     }
 
     res.status(201).json({
-      message: emailStatus === 'sent'
-        ? 'Client created successfully and credentials emailed.'
-        : `Client created successfully, but email failed: ${emailError}`,
+      message: isTeam 
+        ? 'Lead assigned successfully.'
+        : (emailStatus === 'sent'
+          ? 'Client created successfully and credentials emailed.'
+          : `Client created successfully, but email failed: ${emailError}`),
       company: toCompanyJSON(newComp),
       password: plainPassword,
       emailStatus,
@@ -616,7 +623,7 @@ export const updateCompany = async (req, res) => {
     const comp = await findCompany(req.params.id);
     if (!comp) return res.status(404).json({ error: 'Company not found' });
 
-    const { name, industry, contact, email, phone, joinedDate, joinDate, address, country, teaBreakAllowed } = req.body;
+    const { name, industry, contact, email, phone, joinedDate, joinDate, address, country, teaBreakAllowed, isTeam } = req.body;
 
     if (name !== undefined) {
       if (name.trim().length < 2 || name.trim().length > 30) {
@@ -642,6 +649,7 @@ export const updateCompany = async (req, res) => {
     if (address !== undefined) comp.address = address;
     if (country !== undefined) comp.country = country;
     if (teaBreakAllowed !== undefined) comp.teaBreakAllowed = teaBreakAllowed;
+    if (isTeam !== undefined) comp.isTeam = isTeam;
 
     if (email !== undefined) {
       const emailLower = email.toLowerCase();
@@ -651,7 +659,7 @@ export const updateCompany = async (req, res) => {
         const isSelf = (linkedUser && String(existingUser._id) === String(linkedUser._id)) ||
                        (existingUser.profileId && existingUser.profileId === comp.legacyId) ||
                        (existingUser.email.toLowerCase() === comp.email.toLowerCase());
-        if (!isSelf) {
+        if (!isSelf && !isTeam) {
           return res.status(400).json({ error: 'This email address is already registered.' });
         }
       }

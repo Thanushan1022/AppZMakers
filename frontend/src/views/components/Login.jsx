@@ -145,11 +145,11 @@ export function Login({
 
         {/* Bottom Section: Footer Copyright */}
         <div className="relative z-30 text-slate-300/90 text-sm pt-4 border-t border-[#2e2880]/50">
-          <div>© 2026 Appzmaker. All rights reserved.</div>
+          <div>© 2026 AppZ Makers. All rights reserved.</div>
           <div className="mt-1">
             Developed By{' '}
             <div className="relative inline-block group cursor-pointer text-[#a59bfb] hover:text-white font-semibold transition-colors">
-              AppZ Makers
+              AppZ  Makers
               {/* Hover Tooltip Box */}
               <div className="absolute bottom-full left-0 mb-3 w-64 bg-white/10 backdrop-blur-3xl text-white rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] border border-white/20 p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:-translate-y-1 z-50 pointer-events-auto">
                 <div className="flex flex-col items-center text-center gap-3">
@@ -357,7 +357,7 @@ export function Login({
 
         {/* Bottom Section: Footer Copyright (Mobile View) */}
         <div className="lg:hidden relative z-30 text-white/70 text-[10px] sm:text-xs text-center mt-8 space-y-1 font-medium">
-          <div>© 2026 Appzmaker. All rights reserved.</div>
+          <div>© 2026 AppZ Makers. All rights reserved.</div>
           <div>
             Developed By{' '}
             <a href="https://appzmake.com" target="_blank" rel="noreferrer" className="text-indigo-300 font-bold hover:text-white transition-colors">

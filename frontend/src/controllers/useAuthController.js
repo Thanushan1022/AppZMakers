@@ -42,6 +42,7 @@ export function useAuthController() {
       token: data.token,
       avatar: data.avatar || '',
       sessionTimeout: data.sessionTimeout,
+      isTeam: data.isTeam,
     };
     setAuth(authPayload);
     localStorage.setItem('wf_auth', JSON.stringify(authPayload));

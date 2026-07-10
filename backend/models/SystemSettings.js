@@ -19,6 +19,7 @@ const systemSettingsSchema = new mongoose.Schema(
     teaBreaksMax: { type: Number, default: 2 },
     teaBreakDuration: { type: Number, default: 15 },
     teaBreakGap: { type: Number, default: 120 },
+    departments: { type: [String], default: [] },
     departmentOvertimeRules: [
       {
         department: { type: String, required: true },

@@ -8,6 +8,8 @@ export function TodayAttendanceView({
   todayAttendance = [],
   selectedDate,
   setSelectedDate,
+  settings,
+  globalDepartments,
 }) {
   const FormatMultilineName = ({ name }) => {
     if (!name) return null;
@@ -28,7 +30,8 @@ export function TodayAttendanceView({
   const [activityFilter, setActivityFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
 
-  const departments = [...new Set((employees || []).filter(e => e.status === 'active').map(e => e.department))].filter(Boolean).sort();
+  const activeDepts = [...new Set((employees || []).filter(e => e.status === 'active').map(e => e.department))].filter(Boolean).sort();
+  const departments = settings?.departments || globalDepartments || activeDepts;
 
 
   const containerRef = useRef(null);

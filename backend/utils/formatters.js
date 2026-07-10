@@ -45,6 +45,7 @@ export const toCompanyJSON = (doc) => {
     country: o.country,
     avatar: o.avatar || '',
     teaBreakAllowed: o.teaBreakAllowed,
+    isTeam: o.isTeam,
   };
 };
 

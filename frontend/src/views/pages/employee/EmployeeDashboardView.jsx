@@ -1,6 +1,5 @@
 import { Coffee, Utensils, LogIn, LogOut, TrendingUp, CalendarDays, Timer, AlertCircle, CheckCircle2, XCircle, Trophy, Star, Sparkles } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { monthlyHoursData } from '../../../models/mockData';
 import { formatDecimalHours } from '../../../utils/timeFormatter';
 import confetti from 'canvas-confetti';
 import React, { useEffect, useMemo, useCallback } from 'react';
@@ -20,6 +19,12 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   totalWorkingDays,
   attendancePct,
   monthlyHours,
+  weeklyHours,
+  weeklyHoursChartData,
+  chartMonth,
+  setChartMonth,
+  targetWeeklyHours,
+  weekLabel,
   totalLeaveUsed,
   totalLeave,
   filteredLeaves,
@@ -203,6 +208,8 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
 
   const lateMessage = useMemo(() => {
     if (!shiftStartTime) return null;
+    if (!checkedIn && checkInTime) return null; // already checked out today
+    if (!checkedIn && sessionSecs > 0) return null;
     
     const getSecs = (tStr) => {
       const parts = tStr.split(':').map(Number);
@@ -507,6 +514,24 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
       {/* Stats - Floating Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
+          { 
+            label: 'Weekly Hours', 
+            value: formatDecimalHours(weeklyHours), 
+            sub: (
+              <div className="flex flex-col gap-1.5 mt-2">
+                <span>{weekLabel}</span>
+                <div className="text-slate-800 dark:text-slate-100 text-sm font-black bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm leading-relaxed">
+                  Target: <span className="text-indigo-600 dark:text-indigo-400">{formatDecimalHours(targetWeeklyHours || 40)}</span>
+                  <br/>
+                  Remaining: <span className="text-rose-600 dark:text-rose-400">{formatDecimalHours(Math.max(0, (targetWeeklyHours || 40) - (weeklyHours || 0)))}</span>
+                </div>
+              </div>
+            ),
+            icon: Timer, 
+            color: 'text-blue-600 dark:text-blue-400', 
+            bg: 'bg-blue-100 dark:bg-blue-900/30', 
+            border: 'border-blue-200 dark:border-blue-800' 
+          },
           { label: 'Monthly Hours', value: formatDecimalHours(monthlyHours), sub: 'This month', icon: Timer, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-200 dark:border-indigo-800' },
           { label: 'Extra Hours', value: formatDecimalHours(totalExtraHours), sub: 'Total excess hours', icon: CheckCircle2, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800' },
           { label: 'Less Hours', value: formatDecimalHours(totalLessHours), sub: 'Total deficit hours', icon: XCircle, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30', border: 'border-rose-200 dark:border-rose-800' },
@@ -533,10 +558,15 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
         <div className="lg:col-span-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none p-6 lg:p-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-slate-800 dark:text-slate-100 text-lg font-black tracking-tight">Weekly Hours Analysis</h3>
-            <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold uppercase tracking-wider">May 2026</span>
+            <input 
+              type="month"
+              value={chartMonth}
+              onChange={(e) => setChartMonth(e.target.value)}
+              className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border-none rounded-lg text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+            />
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={monthlyHoursData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+            <AreaChart data={weeklyHoursChartData || []} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
               <defs>
                 <linearGradient id="hoursGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
@@ -707,20 +737,25 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-blue-200 dark:border-blue-800">
                 <AlertCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">
-                {sessionOverModalType === 'tooEarly' ? 'Too Early to Check In' : 'Session Over'}
+              <h3 className="text-slate-800 dark:text-slate-100 text-xl font-black tracking-tight mb-4">
+                Thank you for attempting to check in. Your check-in is not available at this time
               </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
-                {sessionOverModalType === 'cooldown' && "Today's session is over."}
-                {sessionOverModalType === 'tooEarly' && "You cannot check in before your assigned shift starts."}
+                Your shift is currently inactive. Contact HR if you need to check in outside your assigned hours.
                 {nextShiftStartInfo && (
-                  <span className="block mt-2 text-indigo-600 dark:text-indigo-400 font-bold">
+                  <span className="block mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-100 dark:border-indigo-800/50">
                     Your next shift starts on {nextShiftStartInfo.toLocaleDateString()} at {nextShiftStartInfo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.
+                    <br />
+                    Starts in: {(() => {
+                      const diffMs = nextShiftStartInfo.getTime() - new Date().getTime();
+                      if (diffMs <= 0) return 'Any moment now';
+                      const h = Math.floor(diffMs / 3600000);
+                      const m = Math.floor((diffMs % 3600000) / 60000);
+                      if (h > 0) return `${h}h ${m}m`;
+                      return `${m}m`;
+                    })()}
                   </span>
                 )}
-                <span className="block mt-2">
-                  If you need further details, please contact HR.
-                </span>
               </p>
               <button
                 onClick={() => setShowSessionOverModal(false)}

@@ -38,6 +38,11 @@ const buildAuthResponse = async (user) => {
 
   if (role === 'company' && profileId) {
     payload.userId = profileId;
+    const co = await Company.findOne({ $or: [{ legacyId: profileId }] }).collation({ locale: 'en', strength: 2 }).catch(() => null);
+    const companyDoc = co || await Company.findById(profileId).catch(() => null);
+    if (companyDoc) {
+      payload.isTeam = !!companyDoc.isTeam;
+    }
   } else if (role !== 'superadmin' && profileId) {
     payload.userId = profileId;
   } else if (role === 'superadmin') {
@@ -218,12 +223,25 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const accountRole = normalizeRole(user.role);
+    let accountRole = normalizeRole(user.role);
 
     if (selectedRole && normalizeRole(selectedRole) !== accountRole) {
-      return res.status(403).json({
-        error: `This account is registered as ${accountRole}. Please select the correct role.`,
-      });
+      if (accountRole === 'employee' && normalizeRole(selectedRole) === 'company') {
+        const leadCompany = await Company.findOne({ email: user.email.toLowerCase(), isTeam: true });
+        if (leadCompany) {
+          accountRole = 'company';
+          user.role = 'company';
+          user.profileId = leadCompany.legacyId || leadCompany._id.toString();
+        } else {
+          return res.status(403).json({
+            error: `This account is registered as an Employee. You are not assigned as a Lead for any team.`,
+          });
+        }
+      } else {
+        return res.status(403).json({
+          error: `This account is registered as ${accountRole}. Please select the correct role.`,
+        });
+      }
     }
 
     if (accountRole === 'employee') {

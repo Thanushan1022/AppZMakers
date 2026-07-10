@@ -40,6 +40,7 @@ export function EmployeeAttendanceView({ mySalary,
   // New props
   settings,
   targetWorkSecs,
+  targetWeeklyHours,
   totalExtraHours,
   totalLessHours,
   remainingBreakSecs,
@@ -798,23 +799,23 @@ export function EmployeeAttendanceView({ mySalary,
                 <span className="text-indigo-900 dark:text-indigo-100 font-black text-4xl" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                   {weeklyTotalHours.toFixed(2)}h
                 </span>
-                <span className="text-indigo-400 dark:text-indigo-500 font-bold text-lg">/ 40.0h</span>
+                <span className="text-indigo-400 dark:text-indigo-500 font-bold text-lg">/ {targetWeeklyHours.toFixed(1)}h</span>
               </div>
             </div>
             <div className="w-full md:w-auto flex-1 max-w-md">
               <div className="h-4 bg-white/60 dark:bg-slate-800/80 rounded-full overflow-hidden border border-indigo-100 dark:border-slate-700 mb-3 shadow-inner">
-                <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-indigo-400 to-blue-500 relative" style={{ width: `${Math.min(100, (weeklyTotalHours / 40) * 100)}%` }}>
+                <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-indigo-400 to-blue-500 relative" style={{ width: `${targetWeeklyHours > 0 ? Math.min(100, (weeklyTotalHours / targetWeeklyHours) * 100) : 100}%` }}>
                   <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)_50%,rgba(255,255,255,.15)_75%,transparent_75%,transparent)] bg-[length:10px_10px] animate-[stripe_1s_linear_infinite] opacity-50"></div>
                 </div>
               </div>
               <div className="flex items-center justify-end">
-                {weeklyTotalHours >= 40 ? (
+                {weeklyTotalHours >= targetWeeklyHours ? (
                   <span className="text-emerald-600 text-sm font-bold flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" /> Goal Met
                   </span>
                 ) : (
                   <span className="text-amber-600 text-sm font-bold flex items-center gap-2 animate-pulse">
-                    <Timer className="w-4 h-4" /> {Math.max(0, 40 - weeklyTotalHours).toFixed(2)}h remaining
+                    <Timer className="w-4 h-4" /> {Math.max(0, targetWeeklyHours - weeklyTotalHours).toFixed(2)}h remaining
                   </span>
                 )}
               </div>
@@ -1217,20 +1218,25 @@ export function EmployeeAttendanceView({ mySalary,
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-blue-200 dark:border-blue-800">
                 <AlertCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-slate-800 dark:text-slate-100 text-2xl font-black tracking-tight mb-2">
-                {sessionOverModalType === 'tooEarly' ? 'Too Early to Check In' : 'Session Over'}
+              <h3 className="text-slate-800 dark:text-slate-100 text-xl font-black tracking-tight mb-4">
+                Thank you for attempting to check in. Your check-in is not available at this time
               </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
-                {sessionOverModalType === 'cooldown' && "Today's session is over."}
-                {sessionOverModalType === 'tooEarly' && "You cannot check in before your assigned shift starts."}
+                Your shift is currently inactive. Contact HR if you need to check in outside your assigned hours.
                 {nextShiftStartInfo && (
-                  <span className="block mt-2 text-indigo-600 dark:text-indigo-400 font-bold">
+                  <span className="block mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-100 dark:border-indigo-800/50">
                     Your next shift starts on {nextShiftStartInfo.toLocaleDateString()} at {nextShiftStartInfo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}.
+                    <br />
+                    Starts in: {(() => {
+                      const diffMs = nextShiftStartInfo.getTime() - new Date().getTime();
+                      if (diffMs <= 0) return 'Any moment now';
+                      const h = Math.floor(diffMs / 3600000);
+                      const m = Math.floor((diffMs % 3600000) / 60000);
+                      if (h > 0) return `${h}h ${m}m`;
+                      return `${m}m`;
+                    })()}
                   </span>
                 )}
-                <span className="block mt-2">
-                  If you need further details, please contact HR.
-                </span>
               </p>
               <button
                 onClick={() => setShowSessionOverModal(false)}

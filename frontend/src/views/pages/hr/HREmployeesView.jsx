@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Users, Mail, Phone, Calendar, Plus, FileText, Download, X } from 'lucide-react';
+import { Search, Users, Mail, Phone, Calendar, Plus, FileText, Download, X, MapPin } from 'lucide-react';
 
 export function HREmployeesView({
   search,
@@ -13,6 +13,7 @@ export function HREmployeesView({
   selectedEmployeeId,
   setSelectedEmployeeId,
   departments,
+  globalDepartments = [],
   filteredEmployees,
   selectedEmployee,
   selectedAttendance,
@@ -29,6 +30,7 @@ export function HREmployeesView({
   handleAdjustAttendance,
   handleCreateManualAttendance,
   handleAssignShift,
+  isSubmitting,
 }) {
   const [adjustingRec, setAdjustingRec] = useState(null);
   const [adjustForm, setAdjustForm] = useState({
@@ -214,6 +216,8 @@ export function HREmployeesView({
                       { icon: Phone, value: selectedEmployee.phone || 'N/A' },
                       { icon: Calendar, value: `Joined: ${selectedEmployee.joinDate || 'N/A'}` },
                       { icon: Calendar, value: `DOB: ${selectedEmployee.dateOfBirth || 'N/A'}` },
+                      { icon: MapPin, value: `Location: ${selectedEmployee.country || 'N/A'}` },
+                      { icon: MapPin, value: `Address: ${selectedEmployee.address || 'N/A'}` },
                     ].map(({ icon: Icon, value }) => (
                       <div key={value} className="flex items-center gap-2 text-slate-500">
                         <Icon className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
@@ -557,36 +561,50 @@ export function HREmployeesView({
                 ].map(f => (
                   <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
-                    <input
-                      type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
-                      value={empForm[f.key] || ''}
-                      onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
-                      placeholder={f.placeholder}
-                      required={f.key !== 'dateOfBirth'}
-                      max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
-                      minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
-                      maxLength={['name', 'position', 'department'].includes(f.key) ? 30 : undefined}
-                      pattern={
-                        f.key === 'name'
-                          ? "^[a-zA-Z\\s.\\-]+$"
-                          : f.key === 'position' || f.key === 'department'
-                            ? "^[a-zA-Z\\s.\\-()&]+$"
-                            : f.key === 'email'
-                              ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-                              : undefined
-                      }
-                      title={
-                        f.key === 'name'
-                          ? "Only letters, spaces, dots, and hyphens are allowed."
-                          : f.key === 'position' || f.key === 'department'
-                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                            : f.key === 'email'
-                              ? "Please enter a valid email address."
-                              : undefined
-                      }
-                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                      style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
-                    />
+                    {f.key === 'department' ? (
+                      <select
+                        required
+                        value={empForm[f.key] || ''}
+                        onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
+                      >
+                        <option value="" disabled>Select Department...</option>
+                        {globalDepartments.map(dept => (
+                          <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
+                        value={empForm[f.key] || ''}
+                        onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        placeholder={f.placeholder}
+                        required={f.key !== 'dateOfBirth'}
+                        max={f.key === 'joinDate' || f.key === 'dateOfBirth' ? new Date().toISOString().split('T')[0] : undefined}
+                        minLength={f.key !== 'joinDate' && f.key !== 'dateOfBirth' && f.key !== 'email' ? 2 : undefined}
+                        maxLength={['name', 'position', 'department'].includes(f.key) ? 30 : undefined}
+                        pattern={
+                          f.key === 'name'
+                            ? "^[a-zA-Z\\s.\\-]+$"
+                            : f.key === 'position' || f.key === 'department'
+                              ? "^[a-zA-Z\\s.\\-()&]+$"
+                              : f.key === 'email'
+                                ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                                : undefined
+                        }
+                        title={
+                          f.key === 'name'
+                            ? "Only letters, spaces, dots, and hyphens are allowed."
+                            : f.key === 'position' || f.key === 'department'
+                              ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                              : f.key === 'email'
+                                ? "Please enter a valid email address."
+                                : undefined
+                        }
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                        style={f.key === 'joinDate' || f.key === 'dateOfBirth' ? { colorScheme: 'dark' } : {}}
+                      />
+                    )}
                   </div>
                 ))}
 
@@ -624,8 +642,10 @@ export function HREmployeesView({
 
               </div>
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-white/10">
-                <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm">Cancel</button>
-                <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95">Add Employee</button>
+                <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting} className="w-full sm:w-auto px-8 py-3.5 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] text-sm font-bold uppercase tracking-wider transition-colors active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-[14px] text-sm font-black uppercase tracking-widest shadow-[0_4px_16px_0_rgba(255,255,255,0.1)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? 'SUBMITTING...' : 'ADD EMPLOYEE'}
+                </button>
               </div>
             </form>
           </div>

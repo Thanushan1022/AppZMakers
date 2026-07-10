@@ -210,7 +210,10 @@ export function Layout({ role, onLogout, auth, children }) {
     }
   }, [location.pathname, auth]);
 
-  const navItems = navByRole[role] || [];
+  let navItems = navByRole[role] || [];
+  if (role === 'company' && auth?.isTeam) {
+    navItems = navItems.filter(item => item.id !== 'shift-notices' && item.id !== 'faq');
+  }
   const badgeColor = roleColors[role] || 'bg-slate-500';
   const pathPrefix = rolePrefixes[role] || role;
 

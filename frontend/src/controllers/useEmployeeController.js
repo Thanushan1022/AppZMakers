@@ -91,6 +91,12 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   });
   const [customEndDate, setCustomEndDate] = useState(() => new Date().toISOString().split('T')[0]);
 
+  // Chart month filter state
+  const [chartMonth, setChartMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+
   // Load all user profile, leave, and attendance data from backend
   const fetchData = async () => {
     if (!userId) return;
@@ -867,6 +873,25 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   const attendancePct = totalWorkingDays > 0 ? Math.round((presentDays / totalWorkingDays) * 100) : 0;
   const monthlyHours = currentMonthRecords.reduce((sum, a) => sum + (a.totalHours || 0), 0);
 
+  const today = new Date();
+  const day = today.getDay();
+  const diffToMonday = today.getDate() - day + (day === 0 ? -6 : 1);
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(diffToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const formatDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const startOfWeekStr = formatDateStr(startOfWeek);
+  const endOfWeekStr = formatDateStr(endOfWeek);
+
+  const currentWeekRecords = myAttendance.filter(a => a.date && a.date >= startOfWeekStr && a.date <= endOfWeekStr);
+  const weeklyHours = currentWeekRecords.reduce((sum, a) => sum + (a.totalHours || 0), 0);
+
+  const shortMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const weekLabel = `${shortMonthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()} - ${shortMonthNames[endOfWeek.getMonth()]} ${endOfWeek.getDate()}`;
   const totalLeaveUsed = (balance.annual?.used || 0) + (balance.casual?.used || 0) + (balance.medical?.used || 0);
   const totalLeave = (balance.annual?.total || 0) + (balance.casual?.total || 0) + (balance.medical?.total || 0);
 
@@ -925,8 +950,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     return { mondayStr: format(monday), sundayStr: format(sunday) };
   };
 
-  const filteredLeaves = allLeaves.filter(l => {
-    if (leaveFilter !== 'all' && l.status !== leaveFilter) return false;
+  const leavesForMonthYear = allLeaves.filter(l => {
     if (leaveMonthFilter !== 'all') {
       const leaveDate = l.startDate || l.appliedOn;
       if (!leaveDate) return false;
@@ -939,14 +963,85 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     return true;
   });
 
+  const leaveCounts = {
+    all: leavesForMonthYear.length,
+    pending: leavesForMonthYear.filter(l => l.status === 'pending').length,
+    approved: leavesForMonthYear.filter(l => l.status === 'approved').length,
+    rejected: leavesForMonthYear.filter(l => l.status === 'rejected').length,
+  };
+
+  const filteredLeaves = leavesForMonthYear.filter(l => {
+    if (leaveFilter !== 'all' && l.status !== leaveFilter) return false;
+    return true;
+  });
+
   let filteredAttendance = [];
+  let targetWeeklyHours = (targetWorkSecs || 28800) * 5 / 3600; // defaults to 40
+
   if (filterType === 'monthly') {
     filteredAttendance = myAttendance.filter(a => isDateInCompanyMonth(a.date, selectedMonth));
   } else if (filterType === 'weekly') {
     const { mondayStr, sundayStr } = getWeekRange(selectedWeekDate);
     filteredAttendance = myAttendance.filter(a => a.date >= mondayStr && a.date <= sundayStr);
+
+    let overlapDays = 0;
+    const approvedLeavesInWeek = allLeaves.filter(l => l.status === 'approved' && l.startDate && l.endDate);
+    approvedLeavesInWeek.forEach(l => {
+      let d = new Date(l.startDate);
+      const endD = new Date(l.endDate);
+      while (d <= endD) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dStr = `${y}-${m}-${day}`;
+        const dayOfWeek = d.getDay();
+        // Only count weekdays
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+          if (dStr >= mondayStr && dStr <= sundayStr) {
+            overlapDays += (l.halfDay ? 0.5 : 1);
+          }
+        }
+        d.setDate(d.getDate() + 1);
+      }
+    });
+
+    targetWeeklyHours -= overlapDays * ((targetWorkSecs || 28800) / 3600);
+    if (targetWeeklyHours < 0) targetWeeklyHours = 0;
+
   } else if (filterType === 'custom') {
     filteredAttendance = myAttendance.filter(a => a.date >= customStartDate && a.date <= customEndDate);
+  }
+
+  // Calculate dynamic weeklyHoursChartData based on chartMonth
+  const weeklyHoursChartData = [];
+  if (chartMonth) {
+    const [yr, mo] = chartMonth.split('-').map(Number);
+    const lastDayOfMonth = new Date(yr, mo, 0); // Last day of the selected month
+    for (let i = 3; i >= 0; i--) {
+      const d = new Date(lastDayOfMonth);
+      d.setDate(d.getDate() - i * 7);
+      
+      const day = d.getDay();
+      const diffToMonday = d.getDate() - day + (day === 0 ? -6 : 1);
+      const startW = new Date(d);
+      startW.setDate(diffToMonday);
+      startW.setHours(0, 0, 0, 0);
+      
+      const endW = new Date(startW);
+      endW.setDate(startW.getDate() + 6);
+      endW.setHours(23, 59, 59, 999);
+      
+      const startStr = formatDateStr(startW);
+      const endStr = formatDateStr(endW);
+      
+      const weekRecords = myAttendance.filter(a => a.date && a.date >= startStr && a.date <= endStr);
+      const wHours = weekRecords.reduce((sum, a) => sum + (a.totalHours || 0), 0);
+      
+      weeklyHoursChartData.push({
+        week: `W${4 - i}`,
+        hours: Number(wHours.toFixed(1))
+      });
+    }
   }
 
   const joinDateSafe = employee ? employee.joinDate : '2023-01-01';
@@ -991,6 +1086,9 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     setLeaveYearFilter,
     leaveForm,
     setLeaveForm,
+    filteredLeaves,
+    leaveCounts,
+    handleLeaveSubmit,
     leaveError,
     setLeaveError,
     selectedMonth,
@@ -1004,6 +1102,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     remainingBreakSecs,
     isBreakOver,
     targetWorkSecs,
+    targetWeeklyHours,
     totalExtraHours,
     totalLessHours,
     showGoodbye,
@@ -1019,6 +1118,9 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     totalWorkingDays,
     attendancePct,
     monthlyHours,
+    weeklyHours,
+    weeklyHoursChartData,
+    weekLabel,
     totalLeaveUsed,
     totalLeave,
     filteredLeaves,
@@ -1070,6 +1172,8 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     setCustomStartDate,
     customEndDate,
     setCustomEndDate,
+    chartMonth,
+    setChartMonth,
     getWeekRange,
     shiftNotices,
     handleCancelLeave

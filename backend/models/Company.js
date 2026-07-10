@@ -15,6 +15,7 @@ const companySchema = new mongoose.Schema(
     country: { type: String, default: 'Sri Lanka' },
     avatar: { type: String, default: '' },
     teaBreakAllowed: { type: Boolean, default: true },
+    isTeam: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

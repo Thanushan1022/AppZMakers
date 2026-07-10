@@ -87,7 +87,7 @@ try {
 const startServer = async () => {
   try {
     await connectDatabase();
-    await seedIfEmpty();
+    // await seedIfEmpty();
     await ensureUserProfiles();
 
     // Start background cron jobs
@@ -115,4 +115,8 @@ const startServer = async () => {
 };
 
 startServer();
-// restart trigger
+
+
+
+
+

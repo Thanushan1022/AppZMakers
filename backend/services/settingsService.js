@@ -5,6 +5,17 @@ export const getSettings = async () => {
   if (!settings) {
     settings = await SystemSettings.create({ key: 'default' });
   }
+  if (!settings.departments || settings.departments.length === 0) {
+    settings.departments = [
+      'Engineering',
+      'Design',
+      'Product',
+      'Operations',
+      'Analytics'
+    ];
+    await settings.save();
+  }
+  
   const o = settings.toObject();
   delete o.key;
   delete o._id;

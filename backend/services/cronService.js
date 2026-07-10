@@ -30,7 +30,10 @@ export const startCronJobs = () => {
           if (!employee) continue;
 
           // Find rule for this department
-          const rule = departmentRules.find(r => r.department === employee.department);
+          const rule = departmentRules.find(r => 
+            r.department && employee.department && 
+            r.department.trim() === employee.department.trim()
+          );
           if (!rule || !rule.enabled) continue; // Skip if no rule or disabled
 
           // Calculate elapsed hours (excluding breaks)

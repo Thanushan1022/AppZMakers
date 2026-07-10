@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { BACKEND_URL } from '../config';
 
@@ -17,6 +17,7 @@ export function useHRController(hrId, updateAuth) {
   const [leavesList, setLeavesList] = useState([]);
   const [clients, setClients] = useState([]);
   const [shiftNotices, setShiftNotices] = useState([]);
+  const [globalDepartments, setGlobalDepartments] = useState([]);
 
   const [todayAttendance, setTodayAttendance] = useState([]);
   const [weeklyAttendanceData, setWeeklyAttendanceData] = useState([]);
@@ -64,6 +65,8 @@ export function useHRController(hrId, updateAuth) {
     country: '',
     shift: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const [leaveTabFilter, setLeaveTabFilter] = useState('pending');
   const [leaveMonthFilter, setLeaveMonthFilter] = useState('all');
@@ -91,12 +94,18 @@ export function useHRController(hrId, updateAuth) {
 
   const fetchData = async () => {
     try {
-      const [dashRes, dbRes, leavesRes, noticesRes] = await Promise.all([
+      const [dashRes, dbRes, leavesRes, noticesRes, settingsRes] = await Promise.all([
         fetch(`${BACKEND_URL}/hr/dashboard?date=${selectedDate}`),
         fetch(`${BACKEND_URL}/admin/dashboard`),
         fetch(`${BACKEND_URL}/hr/leaves`),
         fetch(`${BACKEND_URL}/hr/shift-notices`),
+        fetch(`${BACKEND_URL}/hr/settings`),
       ]);
+
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        setGlobalDepartments(settingsData.departments || []);
+      }
 
       if (leavesRes.ok) {
         setLeavesList(await leavesRes.json());
@@ -527,6 +536,8 @@ export function useHRController(hrId, updateAuth) {
 
   const handleAddEmployee = async (e) => {
     if (e) e.preventDefault();
+    if (isSubmitting) return;
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(empForm.email)) {
       alert('Please enter a valid email address.');
@@ -541,6 +552,10 @@ export function useHRController(hrId, updateAuth) {
       alert('Please select or enter a working location (country).');
       return;
     }
+
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     try {
       const res = await fetch(`${BACKEND_URL}/hr/employees`, {
         method: 'POST',
@@ -566,13 +581,21 @@ export function useHRController(hrId, updateAuth) {
         setEmpForm({ name: '', email: '', position: '', department: '', joinDate: '', dateOfBirth: '', address: '', country: '', shift: '' });
         setShowModal(false);
         fetchData();
+        setTimeout(() => {
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+        }, 500);
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to add employee');
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
       }
     } catch (err) {
       console.error(err);
       alert('An error occurred while adding the employee.');
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -603,6 +626,7 @@ export function useHRController(hrId, updateAuth) {
     selectedEmployeeId,
     setSelectedEmployeeId,
     departments,
+    globalDepartments,
     filteredEmployees,
     selectedEmployee,
     selectedAttendance,
@@ -662,6 +686,7 @@ export function useHRController(hrId, updateAuth) {
     empForm,
     setEmpForm,
     handleAddEmployee,
+    isSubmitting,
 
     hrProfile,
     handleUpdateHRProfile,
