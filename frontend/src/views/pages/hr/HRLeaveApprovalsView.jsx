@@ -57,25 +57,25 @@ export function HRLeaveApprovalsView({
       </div>
 
       {/* Filter tabs + search */}
-      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xl shadow-slate-200/40 dark:shadow-none">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-5 flex flex-col xl:flex-row items-start xl:items-center gap-4 shadow-xl shadow-slate-200/40 dark:shadow-none w-full min-w-0">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 w-full xl:w-auto min-w-0">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700 overflow-x-auto w-full sm:w-auto flex-nowrap" style={{ scrollbarWidth: 'none' }}>
             {['all', 'pending', 'approved', 'rejected', 'cancelled'].map(f => (
               <button
                 key={f}
                 onClick={() => setLeaveTabFilter(f)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${leaveTabFilter === f ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                className={`flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${leaveTabFilter === f ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
               >
                 {f} ({leaveCounts[f] || 0})
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <select
               value={leaveYearFilter}
               onChange={(e) => setLeaveYearFilter(e.target.value)}
-              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
+              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors flex-1 sm:flex-none"
             >
               <option value="all">All Years</option>
               {availableYears.map(y => (
@@ -85,7 +85,7 @@ export function HRLeaveApprovalsView({
             <select
               value={leaveMonthFilter}
               onChange={(e) => setLeaveMonthFilter(e.target.value)}
-              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
+              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors flex-1 sm:flex-none"
             >
               {months.map(m => (
                 <option key={m.value} value={m.value}>{m.label}</option>
@@ -93,7 +93,7 @@ export function HRLeaveApprovalsView({
             </select>
           </div>
         </div>
-        <div className="flex-1 relative w-full sm:w-auto">
+        <div className="flex-1 relative w-full min-w-0">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
@@ -108,53 +108,53 @@ export function HRLeaveApprovalsView({
       {/* Leave cards */}
       <div className="space-y-4">
         {filteredLeaves.length === 0 ? (
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-12 text-center shadow-xl shadow-slate-200/40 dark:shadow-none">
+          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-12 text-center shadow-xl shadow-slate-200/40 dark:shadow-none w-full min-w-0">
             <Clock className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
             <p className="text-slate-400">No leave requests found</p>
           </div>
         ) : filteredLeaves.map(leave => (
-          <div key={leave.id} className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/80 dark:border-slate-700 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:bg-white/70 transition-all relative overflow-hidden group">
+          <div key={leave.id} className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/80 dark:border-slate-700 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:bg-white/70 transition-all relative overflow-hidden group w-full min-w-0">
             <div className="absolute -right-12 -top-12 w-48 h-48 bg-indigo-300/40 dark:bg-indigo-900/40 rounded-full blur-3xl group-hover:bg-indigo-400/50 transition-colors duration-700 ease-out pointer-events-none"></div>
             <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-fuchsia-300/30 dark:bg-fuchsia-900/30 rounded-full blur-3xl group-hover:bg-fuchsia-400/40 transition-colors duration-700 ease-out pointer-events-none"></div>
-            <div className="relative z-10 flex items-start gap-5">
+            <div className="relative z-10 flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
               <div className="w-12 h-12 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-black text-lg flex-shrink-0 shadow-sm border border-indigo-100 dark:border-indigo-800">
                 {leave.employeeName.split(' ').map(n => n[0]).join('')}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 w-full">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
-                  <div>
-                    <div className="font-bold text-lg text-slate-800 dark:text-slate-100">{leave.employeeName}</div>
-                    <div className="text-slate-500 dark:text-slate-400 text-sm mt-1">{leave.department} · Applied {leave.appliedOn}</div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-lg text-slate-800 dark:text-slate-100 truncate">{leave.employeeName}</div>
+                    <div className="text-slate-500 dark:text-slate-400 text-sm mt-1 truncate">{leave.department} · Applied {leave.appliedOn}</div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-bold shadow-sm ${
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold shadow-sm flex-shrink-0 ${
                     leave.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
                     leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 
                     leave.status === 'cancelled' ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-amber-50 text-amber-600'
                   }`}>{leave.status}</span>
                 </div>
 
-                <div className="mt-4 flex items-center gap-4 flex-wrap">
-                  <span className={`px-3 py-1.5 rounded-lg text-sm font-bold border shadow-sm capitalize ${typeColors[leave.type] || 'bg-slate-50 text-slate-600'}`}>
+                <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <span className={`px-3 py-1.5 rounded-lg text-sm font-bold border shadow-sm capitalize whitespace-nowrap ${typeColors[leave.type] || 'bg-slate-50 text-slate-600'}`}>
                     {leave.type === 'client-assigned' ? 'Client/Lead' : leave.type} Leave
                   </span>
-                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <Calendar className="w-4 h-4" />
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
                     <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{leave.startDate}</span>
-                    {leave.startDate !== leave.endDate && <><span>→</span><span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{leave.endDate}</span></>}
-                    <span className="text-slate-300">·</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">{leave.days} day{leave.days !== 1 ? 's' : ''}</span>
+                    {leave.startDate !== leave.endDate && <><span className="text-slate-400">→</span><span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{leave.endDate}</span></>}
+                    <span className="text-slate-300 hidden sm:inline">·</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">{leave.days} day{leave.days !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
 
-                <p className="mt-4 text-slate-700 dark:text-slate-300 text-base font-medium leading-relaxed">{leave.reason}</p>
+                <p className="mt-4 text-slate-700 dark:text-slate-300 text-base font-medium leading-relaxed break-words">{leave.reason}</p>
 
                 {leave.rejectionReason && (
-                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl text-sm text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50">
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl text-sm text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50 break-words">
                     <strong>Rejection reason:</strong> {leave.rejectionReason}
                   </div>
                 )}
                 {leave.hrNote && (
-                  <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-sm text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
+                  <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-sm text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 break-words">
                     <strong>HR note:</strong> {leave.hrNote}
                   </div>
                 )}
@@ -162,16 +162,16 @@ export function HRLeaveApprovalsView({
             </div>
 
             {leave.status === 'pending' && (
-              <div className="mt-4 pt-4 border-t border-border flex items-center gap-3 relative z-10">
+              <div className="mt-5 pt-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10">
                 <button
                   onClick={() => { setSelectedLeave(leave); setLeaveAction('approve'); }}
-                  className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 >
                   <CheckCircle2 className="w-4 h-4" />Approve
                 </button>
                 <button
                   onClick={() => { setSelectedLeave(leave); setLeaveAction('reject'); }}
-                  className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 >
                   <XCircle className="w-4 h-4" />Reject
                 </button>

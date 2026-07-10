@@ -168,201 +168,206 @@ export function Login({
       </div>
 
       {/* RIGHT PANEL (56% width on desktop) — Glassmorphic box form side */}
-      <div className="flex-1 p-6 sm:p-12 lg:p-16 flex flex-col items-center justify-center min-h-[100dvh] lg:min-h-0 lg:h-screen z-10 bg-transparent overflow-y-auto">
+      <div className="flex-1 overflow-y-auto h-screen z-10 bg-transparent">
+        <div className="min-h-full flex flex-col items-center justify-center p-6 sm:p-12 lg:p-16">
+          {/* Blurred Login Box Container */}
+          <div className="w-full max-w-lg bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[32px] p-8 sm:p-10 space-y-6 relative overflow-hidden group">
+            {/* Subtle liquid glow inside */}
+            <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-1000 -z-10" />
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-        {/* Blurred Login Box Container */}
-        <div className="w-full max-w-lg bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[32px] p-8 sm:p-10 space-y-8 my-auto relative overflow-hidden group">
-          {/* Subtle liquid glow inside */}
-          <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-1000 -z-10" />
-          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-          {/* Logo on Mobile */}
-          <div className="lg:hidden flex justify-center mb-6">
-            <img src={logoImg} alt="AppzMaker Logo" className="w-40 sm:w-56 h-auto object-contain drop-shadow-2xl" />
-          </div>
-
-          {/* Header */}
-          <div className="space-y-2">
-            <span className="text-[#a59bfb] text-[10px] font-extrabold uppercase tracking-widest block">Welcome back</span>
-            <h2 className="text-white text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-md">
-              {isForgot ? 'Reset Password' : 'Sign in to your AppZ TeamorA'}
-            </h2>
-            <p className="text-white/70 text-sm">
-              {isForgot ? 'Enter your email address to get a password reset link' : 'Select your role and sign in to continue'}
-            </p>
-          </div>
-
-          {/* Role selector */}
-          {!isForgot && (
-            <div className="space-y-2.5">
-              <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Choose Portal Role</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 bg-white/5 backdrop-blur-md rounded-[14px] p-1 gap-1 border border-white/10 shadow-inner">
-                {roles.map((role) => {
-                  const Icon = role.icon;
-                  const isSelected = selectedRole === role.id;
-                  return (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => setSelectedRole(role.id)}
-                      className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-[11px] text-[11px] font-extrabold transition-all duration-300 ${isSelected
-                        ? 'bg-gradient-to-r from-indigo-500/80 to-purple-500/80 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-white/20'
-                        : 'bg-transparent hover:bg-white/10 text-white/60 hover:text-white border border-transparent'
-                        }`}
-                    >
-                      <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span>{role.label.split(' ')[0]}</span>
-                    </button>
-                  );
-                })}
-              </div>
+            {/* Logo on Mobile */}
+            <div className="lg:hidden flex justify-center mb-6">
+              <img src={logoImg} alt="AppzMaker Logo" className="w-40 sm:w-56 h-auto object-contain drop-shadow-2xl" />
             </div>
-          )}
 
-          {error && (
-            <div className={`p-3.5 rounded-[14px] bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-200 text-sm shadow-inner ${error.includes('You did not checkout properly') ? 'font-bold' : 'font-medium'}`}>
-              {error}
+            {/* Header */}
+            <div className="space-y-2">
+              <span className="text-[#a59bfb] text-[10px] font-extrabold uppercase tracking-widest block">Welcome back</span>
+              <h2 className="text-white text-[20px] sm:text-3xl font-extrabold tracking-tight whitespace-nowrap drop-shadow-md">
+                {isForgot ? 'Reset Password' : 'Sign in to your AppZ TeamorA'}
+              </h2>
+              <p className="text-white/70 text-sm">
+                {isForgot ? 'Enter your email address to get a password reset link' : 'Select your role and sign in to continue'}
+              </p>
             </div>
-          )}
 
-          {successMessage && (
-            <div className="p-3.5 rounded-[14px] bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 text-emerald-200 text-sm font-medium shadow-inner">
-              {successMessage}
-            </div>
-          )}
-
-          {/* Form */}
-          {isForgot ? (
-            <form onSubmit={handleForgotSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
-                <div className="relative group/input">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
-                  <input
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    required
-                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
-                    placeholder="you@domain.com"
-                  />
+            {/* Role selector */}
+            {!isForgot && (
+              <div className="space-y-2.5">
+                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Choose Portal Role</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 bg-white/5 backdrop-blur-md rounded-[14px] p-1 gap-1 border border-white/10 shadow-inner">
+                  {roles.map((role) => {
+                    const Icon = role.icon;
+                    const isSelected = selectedRole === role.id;
+                    return (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRole(role.id);
+                          setEmail('');
+                          setPassword('');
+                        }}
+                        className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-[11px] text-[11px] font-extrabold transition-all duration-300 ${isSelected
+                          ? 'bg-gradient-to-r from-indigo-500/80 to-purple-500/80 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-white/20'
+                          : 'bg-transparent hover:bg-white/10 text-white/60 hover:text-white border border-transparent'
+                          }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{role.label.split(' ')[0]}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+            )}
 
-              <button
-                type="submit"
-                disabled={forgotLoading}
-                className="w-full bg-gradient-to-r from-indigo-500/80 to-purple-500/80 hover:from-indigo-400/90 hover:to-purple-400/90 disabled:opacity-60 text-white py-3.5 rounded-[14px] flex items-center justify-center gap-2 transition-all duration-300 font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] border border-white/20 hover:-translate-y-0.5"
-              >
-                {forgotLoading ? 'Sending...' : 'Send Reset Link'}
-                <LogIn className="w-4 h-4" />
-              </button>
-
-              <div className="text-center pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('login');
-                    setError('');
-                    setSuccessMessage('');
-                  }}
-                  className="text-indigo-300 hover:text-white text-xs font-bold transition-colors drop-shadow-sm"
-                >
-                  Back to Sign In
-                </button>
+            {error && (
+              <div className={`p-3.5 rounded-[14px] bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-200 text-sm shadow-inner ${error.includes('You did not checkout properly') ? 'font-bold' : 'font-medium'}`}>
+                {error}
               </div>
-            </form>
-          ) : (
-            <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
-              {isSignup && (
+            )}
+
+            {successMessage && (
+              <div className="p-3.5 rounded-[14px] bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 text-emerald-200 text-sm font-medium shadow-inner">
+                {successMessage}
+              </div>
+            )}
+
+            {/* Form */}
+            {isForgot ? (
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Full Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] px-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
-                    placeholder="Your full name"
-                  />
+                  <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
+                  <div className="relative group/input">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      required
+                      className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
+                      placeholder="you@domain.com"
+                    />
+                  </div>
                 </div>
-              )}
 
-              <div className="space-y-1.5">
-                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
-                <div className="relative group/input">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
-                    placeholder="you@domain.com"
-                  />
-                </div>
-              </div>
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full bg-gradient-to-r from-indigo-500/80 to-purple-500/80 hover:from-indigo-400/90 hover:to-purple-400/90 disabled:opacity-60 text-white py-3.5 rounded-[14px] flex items-center justify-center gap-2 transition-all duration-300 font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] border border-white/20 hover:-translate-y-0.5"
+                >
+                  {forgotLoading ? 'Sending...' : 'Send Reset Link'}
+                  <LogIn className="w-4 h-4" />
+                </button>
 
-              <div className="space-y-1.5">
-                <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Password</label>
-                <div className="relative group/input">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-12 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
-                    placeholder="••••••••"
-                  />
+                <div className="text-center pt-2">
                   <button
                     type="button"
-                    onClick={() => setShowPass(!showPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                    onClick={() => {
+                      setMode('login');
+                      setError('');
+                      setSuccessMessage('');
+                    }}
+                    className="text-indigo-300 hover:text-white text-xs font-bold transition-colors drop-shadow-sm"
                   >
-                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    Back to Sign In
                   </button>
                 </div>
-              </div>
+              </form>
+            ) : (
+              <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
+                {isSignup && (
+                  <div className="space-y-1.5">
+                    <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Full Name</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] px-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
+                      placeholder="Your full name"
+                    />
+                  </div>
+                )}
 
-              {/* Utility Row */}
-              <div className="flex items-center justify-end text-xs pt-1">
+                <div className="space-y-1.5">
+                  <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Email Address</label>
+                  <div className="relative group/input">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
+                      placeholder="you@domain.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-white/70 text-[10px] uppercase font-bold tracking-wider">Password</label>
+                  <div className="relative group/input">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] pl-11 pr-12 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all font-medium shadow-inner"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(!showPass)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                    >
+                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Utility Row */}
+                <div className="flex items-center justify-end text-xs pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('forgot');
+                      setError('');
+                      setSuccessMessage('');
+                    }}
+                    className="text-indigo-300 hover:text-white font-bold transition-colors drop-shadow-sm"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={() => {
-                    setMode('forgot');
-                    setError('');
-                    setSuccessMessage('');
-                  }}
-                  className="text-indigo-300 hover:text-white font-bold transition-colors drop-shadow-sm"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-indigo-500/80 to-purple-500/80 hover:from-indigo-400/90 hover:to-purple-400/90 disabled:opacity-60 text-white py-3.5 rounded-[14px] flex items-center justify-center gap-2 transition-all duration-300 font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] border border-white/20 hover:-translate-y-0.5"
                 >
-                  Forgot password?
+                  {loading ? 'Please wait...' : isSignup ? 'Register Portal' : 'Sign In to Workspace'}
+                  <LogIn className="w-4 h-4" />
                 </button>
-              </div>
+              </form>
+            )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-500/80 to-purple-500/80 hover:from-indigo-400/90 hover:to-purple-400/90 disabled:opacity-60 text-white py-3.5 rounded-[14px] flex items-center justify-center gap-2 transition-all duration-300 font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] border border-white/20 hover:-translate-y-0.5"
-              >
-                {loading ? 'Please wait...' : isSignup ? 'Register Portal' : 'Sign In to Workspace'}
-                <LogIn className="w-4 h-4" />
-              </button>
-            </form>
-          )}
+          </div>
 
-        </div>
-
-        {/* Bottom Section: Footer Copyright (Mobile View) */}
-        <div className="lg:hidden relative z-30 text-white/70 text-[10px] sm:text-xs text-center mt-8 space-y-1 font-medium">
-          <div>© 2026 AppZ Makers. All rights reserved.</div>
-          <div>
-            Developed By{' '}
-            <a href="https://appzmake.com" target="_blank" rel="noreferrer" className="text-indigo-300 font-bold hover:text-white transition-colors">
-              AppZ Makers
-            </a>
+          {/* Bottom Section: Footer Copyright (Mobile View) */}
+          <div className="lg:hidden relative z-30 text-white/70 text-[10px] sm:text-xs text-center mt-8 space-y-1 font-medium">
+            <div>© 2026 AppZ Makers. All rights reserved.</div>
+            <div>
+              Developed By{' '}
+              <a href="https://appzmake.com" target="_blank" rel="noreferrer" className="text-indigo-300 font-bold hover:text-white transition-colors">
+                AppZ Makers
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -265,12 +265,12 @@ export function EmployeeLeaveView({
             </div>
             <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight">Leave History</h3>
           </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 w-full xl:w-auto min-w-0">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <select
                 value={leaveYearFilter}
                 onChange={(e) => setLeaveYearFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors flex-1 sm:flex-none"
               >
                 <option value="all">All Years</option>
                 {availableYears.map(y => (
@@ -280,7 +280,7 @@ export function EmployeeLeaveView({
               <select
                 value={leaveMonthFilter}
                 onChange={(e) => setLeaveMonthFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors"
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-colors flex-1 sm:flex-none"
               >
                 {months.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -288,12 +288,12 @@ export function EmployeeLeaveView({
               </select>
             </div>
             
-            <div className="flex items-center p-1 bg-slate-100/80 dark:bg-slate-900/80 rounded-2xl shadow-inner border border-slate-200/50 dark:border-slate-700/50">
-              {['all', 'pending', 'approved', 'rejected'].map(f => (
+            <div className="flex items-center p-1 bg-slate-100/80 dark:bg-slate-900/80 rounded-2xl shadow-inner border border-slate-200/50 dark:border-slate-700/50 overflow-x-auto w-full sm:w-auto flex-nowrap" style={{ scrollbarWidth: 'none' }}>
+              {['all', 'pending', 'approved', 'rejected', 'cancelled'].map(f => (
                 <button
                   key={f}
                   onClick={() => setLeaveFilter(f)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
+                  className={`flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 ${
                     leaveFilter === f 
                       ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800'
@@ -320,7 +320,8 @@ export function EmployeeLeaveView({
               const stMap = {
                 approved: { bg: 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800/50', text: 'text-emerald-700 dark:text-emerald-400', icon: <CheckCircle2 className="w-6 h-6 text-emerald-500" /> },
                 rejected: { bg: 'bg-rose-50 dark:bg-rose-900/30 border-rose-100 dark:border-rose-800/50', text: 'text-rose-700 dark:text-rose-400', icon: <XCircle className="w-6 h-6 text-rose-500" /> },
-                pending: { bg: 'bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800/50', text: 'text-amber-700 dark:text-amber-400', icon: <Clock className="w-6 h-6 text-amber-500" /> }
+                pending: { bg: 'bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800/50', text: 'text-amber-700 dark:text-amber-400', icon: <Clock className="w-6 h-6 text-amber-500" /> },
+                cancelled: { bg: 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', text: 'text-slate-600 dark:text-slate-400', icon: <XCircle className="w-6 h-6 text-slate-500" /> }
               };
               const st = stMap[leave.status] || stMap.pending;
 

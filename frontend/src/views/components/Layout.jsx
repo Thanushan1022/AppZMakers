@@ -324,7 +324,7 @@ export function Layout({ role, onLogout, auth, children }) {
   );
 
   return (
-    <div className="flex fixed inset-0 overflow-hidden bg-slate-50 dark:bg-slate-950" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+    <div className="flex fixed inset-0 h-[100dvh] overflow-hidden bg-slate-50 dark:bg-slate-950" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {/* VIBRANT Dynamic Background Blobs for Liquid Effect */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-white/50 dark:bg-slate-950/50">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-500/40 dark:bg-blue-600/40 blur-[100px] animate-pulse mix-blend-multiply dark:mix-blend-screen" style={{ animationDuration: '8s' }}></div>
@@ -436,7 +436,7 @@ export function Layout({ role, onLogout, auth, children }) {
           </header>
 
           {/* Page content */}
-          <main className="flex-1 overflow-y-auto p-4 lg:p-6 relative">
+          <main className="flex-1 overflow-y-auto p-4 pb-12 lg:p-6 lg:pb-12 relative">
             {children}
           </main>
         </div>

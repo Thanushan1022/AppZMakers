@@ -341,12 +341,28 @@ export function AdminSettingsView({
         {/* Department Overtime Rules */}
         <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none relative overflow-hidden group space-y-6 lg:col-span-2">
           <div className="absolute -top-16 -right-16 w-96 h-96 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-colors duration-700"></div>
-          <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 border-b border-white/50 dark:border-slate-800/50 pb-4 text-lg relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center border border-blue-100 dark:border-blue-800/50">
-              <Clock className="w-5 h-5 text-blue-500" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/50 dark:border-slate-800/50 pb-4 relative z-10">
+            <h2 className="text-slate-800 dark:text-slate-100 font-bold flex items-center gap-3 text-lg">
+              <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center border border-blue-100 dark:border-blue-800/50">
+                <Clock className="w-5 h-5 text-blue-500" />
+              </div>
+              Department Overtime Rules
+            </h2>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLocalSettings(prev => ({ ...prev, departmentOvertimeRules: settings.departmentOvertimeRules || [] }))}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => saveKey('departmentOvertimeRules', localSettings.departmentOvertimeRules)}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+              >
+                {saveStatus.departmentOvertimeRules === 'saving' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Save All'}
+              </button>
             </div>
-            Department Overtime Rules
-          </h2>
+          </div>
           <div className="relative z-10 overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -356,8 +372,7 @@ export function AdminSettingsView({
                   <th className="px-4 py-3 font-semibold">Interval (mins)</th>
                   <th className="px-4 py-3 font-semibold">Timeout (mins)</th>
                   <th className="px-4 py-3 font-semibold text-center">Email Notify</th>
-                  <th className="px-4 py-3 font-semibold">Max Hours</th>
-                  <th className="px-4 py-3 rounded-tr-xl font-semibold">Action</th>
+                  <th className="px-4 py-3 rounded-tr-xl font-semibold">Max Hours</th>
                 </tr>
               </thead>
               <tbody>
@@ -396,19 +411,11 @@ export function AdminSettingsView({
                       <td className="px-4 py-4">
                         <input type="number" min="1" value={rule.maxOvertimeHours} onChange={e => handleRuleChange('maxOvertimeHours', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm bg-slate-50" />
                       </td>
-                      <td className="px-4 py-4">
-                        <button
-                          onClick={() => saveKey('departmentOvertimeRules', localSettings.departmentOvertimeRules)}
-                          className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-semibold flex items-center gap-1"
-                        >
-                          {saveStatus.departmentOvertimeRules === 'saving' ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Save All'}
-                        </button>
-                      </td>
                     </tr>
                   );
                 })}
                 {(localSettings.departments || []).length === 0 && (
-                   <tr><td colSpan="7" className="px-4 py-8 text-center text-slate-400">No departments found. Assign departments to employees first.</td></tr>
+                   <tr><td colSpan="6" className="px-4 py-8 text-center text-slate-400">No departments found. Assign departments to employees first.</td></tr>
                 )}
               </tbody>
             </table>

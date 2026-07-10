@@ -968,6 +968,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     pending: leavesForMonthYear.filter(l => l.status === 'pending').length,
     approved: leavesForMonthYear.filter(l => l.status === 'approved').length,
     rejected: leavesForMonthYear.filter(l => l.status === 'rejected').length,
+    cancelled: leavesForMonthYear.filter(l => l.status === 'cancelled').length,
   };
 
   const filteredLeaves = leavesForMonthYear.filter(l => {
