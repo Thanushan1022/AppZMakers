@@ -93,7 +93,7 @@ export function AdminSettingsView({
                   min="0"
                   value={localSettings.breakTime || ''}
                   onChange={e => handleLocalChange('breakTime', e.target.value)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                   placeholder="hour"
                 />
                 <button
@@ -116,7 +116,7 @@ export function AdminSettingsView({
                   min={1}
                   value={localSettings.mealBreaksMax !== undefined ? localSettings.mealBreaksMax : 5}
                   onChange={e => handleLocalChange('mealBreaksMax', parseInt(e.target.value) || 0)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                   placeholder="e.g. 5"
                 />
                 <button
@@ -140,7 +140,7 @@ export function AdminSettingsView({
                   pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
                   value={localSettings.morningShiftStartTime || '09:00'}
                   onChange={e => handleLocalChange('morningShiftStartTime', e.target.value)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
                 />
                 <button
                   onClick={() => saveKey('morningShiftStartTime', localSettings.morningShiftStartTime)}
@@ -162,7 +162,7 @@ export function AdminSettingsView({
                   pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
                   value={localSettings.nightShiftStartTime || '21:00'}
                   onChange={e => handleLocalChange('nightShiftStartTime', e.target.value)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 font-mono"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50 font-mono"
                 />
                 <button
                   onClick={() => saveKey('nightShiftStartTime', localSettings.nightShiftStartTime)}
@@ -184,7 +184,7 @@ export function AdminSettingsView({
                   min="0"
                   value={localSettings.workHours || ''}
                   onChange={e => handleLocalChange('workHours', e.target.value)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                   placeholder="hour"
                 />
                 <button
@@ -212,7 +212,7 @@ export function AdminSettingsView({
 
           <div className="space-y-4 relative z-10">
             {/* Enable/Disable Tea Break */}
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-border">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-border">
               <div>
                 <label className="text-slate-800 text-sm font-semibold">Enable Tea Break</label>
                 <span className="block text-slate-400 text-xs mt-0.5">Toggle tea break feature visibility and options on dashboard</span>
@@ -244,7 +244,7 @@ export function AdminSettingsView({
                   min={1}
                   value={localSettings.teaBreaksMax !== undefined ? localSettings.teaBreaksMax : 2}
                   onChange={e => handleLocalChange('teaBreaksMax', parseInt(e.target.value) || 0)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                 />
                 <button
                   onClick={() => saveKey('teaBreaksMax', localSettings.teaBreaksMax !== undefined ? localSettings.teaBreaksMax : 2)}
@@ -265,7 +265,7 @@ export function AdminSettingsView({
                   min={1}
                   value={localSettings.teaBreakDuration !== undefined ? localSettings.teaBreakDuration : 20}
                   onChange={e => handleLocalChange('teaBreakDuration', parseInt(e.target.value) || 0)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                 />
                 <button
                   onClick={() => saveKey('teaBreakDuration', localSettings.teaBreakDuration !== undefined ? localSettings.teaBreakDuration : 20)}
@@ -286,7 +286,7 @@ export function AdminSettingsView({
                   min={0}
                   value={localSettings.teaBreakGap !== undefined ? localSettings.teaBreakGap : 120}
                   onChange={e => handleLocalChange('teaBreakGap', parseInt(e.target.value) || 0)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                 />
                 <button
                   onClick={() => saveKey('teaBreakGap', localSettings.teaBreakGap !== undefined ? localSettings.teaBreakGap : 120)}
@@ -323,7 +323,7 @@ export function AdminSettingsView({
                   min="0"
                   value={localSettings.leaveAllocations?.medical || 0}
                   onChange={e => handleLeaveChange('medical', parseInt(e.target.value) || 0)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                 />
                 <button
                   onClick={() => saveKey('leaveAllocations.medical', localSettings.leaveAllocations.medical)}
@@ -400,16 +400,16 @@ export function AdminSettingsView({
                         <input type="checkbox" checked={rule.enabled} onChange={e => handleRuleChange('enabled', e.target.checked)} className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" />
                       </td>
                       <td className="px-4 py-4">
-                        <input type="number" min="1" value={rule.intervalMinutes} onChange={e => handleRuleChange('intervalMinutes', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm bg-slate-50" />
+                        <input type="number" min="1" value={rule.intervalMinutes} onChange={e => handleRuleChange('intervalMinutes', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50" />
                       </td>
                       <td className="px-4 py-4">
-                        <input type="number" min="1" value={rule.timeoutMinutes} onChange={e => handleRuleChange('timeoutMinutes', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm bg-slate-50" />
+                        <input type="number" min="1" value={rule.timeoutMinutes} onChange={e => handleRuleChange('timeoutMinutes', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50" />
                       </td>
                       <td className="px-4 py-4 text-center">
                         <input type="checkbox" checked={rule.emailNotification} onChange={e => handleRuleChange('emailNotification', e.target.checked)} className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" />
                       </td>
                       <td className="px-4 py-4">
-                        <input type="number" min="1" value={rule.maxOvertimeHours} onChange={e => handleRuleChange('maxOvertimeHours', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm bg-slate-50" />
+                        <input type="number" min="1" value={rule.maxOvertimeHours} onChange={e => handleRuleChange('maxOvertimeHours', Number(e.target.value))} className="w-20 border border-border rounded-lg px-2 py-1 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50" />
                       </td>
                     </tr>
                   );
@@ -441,7 +441,7 @@ export function AdminSettingsView({
                   min="1"
                   value={localSettings.sessionTimeout || ''}
                   onChange={e => handleLocalChange('sessionTimeout', e.target.value)}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
                 />
                 <button
                   onClick={() => saveKey('sessionTimeout', localSettings.sessionTimeout)}
@@ -471,7 +471,7 @@ export function AdminSettingsView({
               <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-2">Selectively assign tea break privileges to companies or individual employees</p>
             </div>
             
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-border">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-xl border border-border">
               <button
                 onClick={() => { setAllocationTab('companies'); setFilterQuery(''); }}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
@@ -502,7 +502,7 @@ export function AdminSettingsView({
               placeholder={allocationTab === 'companies' ? "Search client/lead companies..." : "Search employees..."}
               value={filterQuery}
               onChange={e => setFilterQuery(e.target.value)}
-              className="w-full border border-border rounded-xl pl-10 pr-4 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+              className="w-full border border-border rounded-xl pl-10 pr-4 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
             />
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
           </div>
@@ -588,7 +588,7 @@ export function AdminSettingsView({
               value={newDepartment}
               onChange={e => setNewDepartment(e.target.value)}
               placeholder="e.g. Marketing"
-              className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50"
+              className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-slate-50 dark:bg-slate-800/50"
             />
             <button
               onClick={() => {
@@ -606,15 +606,15 @@ export function AdminSettingsView({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-4">
             {(localSettings.departments || []).map((dept, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-white border border-slate-100 shadow-sm rounded-xl hover:border-indigo-100 hover:shadow-md transition-all group">
-                <span className="text-sm font-semibold text-slate-700">{dept}</span>
+              <div key={idx} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm rounded-xl hover:border-indigo-100 dark:hover:border-indigo-500/50 hover:shadow-md transition-all group">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{dept}</span>
                 <button
                   onClick={() => {
                     const updatedDepartments = localSettings.departments.filter(d => d !== dept);
                     handleLocalChange('departments', updatedDepartments);
                     saveKey('departments', updatedDepartments);
                   }}
-                  className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                  className="text-slate-300 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors opacity-0 group-hover:opacity-100"
                   title="Remove Department"
                 >
                   <Trash2 className="w-4 h-4" />
