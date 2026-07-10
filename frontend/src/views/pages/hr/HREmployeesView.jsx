@@ -369,8 +369,9 @@ export function HREmployeesView({
                     { label: 'Extra Hours', value: stats.extraHours ? `+${stats.extraHours.toFixed(1)}h` : '—', color: 'text-emerald-600' },
                     { label: 'Less Hours', value: stats.lessHours ? `${stats.lessHours.toFixed(1)}h` : '—', color: 'text-red-500' },
                     { label: 'Present', value: `${stats.present}`, color: 'text-sky-600' },
-                    { label: 'Absent', value: `${stats.total - stats.present}`, color: 'text-red-500' },
-                  ].map(s => (
+                    { label: 'Half Day', value: `${stats.halfDay || 0}`, color: 'text-orange-500' },
+                    { label: 'Absent', value: `${stats.absent || 0}`, color: 'text-red-500' },
+                  ].map((s, idx) => (
                     <div key={s.label} className="bg-slate-50 rounded-xl p-3">
                       <div className={`${s.color} font-semibold`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem' }}>{s.value}</div>
                       <div className="text-slate-400 text-xs mt-0.5">{s.label}</div>

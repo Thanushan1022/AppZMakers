@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User, X, MapPin } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Users, Building2, ShieldCheck, UserPlus, Mail, Phone, Calendar, FileText, Download, User, X, MapPin, ChevronDown } from 'lucide-react';
 
 export const AdminUsersView = React.memo(function AdminUsersView({
   employees,
@@ -47,6 +47,8 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 }) {
   const [assigningCompany, setAssigningCompany] = useState(null);
   const [companyAddMode, setCompanyAddMode] = useState('client');
+  const [leadDropdownOpen, setLeadDropdownOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState({});
   const [selectedHRId, setSelectedHRId] = useState(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const selectedHR = hrUsers.find(h => h.id === selectedHRId) || null;
@@ -458,8 +460,9 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       { label: 'Extra Hours', value: stats.extraHours ? `+${stats.extraHours.toFixed(1)}h` : '—', color: 'text-emerald-600' },
                       { label: 'Less Hours', value: stats.lessHours ? `${stats.lessHours.toFixed(1)}h` : '—', color: 'text-red-500' },
                       { label: 'Present', value: `${stats.present}`, color: 'text-sky-600' },
-                      { label: 'Absent', value: `${stats.total - stats.present}`, color: 'text-red-500' },
-                    ].map(s => (
+                      { label: 'Half Day', value: `${stats.halfDay || 0}`, color: 'text-orange-500' },
+                      { label: 'Absent', value: `${stats.absent || 0}`, color: 'text-red-500' },
+                    ].map((s, idx) => (
                       <div key={s.label} className="bg-slate-50 rounded-xl p-3">
                         <div className={`${s.color} font-semibold`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem' }}>{s.value}</div>
                         <div className="text-slate-400 text-xs mt-0.5">{s.label}</div>
@@ -589,11 +592,11 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                                   breakMinutes: rec.breakMinutes || '',
                                   tasks: (rec.tasks && rec.tasks.length > 0)
                                     ? [
-                                        rec.tasks[0]?.description || '',
-                                        rec.tasks[1]?.description || '',
-                                        rec.tasks[2]?.description || '',
-                                        rec.tasks[3]?.description || ''
-                                      ]
+                                      rec.tasks[0]?.description || '',
+                                      rec.tasks[1]?.description || '',
+                                      rec.tasks[2]?.description || '',
+                                      rec.tasks[3]?.description || ''
+                                    ]
                                     : ['', '', '', ''],
                                   visibleTaskCount: Math.max(1, (rec.tasks || []).length),
                                 });
@@ -853,17 +856,33 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
                     {f.key === 'department' ? (
-                      <select
-                        required
-                        value={empForm[f.key] || ''}
-                        onChange={e => setEmpForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
-                      >
-                        <option value="" disabled>Select Department...</option>
-                        {(settings.departments || []).map(dept => (
-                          <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <div
+                          className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold cursor-pointer flex items-center justify-between"
+                          onClick={() => setOpenDropdowns(p => ({ ...p, empDept: !p.empDept }))}
+                        >
+                          <span className={empForm[f.key] ? 'truncate' : 'truncate text-white/50'}>
+                            {empForm[f.key] || 'Select Department...'}
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-white/50 flex-shrink-0" />
+                        </div>
+                        {openDropdowns.empDept && (
+                          <div className="absolute top-full left-0 mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden bg-slate-900 border border-white/10 rounded-[14px] shadow-2xl z-[9999] py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                            {(settings.departments || []).map(dept => (
+                              <div
+                                key={dept}
+                                className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm font-medium text-white truncate"
+                                onClick={() => {
+                                  setEmpForm(p => ({ ...p, [f.key]: dept }));
+                                  setOpenDropdowns(p => ({ ...p, empDept: false }));
+                                }}
+                              >
+                                {dept}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <input
                         type={f.key === 'joinDate' || f.key === 'dateOfBirth' ? 'date' : f.key === 'email' ? 'email' : 'text'}
@@ -916,19 +935,33 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 
                 <div className="col-span-2">
                   <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Working Location (Country)</label>
-                  <select
-                    required
-                    value={empForm.country || ''}
-                    onChange={e => setEmpForm(p => ({ ...p, country: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
-                  >
-                    <option value="" disabled>Choose Location...</option>
-                    <option value="Sri Lanka">Sri Lanka</option>
-                    <option value="USA">USA</option>
-                    <option value="UK">UK</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Australia">Australia</option>
-                  </select>
+                  <div className="relative">
+                    <div
+                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold cursor-pointer flex items-center justify-between"
+                      onClick={() => setOpenDropdowns(p => ({ ...p, empCountry: !p.empCountry }))}
+                    >
+                      <span className={empForm.country ? 'truncate' : 'truncate text-white/50'}>
+                        {empForm.country || 'Choose Location...'}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    </div>
+                    {openDropdowns.empCountry && (
+                      <div className="absolute top-full left-0 mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden bg-slate-900 border border-white/10 rounded-[14px] shadow-2xl z-[9999] py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                        {['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].map(c => (
+                          <div
+                            key={c}
+                            className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm font-medium text-white truncate"
+                            onClick={() => {
+                              setEmpForm(p => ({ ...p, country: c }));
+                              setOpenDropdowns(p => ({ ...p, empCountry: false }));
+                            }}
+                          >
+                            {c}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
               </div>
@@ -978,17 +1011,33 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   <div key={f.key} className={f.key === 'email' || f.key === 'name' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
                     {f.key === 'department' ? (
-                      <select
-                        required
-                        value={hrForm[f.key] || 'Human Resources'}
-                        onChange={e => setHrForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
-                      >
-                        <option value="" disabled>Select Department...</option>
-                        {(settings.departments || []).map(dept => (
-                          <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <div
+                          className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold cursor-pointer flex items-center justify-between"
+                          onClick={() => setOpenDropdowns(p => ({ ...p, hrDept: !p.hrDept }))}
+                        >
+                          <span className={hrForm[f.key] ? 'truncate' : 'truncate text-white/50'}>
+                            {hrForm[f.key] || 'Select Department...'}
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-white/50 flex-shrink-0" />
+                        </div>
+                        {openDropdowns.hrDept && (
+                          <div className="absolute top-full left-0 mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden bg-slate-900 border border-white/10 rounded-[14px] shadow-2xl z-[9999] py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                            {(settings.departments || []).map(dept => (
+                              <div
+                                key={dept}
+                                className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm font-medium text-white truncate"
+                                onClick={() => {
+                                  setHrForm(p => ({ ...p, [f.key]: dept }));
+                                  setOpenDropdowns(p => ({ ...p, hrDept: false }));
+                                }}
+                              >
+                                {dept}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <input
                         type={f.type}
@@ -1034,7 +1083,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 
       {showModal && activeTab === 'companies' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+          <div className="w-full max-w-xl min-h-[550px] max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-3xl rounded-[32px] border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transform scale-100 transition-all animate-in zoom-in-95 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {/* Subtle emerald liquid glow for companies */}
             <div className="absolute -inset-24 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 blur-3xl opacity-50 transition-opacity duration-1000 -z-10 pointer-events-none" />
 
@@ -1045,13 +1094,13 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                 </div>
                 <div>
                   <h3 className="text-white font-black text-xl tracking-tight drop-shadow-md">
-                    {editingItem 
-                      ? 'Edit Details' 
+                    {editingItem
+                      ? 'Edit Details'
                       : (companyAddMode === 'client' ? 'Add New Client' : 'Add New Lead')}
                   </h3>
                   <p className="text-white/70 font-bold text-sm mt-0.5">
-                    {editingItem 
-                      ? 'Update details' 
+                    {editingItem
+                      ? 'Update details'
                       : (companyAddMode === 'client' ? 'Enter details to add new client' : 'Enter details to add new lead')}
                   </p>
                 </div>
@@ -1087,70 +1136,88 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                   <div key={f.key} className={f.key === 'name' || f.key === 'email' ? 'col-span-2' : ''}>
                     <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">{f.label}</label>
                     {f.type === 'select_employee' ? (
-                      <select
-                        value={coForm[f.key] || ''}
-                        onChange={e => {
-                          const selectedName = e.target.value;
-                          const emp = employees.find(emp => emp.name === selectedName);
-                          setCoForm(p => ({
-                            ...p,
-                            contact: selectedName,
-                            email: emp ? emp.email : '',
-                            phone: emp ? (emp.phone || '') : ''
-                          }));
-                        }}
-                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                        required
-                      >
-                        <option value="" className="bg-slate-900">Select a Lead...</option>
-                        {employees.map(emp => (
-                          <option key={emp.id} value={emp.name} className="bg-slate-900">
-                            {emp.name} {emp.department ? `(${emp.department})` : ''}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <div
+                          className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold cursor-pointer flex items-center justify-between"
+                          onClick={() => setLeadDropdownOpen(!leadDropdownOpen)}
+                        >
+                          <span className="truncate">{coForm.contact || 'Select a Lead...'}</span>
+                          <ChevronDown className="w-4 h-4 text-white/50 flex-shrink-0" />
+                        </div>
+                        {leadDropdownOpen && (
+                          <div className="absolute top-full left-0 mt-1 w-full max-h-80 overflow-y-auto overflow-x-hidden bg-slate-900 border border-white/10 rounded-[14px] shadow-2xl z-[9999] py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                            <div
+                              className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm font-medium text-white/50 truncate"
+                              onClick={() => {
+                                setCoForm(p => ({ ...p, contact: '', email: '', phone: '' }));
+                                setLeadDropdownOpen(false);
+                              }}
+                            >
+                              Select a Lead...
+                            </div>
+                            {employees.map(emp => (
+                              <div
+                                key={emp.id}
+                                className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm font-medium text-white truncate"
+                                onClick={() => {
+                                  setCoForm(p => ({
+                                    ...p,
+                                    contact: emp.name,
+                                    email: emp.email || '',
+                                    phone: emp.phone || ''
+                                  }));
+                                  setLeadDropdownOpen(false);
+                                }}
+                                title={`${emp.name} ${emp.department ? `(${emp.department})` : ''}`}
+                              >
+                                {emp.name} {emp.department ? `(${emp.department})` : ''}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                    <input
-                      type={f.type}
-                      value={coForm[f.key] || ''}
-                      onChange={e => setCoForm(p => ({
-                        ...p,
-                        [f.key]: f.key === 'phone' ? e.target.value.replace(/[^0-9+\s\-()]/g, '') : e.target.value
-                      }))}
-                      placeholder={f.placeholder}
-                      required
-                      max={f.key === 'joinedDate' ? new Date().toISOString().split('T')[0] : undefined}
-                      minLength={['name', 'industry', 'contact'].includes(f.key) ? 2 : undefined}
-                      maxLength={['name', 'industry', 'contact'].includes(f.key) ? 30 : undefined}
-                      pattern={
-                        f.key === 'name'
-                          ? "^[a-zA-Z0-9\\s.\\-()&]+$"
-                          : f.key === 'industry'
-                            ? "^[a-zA-Z\\s.\\-()&]+$"
-                            : f.key === 'contact'
-                              ? "^[a-zA-Z\\s.\\-]+$"
-                              : f.key === 'email'
-                                ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-                                : f.key === 'phone'
-                                  ? "^\\+?[0-9\\s\\-()]{7,20}$"
-                                  : undefined
-                      }
-                      title={
-                        f.key === 'name'
-                          ? "Only letters, numbers, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                          : f.key === 'industry'
-                            ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
-                            : f.key === 'contact'
-                              ? "Only letters, spaces, dots, and hyphens are allowed."
-                              : f.key === 'email'
-                                ? "Please enter a valid email address."
-                                : f.key === 'phone'
-                                  ? "Please enter a valid phone number (7-20 digits)."
-                                  : undefined
-                      }
-                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
-                      style={f.key === 'joinedDate' ? { colorScheme: 'dark' } : {}}
-                    />
+                      <input
+                        type={f.type}
+                        value={coForm[f.key] || ''}
+                        onChange={e => setCoForm(p => ({
+                          ...p,
+                          [f.key]: f.key === 'phone' ? e.target.value.replace(/[^0-9+\s\-()]/g, '') : e.target.value
+                        }))}
+                        placeholder={f.placeholder}
+                        required
+                        max={f.key === 'joinedDate' ? new Date().toISOString().split('T')[0] : undefined}
+                        minLength={['name', 'industry', 'contact'].includes(f.key) ? 2 : undefined}
+                        maxLength={['name', 'industry', 'contact'].includes(f.key) ? 30 : undefined}
+                        pattern={
+                          f.key === 'name'
+                            ? "^[a-zA-Z0-9\\s.\\-()&]+$"
+                            : f.key === 'industry'
+                              ? "^[a-zA-Z\\s.\\-()&]+$"
+                              : f.key === 'contact'
+                                ? "^[a-zA-Z\\s.\\-]+$"
+                                : f.key === 'email'
+                                  ? "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                                  : f.key === 'phone'
+                                    ? "^\\+?[0-9\\s\\-()]{7,20}$"
+                                    : undefined
+                        }
+                        title={
+                          f.key === 'name'
+                            ? "Only letters, numbers, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                            : f.key === 'industry'
+                              ? "Only letters, spaces, dots, hyphens, brackets, and ampersands are allowed."
+                              : f.key === 'contact'
+                                ? "Only letters, spaces, dots, and hyphens are allowed."
+                                : f.key === 'email'
+                                  ? "Please enter a valid email address."
+                                  : f.key === 'phone'
+                                    ? "Please enter a valid phone number (7-20 digits)."
+                                    : undefined
+                        }
+                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                        style={f.key === 'joinedDate' ? { colorScheme: 'dark' } : {}}
+                      />
                     )}
                   </div>
                 ))}
@@ -1174,19 +1241,33 @@ export const AdminUsersView = React.memo(function AdminUsersView({
 
                     <div className="col-span-2">
                       <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm mb-1.5 block">Country</label>
-                      <select
-                        required
-                        value={coForm.country || ''}
-                        onChange={e => setCoForm(p => ({ ...p, country: e.target.value }))}
-                        className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10 appearance-none [&>option]:bg-slate-800"
-                      >
-                        <option value="" disabled>Choose Location...</option>
-                        <option value="Sri Lanka">Sri Lanka</option>
-                        <option value="USA">USA</option>
-                        <option value="UK">UK</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Australia">Australia</option>
-                      </select>
+                      <div className="relative">
+                        <div
+                          className="w-full px-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-sm font-bold cursor-pointer flex items-center justify-between"
+                          onClick={() => setOpenDropdowns(p => ({ ...p, coCountry: !p.coCountry }))}
+                        >
+                          <span className={coForm.country ? 'truncate' : 'truncate text-white/50'}>
+                            {coForm.country || 'Choose Location...'}
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-white/50 flex-shrink-0" />
+                        </div>
+                        {openDropdowns.coCountry && (
+                          <div className="absolute top-full left-0 mt-1 w-full max-h-60 overflow-y-auto overflow-x-hidden bg-slate-900 border border-white/10 rounded-[14px] shadow-2xl z-[9999] py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                            {['Sri Lanka', 'USA', 'UK', 'Canada', 'Australia'].map(c => (
+                              <div
+                                key={c}
+                                className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm font-medium text-white truncate"
+                                onClick={() => {
+                                  setCoForm(p => ({ ...p, country: c }));
+                                  setOpenDropdowns(p => ({ ...p, coCountry: false }));
+                                }}
+                              >
+                                {c}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}

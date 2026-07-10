@@ -95,7 +95,10 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
     ));
 
     // Status matches
-    const matchesStatus = statusFilter === 'All' || rec.status === statusFilter.toLowerCase();
+    const normalizedFilter = statusFilter.toLowerCase() === 'half day' ? 'half-day' : statusFilter.toLowerCase();
+    const matchesStatus = statusFilter === 'All' || 
+                          rec.status === normalizedFilter || 
+                          (normalizedFilter === 'present' && rec.status === 'late');
 
     // Employee matches
     const matchesEmployee = employeeFilter === 'All' || rec.employeeId === employeeFilter;
@@ -239,6 +242,7 @@ export function CompanyAttendanceView({ myEmployees = [], attendanceHistory = []
               <option value="All">All Statuses</option>
               <option value="present">Present</option>
               <option value="absent">Absent</option>
+              <option value="half-day">Half Day</option>
             </select>
           </div>
 

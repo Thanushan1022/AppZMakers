@@ -417,7 +417,7 @@ export function useAdminController(adminId, updateAuth) {
   };
 
   const getEmployeeStats = (empId) =>
-    employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
+    employeeStatsMap[empId] || { present: 0, total: 0, pct: 0, hours: 0, extraHours: 0, lessHours: 0, late: 0, absent: 0, halfDay: 0, mealBreakMinutes: 0, teaBreakMinutes: 0 };
 
   const [shiftFilter, setShiftFilter] = useState('All');
 

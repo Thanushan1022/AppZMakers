@@ -648,7 +648,7 @@ export function CompanyReportsView({
                 <option value="all">All Employees</option>
                 {(employeesList || []).map(emp => (
                   <option key={emp.id} value={emp.id}>
-                    {(emp.name || '').split(' ')[0]} - {emp.department || 'No Dept'}
+                    {emp.name}
                   </option>
                 ))}
               </select>

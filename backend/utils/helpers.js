@@ -81,6 +81,7 @@ export const computeEmployeeStats = (employeeId, attendanceRecords) => {
   const present = records.filter((r) => r.status === 'present' || r.status === 'late').length;
   const late = records.filter((r) => r.status === 'late').length;
   const absent = records.filter((r) => r.status === 'absent').length;
+  const halfDay = records.filter((r) => r.status === 'half-day').length;
   const total = records.length;
   const hours = records.reduce((sum, r) => sum + (r.totalHours || 0), 0);
   const extraHours = records.reduce((sum, r) => sum + (r.extraHours || 0), 0);
@@ -109,6 +110,7 @@ export const computeEmployeeStats = (employeeId, attendanceRecords) => {
     present,
     late,
     absent,
+    halfDay,
     total,
     hours,
     extraHours,

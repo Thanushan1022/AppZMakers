@@ -202,6 +202,7 @@ export function TodayAttendanceView({
                   <option value="all">All Statuses</option>
                   <option value="present">Present</option>
                   <option value="absent">Absent</option>
+                  <option value="half-day">Half Day</option>
                 </select>
               </div>
               <div className="flex items-center gap-1.5">
@@ -285,8 +286,9 @@ export function TodayAttendanceView({
                     const isOnMealBreak = rec?.onBreak || (rec?.breaks?.some(b => b.type !== 'tea' && !b.end));
                     const isOnTeaBreak = rec?.onTeaBreak || (rec?.breaks?.some(b => b.type === 'tea' && !b.end));
 
-                    if (statusFilter === 'present' && isAbsent) return false;
+                    if (statusFilter === 'present' && status !== 'present' && status !== 'late') return false;
                     if (statusFilter === 'absent' && !isAbsent) return false;
+                    if (statusFilter === 'half-day' && status !== 'half-day') return false;
 
                     if (activityFilter !== 'all') {
                       if (isAbsent || !rec?.checkIn || rec?.checkOut) return false;

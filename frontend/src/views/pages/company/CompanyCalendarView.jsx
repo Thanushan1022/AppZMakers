@@ -417,14 +417,16 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       </div>
 
       {/* Calendar Grid Container */}
-      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none overflow-hidden">
+      <div className="bg-white/40 backdrop-blur-3xl rounded-[32px] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] overflow-hidden relative isolate">
+        <div className="absolute -inset-24 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-emerald-500/10 blur-3xl -z-10 pointer-events-none" />
+
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/40 bg-white/30 relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center shadow-sm">
-              <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+              <CalendarIcon className="w-5 h-5 text-indigo-600 drop-shadow-sm" />
             </div>
-            <span className="text-slate-800 dark:text-slate-100 font-black text-xl tracking-tight">
+            <span className="text-slate-800 font-black text-xl tracking-tight drop-shadow-sm">
               {monthNames[month]} {year}
             </span>
           </div>
@@ -432,19 +434,19 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
           <div className="flex items-center gap-2">
             <button
               onClick={prevMonth}
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all cursor-pointer active:scale-95"
+              className="p-2 hover:bg-white/50 text-slate-500 hover:text-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
+              className="px-5 py-2 bg-white/60 hover:bg-white/80 border border-white/50 text-slate-800 rounded-[12px] text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
             >
               Today
             </button>
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all cursor-pointer active:scale-95"
+              className="p-2 hover:bg-white/50 text-slate-500 hover:text-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -452,20 +454,20 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         </div>
 
         {/* Desktop Calendar Grid */}
-        <div className="hidden md:block">
-          <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800/50 text-center bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.02)] relative z-20">
+        <div className="hidden md:block relative z-10">
+          <div className="grid grid-cols-7 border-b border-white/40 text-center bg-white/20 backdrop-blur-sm text-indigo-900/60 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(255,255,255,0.4)]">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
               <div key={d}>{d}</div>
             ))}
           </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-slate-50/30 dark:bg-slate-900/30">
-            <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
-            <span className="text-sm text-slate-500 dark:text-slate-400 font-bold tracking-wider uppercase">Loading calendar...</span>
+          <div className="flex flex-col items-center justify-center py-32 bg-white/20">
+            <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+            <span className="text-sm text-slate-500 font-bold tracking-wider uppercase">Loading calendar...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-7 grid-rows-5 bg-slate-100 dark:bg-slate-800 gap-[1px]">
+          <div className="grid grid-cols-7 grid-rows-5 bg-white/30 gap-[1px]">
             {calendarDays.map((day, idx) => {
               const dayEvents = getEventsForDay(day);
               const isToday = day &&
@@ -481,14 +483,14 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 <div
                   key={idx}
                   onClick={() => day && handleDayClick(day)}
-                  className={`min-h-[140px] p-3 flex flex-col justify-between transition-all duration-300 relative ${day ? 'cursor-pointer' : ''} ${isWeekend ? 'bg-slate-50/90 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-800/80' : 'bg-white dark:bg-slate-900/90 hover:bg-slate-50 dark:hover:bg-slate-800'} ${!day ? 'bg-slate-50/30 dark:bg-slate-900/30' : ''} group`}
+                  className={`min-h-[140px] p-3 flex flex-col justify-between transition-all duration-300 relative ${day ? 'cursor-pointer' : ''} ${!day ? 'bg-white/20 backdrop-blur-sm' : isToday ? 'bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 z-10 shadow-[0_4px_20px_rgba(16,185,129,0.2)]' : isWeekend ? 'bg-white/40 hover:bg-white/60' : 'bg-white/60 hover:bg-white/80'} group`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${isToday ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-110' : isSunday ? 'text-rose-600 dark:text-rose-400 group-hover:bg-rose-50 dark:group-hover:bg-rose-900/30' : isSaturday ? 'text-slate-400 dark:text-slate-500 group-hover:bg-slate-100 dark:group-hover:bg-slate-800' : 'text-slate-700 dark:text-slate-200 group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
+                    <span className={`text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${isToday ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-110' : isSunday ? 'text-rose-500 group-hover:bg-rose-100' : isSaturday ? 'text-slate-500 group-hover:bg-slate-200' : 'text-slate-700 group-hover:bg-slate-200'}`}>
                       {day}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
+                      <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest bg-white/80 px-2 py-0.5 rounded-lg border border-white">
                         {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}
                       </span>
                     )}
@@ -535,14 +537,14 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         </div>
 
         {/* Mobile Agenda View */}
-        <div className="block md:hidden">
+        <div className="block md:hidden relative z-10">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 bg-slate-50/30 dark:bg-slate-900/30">
+            <div className="flex flex-col items-center justify-center py-24 bg-white/30">
               <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-3" />
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wider uppercase">Loading calendar...</span>
+              <span className="text-xs text-slate-500 font-bold tracking-wider uppercase">Loading calendar...</span>
             </div>
           ) : (
-            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900/90 max-h-[65vh] overflow-y-auto">
+            <div className="flex flex-col divide-y divide-white/40 bg-white/40 max-h-[65vh] overflow-y-auto">
               {calendarDays.filter(day => day).map(day => {
                 const dayEvents = getEventsForDay(day);
                 const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
@@ -554,17 +556,17 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                     key={day}
                     ref={isToday ? todayRef : null}
                     onClick={() => handleDayClick(day)}
-                    className={`flex gap-4 p-4 transition-colors cursor-pointer ${isToday ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                    className={`flex gap-4 p-4 transition-colors cursor-pointer ${isToday ? 'bg-emerald-50 hover:bg-emerald-100 border-l-[4px] border-emerald-500 shadow-sm' : 'hover:bg-white/60 border-l-[4px] border-transparent'}`}
                   >
                     <div className="flex flex-col items-center w-12 flex-shrink-0">
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>{weekdayStr}</span>
-                      <span className={`w-9 h-9 flex items-center justify-center rounded-full text-base font-black mt-1 transition-all ${isToday ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-110' : 'text-slate-700 dark:text-slate-200'}`}>
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-emerald-600' : 'text-slate-500'}`}>{weekdayStr}</span>
+                      <span className={`w-9 h-9 flex items-center justify-center rounded-full text-base font-black mt-1 transition-all ${isToday ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-110' : 'text-slate-700'}`}>
                         {day}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0 pt-1">
                       {dayEvents.length === 0 ? (
-                        <div className="text-sm text-slate-400 dark:text-slate-500 font-medium italic mt-1.5 opacity-60">No events</div>
+                        <div className="text-sm text-slate-400 font-medium italic mt-1.5 opacity-60">No events</div>
                       ) : (
                         <div className="space-y-2">
                           {dayEvents.map(event => {
