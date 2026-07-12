@@ -389,12 +389,12 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         <div className="absolute -inset-24 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-emerald-500/10 blur-3xl -z-10 pointer-events-none" />
 
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/40 bg-white/30 relative z-10 dark:border-slate-700/40 dark:bg-slate-800/50">
+        <div className="flex flex-wrap items-center justify-between px-6 py-5 border-b border-white/40 bg-white/30 relative z-10 dark:border-slate-700/40 dark:bg-slate-800/50 gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm dark:bg-slate-800/60 dark:border-slate-700/50">
+            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm dark:bg-slate-800/60 dark:border-slate-700/50 flex-shrink-0">
               <CalendarIcon className="w-5 h-5 text-indigo-600 drop-shadow-sm" />
             </div>
-            <span className="text-slate-800 font-black text-xl tracking-tight drop-shadow-sm dark:text-slate-100">
+            <span className="text-slate-800 font-black text-xl tracking-tight drop-shadow-sm dark:text-slate-100 whitespace-nowrap">
               {monthNames[month]} {year}
             </span>
           </div>
