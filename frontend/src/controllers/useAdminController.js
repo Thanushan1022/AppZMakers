@@ -828,6 +828,31 @@ export function useAdminController(adminId, updateAuth) {
     }
   };
 
+  const handleAssignTeam = async (employeeId, teamId) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${employeeId}/team`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || 'Team assignment updated successfully.');
+        setEmployees((prev) => prev.map((e) => e.id === employeeId ? { ...e, teamId: teamId, team: companies.find(c => c.id === teamId)?.name || 'None' } : e));
+        fetchData();
+        if (selectedEmployeeId === employeeId) {
+          fetchEmployeeDetail(employeeId);
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update team assignment.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while updating team assignment.');
+    }
+  };
+
   const handleAssignShift = async (employeeId, shift) => {
     try {
       const res = await fetch(`${BACKEND_URL}/employees/${employeeId}/shift`, {
@@ -1020,6 +1045,7 @@ export function useAdminController(adminId, updateAuth) {
     handleAddCompany,
     handleUpdateSetting,
     handleAssignClient,
+    handleAssignTeam,
     handleAssignShift,
     handleToggleEmployeeTeaBreak,
     handleToggleCompanyTeaBreak,

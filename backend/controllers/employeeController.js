@@ -472,6 +472,37 @@ export const updateClient = async (req, res) => {
   }
 };
 
+export const updateTeam = async (req, res) => {
+  try {
+    const emp = await findEmployee(req.params.id);
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    const { teamId } = req.body;
+    if (!teamId || teamId === 'unassigned' || teamId === 'Unassigned') {
+      emp.teamId = null;
+      emp.team = 'None';
+    } else {
+      let query;
+      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(teamId);
+      if (isValidObjectId) {
+        query = { $or: [{ legacyId: teamId }, { _id: teamId }] };
+      } else {
+        query = { legacyId: teamId };
+      }
+      const comp = await Company.findOne(query);
+      if (!comp) return res.status(404).json({ error: 'Team not found' });
+      emp.teamId = comp.legacyId || comp._id.toString();
+      emp.team = comp.name;
+    }
+    await emp.save();
+
+    res.json({ message: 'Employee team assignment updated successfully', employee: toEmployeeJSON(emp) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 export const updateShift = async (req, res) => {
   try {
     const emp = await findEmployee(req.params.id);

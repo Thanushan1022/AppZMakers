@@ -9,6 +9,8 @@ const employeeSchema = new mongoose.Schema(
     department: { type: String, default: '' },
     company: { type: String, default: 'General' },
     companyId: { type: String, default: null },
+    team: { type: String, default: 'None' },
+    teamId: { type: String, default: null },
     avatar: { type: String, default: '' },
     joinDate: { type: String, default: () => new Date().toISOString().split('T')[0] },
     dateOfBirth: { type: String, default: null },

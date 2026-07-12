@@ -11,6 +11,8 @@ export function CompanyProfileView({
   const [industry, setIndustry] = useState('');
   const [contact, setContact] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [country, setCountry] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -90,7 +92,7 @@ export function CompanyProfileView({
     }
 
     setIsSaving(true);
-    const updateData = { name, email, industry, contact, phone };
+    const updateData = { name, email, industry, contact, phone, address, country };
     if (password) {
       updateData.password = password;
     }
@@ -182,6 +184,8 @@ export function CompanyProfileView({
                   setIndustry(company.industry || '');
                   setContact(company.contact || '');
                   setPhone(company.phone || '');
+                  setAddress(company.address || '');
+                  setCountry(company.country || '');
                   setPassword('');
                   setConfirmPassword('');
                   setIsEditing(true);
@@ -256,6 +260,8 @@ export function CompanyProfileView({
               { label: 'Client/Lead ID', value: company.id ? company.id.toUpperCase() : 'N/A' },
               { label: 'Industry Sector', value: company.industry || 'General' },
               { label: 'Primary Contact', value: company.contact || 'N/A' },
+              { label: 'Location', value: company.address || 'N/A' },
+              { label: 'Country', value: company.country || 'N/A' },
               { label: 'Joined Date', value: company.joinedDate ? new Date(company.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' },
               { label: 'Assigned Employees Count', value: `${company.employeeCount || 0} active employees` },
             ].map(({ label, value }) => (
@@ -385,6 +391,38 @@ export function CompanyProfileView({
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\s\-()]/g, ''))}
                       placeholder="+1 (555) 012-3456"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm" htmlFor="address">Location</label>
+                  <div className="relative group/input">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                    <input
+                      id="address"
+                      type="text"
+                      maxLength={100}
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="City"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider pl-1 drop-shadow-sm" htmlFor="country">Country</label>
+                  <div className="relative group/input">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within/input:text-white/80 transition-colors" />
+                    <input
+                      id="country"
+                      type="text"
+                      maxLength={50}
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder="e.g. Sri Lanka"
                       className="w-full pl-12 pr-4 py-3.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-[14px] text-white text-base font-bold placeholder-white/30 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all shadow-inner hover:bg-white/10"
                     />
                   </div>

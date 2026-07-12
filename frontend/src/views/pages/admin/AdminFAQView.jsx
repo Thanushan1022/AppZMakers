@@ -161,8 +161,9 @@ export function AdminFAQView({ faqs, handleCreateFaq, handleUpdateFaq, handleDel
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Order Number</label>
                 <input
                   type="number"
+                  min="0"
                   value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, order: Math.max(0, Number(e.target.value)) })}
                   className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                   placeholder="0"
                 />

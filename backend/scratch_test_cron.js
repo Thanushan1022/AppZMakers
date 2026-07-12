@@ -7,7 +7,7 @@ import SystemSettings from './models/SystemSettings.js';
 dotenv.config();
 
 mongoose.connect(process.env.MONGODB_URI).then(async () => {
-  const emp = await Employee.findOne({ email: 'gajan@gmail.com' });
+  const emp = await Employee.findOne({ email: 'nilusana07gobalakrishnar@gmail.com' });
   const attendance = await Attendance.findOne({
     employeeId: { $in: [emp._id, emp.legacyId] },
     checkOut: null,
@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGODB_URI).then(async () => {
   const departmentRules = settings?.departmentOvertimeRules || [];
   
   const rule = departmentRules.find(r => r.department === emp.department);
-  console.log('Rule:', rule);
+  console.log('Rule:', rule); console.log('OvertimeState:', attendance.overtimeState);
   
   const now = new Date();
   const nowMs = now.getTime();

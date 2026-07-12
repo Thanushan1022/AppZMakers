@@ -13,6 +13,8 @@ export const toEmployeeJSON = (doc) => {
     department: standardizeDepartment(o.department),
     company: o.company,
     companyId: o.companyId,
+    team: o.team,
+    teamId: o.teamId,
     avatar: o.avatar,
     joinDate: o.joinDate,
     status: o.status,

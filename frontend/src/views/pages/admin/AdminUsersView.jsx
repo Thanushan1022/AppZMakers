@@ -23,6 +23,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   handleDeleteCompany,
   handleAddEmployee,
   handleAssignClient,
+  handleAssignTeam,
   hrForm,
   setHrForm,
   handleAddHR,
@@ -402,27 +403,50 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                 {/* Work Assignment Card */}
                 <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-3xl border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
                   <h4 className="text-slate-800 dark:text-slate-100 font-bold mb-4 text-sm flex items-center gap-2">
-                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">💼</span> Client/Lead Assignment
+                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">💼</span> Client & Team Assignment
                   </h4>
                   <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-3">
-                    <div>
-                      <div className="text-xs text-slate-400 font-medium">Current Client/Lead</div>
-                      <div className="text-slate-800 font-semibold text-sm mt-1">{selectedEmployee.company || 'General (Our Company)'}</div>
+                    
+                    {/* Client Assignment */}
+                    <div className="mb-4">
+                      <div className="text-xs text-slate-400 font-medium">Current Client</div>
+                      <div className="text-slate-800 font-semibold text-sm mt-1 mb-2">{selectedEmployee.company || 'General (Our Company)'}</div>
+                      
+                      <div className="pt-2 border-t border-slate-200/50">
+                        <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client</label>
+                        <select
+                          value={selectedEmployee.companyId || 'unassigned'}
+                          onChange={(e) => handleAssignClient(selectedEmployee.id, e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
+                        >
+                          <option value="unassigned">General (Our Company)</option>
+                          {companies.filter(c => !c.isTeam).map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-200/50">
-                      <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Client/Lead</label>
-                      <select
-                        value={selectedEmployee.companyId || 'unassigned'}
-                        onChange={(e) => handleAssignClient(selectedEmployee.id, e.target.value)}
-                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
-                      >
-                        <option value="unassigned">General (Our Company)</option>
-                        {companies.map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </select>
+                    {/* Team/Lead Assignment */}
+                    <div className="pt-3 border-t border-slate-200/50">
+                      <div className="text-xs text-slate-400 font-medium">Current Team / Lead</div>
+                      <div className="text-slate-800 font-semibold text-sm mt-1 mb-2">{selectedEmployee.team || 'None'}</div>
+                      
+                      <div className="pt-2 border-t border-slate-200/50">
+                        <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Team Lead</label>
+                        <select
+                          value={selectedEmployee.teamId || 'unassigned'}
+                          onChange={(e) => handleAssignTeam(selectedEmployee.id, e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
+                        >
+                          <option value="unassigned">None</option>
+                          {companies.filter(c => c.isTeam).map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
+
                   </div>
                 </div>
 

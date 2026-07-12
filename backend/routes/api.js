@@ -20,6 +20,7 @@ router.post('/employees/:id/leaves', employeeController.createLeaveRequest);
 router.delete('/employees/:id/leaves/:leaveId', employeeController.deleteLeaveRequest);
 router.put('/employees/:id/leaves/:leaveId/cancel', employeeController.cancelLeaveRequest);
 router.put('/employees/:id/client', employeeController.updateClient);
+router.put('/employees/:id/team', employeeController.updateTeam);
 router.put('/employees/:id/shift', employeeController.updateShift);
 router.put('/employees/:id/profile', employeeController.updateProfile);
 router.get('/employees/:id/shift-notices', employeeController.getEmployeeShiftNotices);

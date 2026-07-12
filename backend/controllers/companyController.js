@@ -169,7 +169,7 @@ export const updateProfile = async (req, res) => {
     const comp = await findCompany(req.params.id);
     if (!comp) return res.status(404).json({ error: 'Company not found' });
 
-    const { name, industry, contact, email, phone, password, avatar } = req.body;
+    const { name, industry, contact, email, phone, password, avatar, address, country } = req.body;
 
     if (password && password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
@@ -181,6 +181,8 @@ export const updateProfile = async (req, res) => {
     if (email !== undefined) comp.email = email;
     if (phone !== undefined) comp.phone = phone;
     if (avatar !== undefined) comp.avatar = avatar;
+    if (address !== undefined) comp.address = address;
+    if (country !== undefined) comp.country = country;
 
     await comp.save();
 

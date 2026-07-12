@@ -137,8 +137,6 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
     targetValue: '',
   });
 
-  const [selectedCountryFilter, setSelectedCountryFilter] = useState('All');
-
   const titleWordsCount = eventForm.title.trim().split(/\s+/).filter(Boolean).length;
   const descWordsCount = eventForm.description.trim().split(/\s+/).filter(Boolean).length;
   const todayStr = new Date().toISOString().split('T')[0];
@@ -189,25 +187,6 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return events.filter((e) => {
       if (e.start > dateStr || e.end < dateStr) return false;
-      
-      if (selectedCountryFilter !== 'All') {
-        let countryKey = '';
-        if (e.targetValue) {
-          countryKey = e.targetValue.toLowerCase().trim();
-        } else {
-          const match = e.title.match(/^\[(.*?)\]/);
-          if (match) {
-            countryKey = match[1].toLowerCase().trim();
-          }
-        }
-        
-        if (countryKey && countryKey !== selectedCountryFilter.toLowerCase() && countryKey !== 'united states' && countryKey !== 'united kingdom') {
-          // Additional check for aliases
-          if (selectedCountryFilter.toLowerCase() === 'usa' && countryKey === 'united states') return true;
-          if (selectedCountryFilter.toLowerCase() === 'uk' && countryKey === 'united kingdom') return true;
-          return false;
-        }
-      }
       return true;
     });
   };
@@ -222,7 +201,8 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
            event.type === 'casual-leave' ||
            event.type === 'medical-leave' ||
            event.type === 'birthday' ||
-           event.type === 'anniversary';
+           event.type === 'anniversary' ||
+           event.type.endsWith('-leave');
   };
 
   const canManageEvents = role === 'hr' || role === 'superadmin';
@@ -379,18 +359,6 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
           </p>
         </div>
         <div className="flex gap-3 items-center">
-          <select
-            value={selectedCountryFilter}
-            onChange={(e) => setSelectedCountryFilter(e.target.value)}
-            className="border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/20 cursor-pointer shadow-sm"
-          >
-            <option value="All">All Countries</option>
-            <option value="usa">USA</option>
-            <option value="uk">UK</option>
-            <option value="canada">Canada</option>
-            <option value="australia">Australia</option>
-            <option value="sri lanka">Sri Lanka</option>
-          </select>
           {canManageEvents && (
             <button
               onClick={() => {
@@ -417,16 +385,16 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
       </div>
 
       {/* Calendar Grid Container */}
-      <div className="bg-white/40 backdrop-blur-3xl rounded-[32px] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] overflow-hidden relative isolate">
+      <div className="bg-white/40 backdrop-blur-3xl rounded-[32px] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] overflow-hidden relative isolate dark:bg-slate-900/40 dark:border-slate-700/60">
         <div className="absolute -inset-24 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-emerald-500/10 blur-3xl -z-10 pointer-events-none" />
 
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/40 bg-white/30 relative z-10">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/40 bg-white/30 relative z-10 dark:border-slate-700/40 dark:bg-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm">
+            <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center border border-white/50 shadow-sm dark:bg-slate-800/60 dark:border-slate-700/50">
               <CalendarIcon className="w-5 h-5 text-indigo-600 drop-shadow-sm" />
             </div>
-            <span className="text-slate-800 font-black text-xl tracking-tight drop-shadow-sm">
+            <span className="text-slate-800 font-black text-xl tracking-tight drop-shadow-sm dark:text-slate-100">
               {monthNames[month]} {year}
             </span>
           </div>
@@ -434,19 +402,19 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
           <div className="flex items-center gap-2">
             <button
               onClick={prevMonth}
-              className="p-2 hover:bg-white/50 text-slate-500 hover:text-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm"
+              className="p-2 hover:bg-white/50 text-slate-500 hover:text-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm dark:hover:bg-slate-700/50 dark:hover:text-slate-200"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="px-5 py-2 bg-white/60 hover:bg-white/80 border border-white/50 text-slate-800 rounded-[12px] text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
+              className="px-5 py-2 bg-white/60 hover:bg-white/80 border border-white/50 text-slate-800 rounded-[12px] text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95 dark:bg-slate-800/60 dark:hover:bg-slate-700/80 dark:border-slate-700/50 dark:text-slate-100"
             >
               Today
             </button>
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-white/50 text-slate-500 hover:text-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm"
+              className="p-2 hover:bg-white/50 text-slate-500 hover:text-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm dark:hover:bg-slate-700/50 dark:hover:text-slate-200"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -455,19 +423,19 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
 
         {/* Desktop Calendar Grid */}
         <div className="hidden md:block relative z-10">
-          <div className="grid grid-cols-7 border-b border-white/40 text-center bg-white/20 backdrop-blur-sm text-indigo-900/60 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(255,255,255,0.4)]">
+          <div className="grid grid-cols-7 border-b border-white/40 text-center bg-white/20 backdrop-blur-sm text-indigo-900/60 text-[10px] font-black uppercase tracking-widest py-4 shadow-[0_1px_0_0_rgba(255,255,255,0.4)] dark:border-slate-700/40 dark:bg-slate-800/20 dark:text-indigo-200/60 dark:shadow-none">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
               <div key={d}>{d}</div>
             ))}
           </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-white/20">
+          <div className="flex flex-col items-center justify-center py-32 bg-white/20 dark:bg-slate-800/20">
             <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
             <span className="text-sm text-slate-500 font-bold tracking-wider uppercase">Loading calendar...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-7 grid-rows-5 bg-white/30 gap-[1px]">
+          <div className="grid grid-cols-7 grid-rows-5 bg-white/30 gap-[1px] dark:bg-slate-700/30">
             {calendarDays.map((day, idx) => {
               const dayEvents = getEventsForDay(day);
               const isToday = day &&
@@ -483,14 +451,14 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                 <div
                   key={idx}
                   onClick={() => day && handleDayClick(day)}
-                  className={`min-h-[140px] p-3 flex flex-col justify-between transition-all duration-300 relative ${day ? 'cursor-pointer' : ''} ${!day ? 'bg-white/20 backdrop-blur-sm' : isToday ? 'bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 z-10 shadow-[0_4px_20px_rgba(16,185,129,0.2)]' : isWeekend ? 'bg-white/40 hover:bg-white/60' : 'bg-white/60 hover:bg-white/80'} group`}
+                  className={`min-h-[140px] p-3 flex flex-col justify-between transition-all duration-300 relative ${day ? 'cursor-pointer' : ''} ${!day ? 'bg-white/20 backdrop-blur-sm dark:bg-slate-800/20' : isToday ? 'bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-400 z-10 shadow-[0_4px_20px_rgba(16,185,129,0.2)] dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:border-emerald-500' : isWeekend ? 'bg-white/40 hover:bg-white/60 dark:bg-slate-800/40 dark:hover:bg-slate-800/60' : 'bg-white/60 hover:bg-white/80 dark:bg-slate-800/60 dark:hover:bg-slate-800/80'} group`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${isToday ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-110' : isSunday ? 'text-rose-500 group-hover:bg-rose-100' : isSaturday ? 'text-slate-500 group-hover:bg-slate-200' : 'text-slate-700 group-hover:bg-slate-200'}`}>
+                    <span className={`text-sm font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${isToday ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-110' : isSunday ? 'text-rose-500 group-hover:bg-rose-100 dark:group-hover:bg-rose-900/30' : isSaturday ? 'text-slate-500 group-hover:bg-slate-200 dark:text-slate-400 dark:group-hover:bg-slate-700' : 'text-slate-700 group-hover:bg-slate-200 dark:text-slate-300 dark:group-hover:bg-slate-700'}`}>
                       {day}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest bg-white/80 px-2 py-0.5 rounded-lg border border-white">
+                      <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest bg-white/80 px-2 py-0.5 rounded-lg border border-white dark:bg-slate-800/80 dark:border-slate-700 dark:text-slate-400">
                         {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}
                       </span>
                     )}
@@ -539,12 +507,12 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
         {/* Mobile Agenda View */}
         <div className="block md:hidden relative z-10">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 bg-white/30">
+            <div className="flex flex-col items-center justify-center py-24 bg-white/30 dark:bg-slate-800/30">
               <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-3" />
               <span className="text-xs text-slate-500 font-bold tracking-wider uppercase">Loading calendar...</span>
             </div>
           ) : (
-            <div className="flex flex-col divide-y divide-white/40 bg-white/40 max-h-[65vh] overflow-y-auto">
+            <div className="flex flex-col divide-y divide-white/40 bg-white/40 max-h-[65vh] overflow-y-auto dark:divide-slate-700/40 dark:bg-slate-800/40">
               {calendarDays.filter(day => day).map(day => {
                 const dayEvents = getEventsForDay(day);
                 const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
@@ -556,11 +524,11 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
                     key={day}
                     ref={isToday ? todayRef : null}
                     onClick={() => handleDayClick(day)}
-                    className={`flex gap-4 p-4 transition-colors cursor-pointer ${isToday ? 'bg-emerald-50 hover:bg-emerald-100 border-l-[4px] border-emerald-500 shadow-sm' : 'hover:bg-white/60 border-l-[4px] border-transparent'}`}
+                    className={`flex gap-4 p-4 transition-colors cursor-pointer ${isToday ? 'bg-emerald-50 hover:bg-emerald-100 border-l-[4px] border-emerald-500 shadow-sm dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40' : 'hover:bg-white/60 border-l-[4px] border-transparent dark:hover:bg-slate-800/60'}`}
                   >
                     <div className="flex flex-col items-center w-12 flex-shrink-0">
                       <span className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-emerald-600' : 'text-slate-500'}`}>{weekdayStr}</span>
-                      <span className={`w-9 h-9 flex items-center justify-center rounded-full text-base font-black mt-1 transition-all ${isToday ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-110' : 'text-slate-700'}`}>
+                      <span className={`w-9 h-9 flex items-center justify-center rounded-full text-base font-black mt-1 transition-all ${isToday ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-110' : 'text-slate-700 dark:text-slate-300'}`}>
                         {day}
                       </span>
                     </div>
@@ -791,7 +759,7 @@ export function CompanyCalendarView({ role, employeeId, companyId }) {
             </div>
 
             <div className="flex gap-4 pt-8">
-              {canEditOrDelete && !isReadOnlyEvent(selectedEvent) && (
+              {canEditOrDelete && (!isReadOnlyEvent(selectedEvent)) && (
                 <button
                   type="button"
                   onClick={(e) => handleDelete(selectedEvent._id || selectedEvent.id, e)}

@@ -121,8 +121,8 @@ export function Login({
         {/* Top Section: Logo Block & Trust Badges */}
         <div className="relative z-30 space-y-4">
           <div className="flex flex-col items-start gap-2">
-            <div className="bg-white/95 p-4 rounded-3xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] backdrop-blur-md border border-white/20">
-              <img src={logoImg} alt="AppzMaker Logo" className="h-32 sm:h-44 lg:h-56 w-auto object-contain max-w-full" />
+            <div className="p-2">
+              <img src={logoImg} alt="AppzMaker Logo" className="h-32 sm:h-44 lg:h-56 w-auto object-contain max-w-full drop-shadow-xl" />
             </div>
             <div className="text-[#a59bfb] text-sm uppercase font-extrabold tracking-widest mt-1 pl-1">Workforce Solutions</div>
           </div>
@@ -181,8 +181,8 @@ export function Login({
 
             {/* Logo on Mobile */}
             <div className="lg:hidden flex justify-center mb-6">
-              <div className="bg-white/95 p-3 rounded-2xl shadow-[0_8px_20px_rgba(255,255,255,0.1)] backdrop-blur-md border border-white/20">
-                <img src={logoImg} alt="AppzMaker Logo" className="w-36 sm:w-48 h-auto object-contain" />
+              <div className="p-2">
+                <img src={logoImg} alt="AppzMaker Logo" className="w-36 sm:w-48 h-auto object-contain drop-shadow-xl" />
               </div>
             </div>
 

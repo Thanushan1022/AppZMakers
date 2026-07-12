@@ -9,6 +9,7 @@ import {
   updateGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
 } from '../services/googleCalendarService.js';
+import { syncLeaveBalance } from '../services/leaveService.js';
 
 export const getEvents = async (req, res) => {
   console.log('getEvents called!');
@@ -424,8 +425,31 @@ export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const event = await CompanyEvent.findById(id);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
+    let event;
+    try {
+      event = await CompanyEvent.findById(id);
+    } catch (err) {}
+
+    if (!event) {
+      let leave;
+      try {
+        leave = await LeaveRequest.findById(id);
+      } catch(err) {}
+
+      if (leave) {
+        await LeaveRequest.findByIdAndDelete(id);
+        let query = { $or: [{ legacyId: leave.employeeId }] };
+        if (mongoose.Types.ObjectId.isValid(leave.employeeId)) {
+          query.$or.push({ _id: leave.employeeId });
+        }
+        const emp = await Employee.findOne(query);
+        if (emp) {
+            await syncLeaveBalance(leave.employeeId, emp.joinDate);
+        }
+        return res.json({ message: 'Leave deleted from calendar successfully' });
+      }
+      return res.status(404).json({ error: 'Event not found' });
+    }
 
     if (event.googleEventId) {
       await deleteGoogleCalendarEvent(event.googleEventId, event.targetLocation === 'country' ? event.targetValue : 'Global');
