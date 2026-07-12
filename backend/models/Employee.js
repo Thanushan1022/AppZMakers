@@ -24,6 +24,9 @@ const employeeSchema = new mongoose.Schema(
     office: { type: String, default: 'Colombo' },
     shift: { type: String, enum: ['morning', 'night'], default: 'morning' },
     teaBreakAllowed: { type: Boolean, default: true },
+    isTeamLead: { type: Boolean, default: false },
+    reportsTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', default: null },
+    isClientSide: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

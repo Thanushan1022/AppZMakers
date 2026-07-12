@@ -341,17 +341,25 @@ export function HREmployeesView({
                       <div className="text-slate-800 font-semibold text-sm mt-1 mb-2">{selectedEmployee.team || 'None'}</div>
                       
                       <div className="pt-2 border-t border-slate-200/50">
-                        <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Team Lead</label>
-                        <select
-                          value={selectedEmployee.teamId || 'unassigned'}
-                          onChange={(e) => handleAssignTeam(selectedEmployee.id, e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
-                        >
-                          <option value="unassigned">None</option>
-                          {clients.filter(c => c.isTeam).map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                        {clients.some(c => c.isTeam && (c.contact || '').toLowerCase() === selectedEmployee.name.toLowerCase()) ? (
+                          <div className="text-xs text-amber-600 font-medium bg-amber-50 p-2 rounded-lg border border-amber-200/50">
+                            This employee is already a Team Lead and cannot be assigned to another team.
+                          </div>
+                        ) : (
+                          <>
+                            <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Team Lead</label>
+                            <select
+                              value={selectedEmployee.teamId || 'unassigned'}
+                              onChange={(e) => handleAssignTeam(selectedEmployee.id, e.target.value)}
+                              className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
+                            >
+                              <option value="unassigned">None</option>
+                              {clients.filter(c => c.isTeam).map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                              ))}
+                            </select>
+                          </>
+                        )}
                       </div>
                     </div>
 

@@ -433,17 +433,25 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                       <div className="text-slate-800 font-semibold text-sm mt-1 mb-2">{selectedEmployee.team || 'None'}</div>
                       
                       <div className="pt-2 border-t border-slate-200/50">
-                        <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Team Lead</label>
-                        <select
-                          value={selectedEmployee.teamId || 'unassigned'}
-                          onChange={(e) => handleAssignTeam(selectedEmployee.id, e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
-                        >
-                          <option value="unassigned">None</option>
-                          {companies.filter(c => c.isTeam).map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                        {companies.some(c => c.isTeam && (c.contact || '').toLowerCase() === selectedEmployee.name.toLowerCase()) ? (
+                          <div className="text-xs text-amber-600 font-medium bg-amber-50 p-2 rounded-lg border border-amber-200/50">
+                            This employee is already a Team Lead and cannot be assigned to another team.
+                          </div>
+                        ) : (
+                          <>
+                            <label className="block text-slate-505 text-[10px] font-semibold mb-1">Assign to Team Lead</label>
+                            <select
+                              value={selectedEmployee.teamId || 'unassigned'}
+                              onChange={(e) => handleAssignTeam(selectedEmployee.id, e.target.value)}
+                              className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none bg-white font-medium cursor-pointer"
+                            >
+                              <option value="unassigned">None</option>
+                              {companies.filter(c => c.isTeam).map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                              ))}
+                            </select>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -780,7 +788,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                                 <div className="break-all break-words">{co.contact}</div>
                               </td>
                               <td className="py-3 px-4 text-slate-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                {employees.filter(e => e.companyId === co.id).length}
+                                {employees.filter(e => co.isTeam ? e.teamId === co.id : e.companyId === co.id).length}
                               </td>
                               <td className="py-3 px-4 text-slate-400 whitespace-nowrap" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{co.joinedDate}</td>
                               <td className="py-3 px-4">
@@ -1326,22 +1334,34 @@ export const AdminUsersView = React.memo(function AdminUsersView({
             </div>
 
             <div className="overflow-y-auto my-4 flex-1 divide-y divide-border dark:divide-slate-800 pr-1">
-              {employees.map(emp => {
-                const isAssigned = emp.companyId === assigningCompany.id;
+              {employees.filter(emp => {
+                if (!assigningCompany.isTeam) return true;
+                const isLeadOfAnyTeam = companies.some(c => c.isTeam && (c.contact || '').toLowerCase() === emp.name.toLowerCase());
+                return !isLeadOfAnyTeam;
+              }).map(emp => {
+                const isAssigned = assigningCompany.isTeam ? emp.teamId === assigningCompany.id : emp.companyId === assigningCompany.id;
                 return (
                   <div key={emp.id} className="flex items-center justify-between py-3">
                     <div>
                       <div className="text-slate-700 dark:text-slate-200 text-sm font-medium">{emp.name}</div>
                       <div className="text-slate-400 dark:text-slate-500 text-xs">{emp.position} · {emp.department}</div>
                       <div className="text-slate-400 dark:text-slate-500 text-[10px] mt-0.5">
-                        Current: <span className="font-medium text-slate-600 dark:text-slate-400">{emp.company || 'General (Our Company)'}</span>
+                        Current: <span className="font-medium text-slate-600 dark:text-slate-400">
+                          {assigningCompany.isTeam ? (emp.team || 'None') : (emp.company || 'General (Our Company)')}
+                        </span>
                       </div>
                     </div>
                     <div>
                       <input
                         type="checkbox"
                         checked={isAssigned}
-                        onChange={() => handleAssignClient(emp.id, isAssigned ? '' : assigningCompany.id)}
+                        onChange={() => {
+                          if (assigningCompany.isTeam) {
+                            handleAssignTeam(emp.id, isAssigned ? '' : assigningCompany.id);
+                          } else {
+                            handleAssignClient(emp.id, isAssigned ? '' : assigningCompany.id);
+                          }
+                        }}
                         className="w-4 h-4 rounded text-indigo-600 border-gray-300 dark:border-slate-600 focus:ring-indigo-500 cursor-pointer dark:bg-slate-700"
                       />
                     </div>
