@@ -564,6 +564,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                         type="date"
                         value={attendanceDateFilter}
                         onChange={(e) => setAttendanceDateFilter(e.target.value)}
+                        max={getTodayDateString()}
                         className="border border-border rounded-xl px-2.5 py-1 text-xs text-slate-600 focus:outline-none bg-slate-50 font-medium cursor-pointer"
                       />
                     </div>

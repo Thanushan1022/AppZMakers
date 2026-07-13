@@ -116,7 +116,8 @@ export const getEvents = async (req, res) => {
       const comp = await Company.findOne(query).select('-avatar').lean();
       if (comp) {
         const compId = comp.legacyId || comp._id.toString();
-        const employees = await Employee.find({ companyId: compId }).select('-avatar -cvData -cvName').lean();
+        const employeeQuery = comp.isTeam ? { teamId: compId } : { companyId: compId };
+        const employees = await Employee.find(employeeQuery).select('-avatar -cvData -cvName').lean();
         const empIds = employees.map((emp) => emp.legacyId || emp._id.toString());
 
         const approvedLeaves = await LeaveRequest.find({
@@ -179,7 +180,8 @@ export const getEvents = async (req, res) => {
       const comp = await Company.findOne(query).select('-avatar').lean();
       if (comp) {
         const compId = comp.legacyId || comp._id.toString();
-        targetEmployees = await Employee.find({ companyId: compId, status: 'active' }).select('-avatar -cvData -cvName').lean();
+        const employeeQuery = comp.isTeam ? { teamId: compId, status: 'active' } : { companyId: compId, status: 'active' };
+        targetEmployees = await Employee.find(employeeQuery).select('-avatar -cvData -cvName').lean();
       }
     } else {
       // HR/Admin sees all active employees

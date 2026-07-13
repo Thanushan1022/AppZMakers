@@ -288,6 +288,13 @@ export function EmployeeProfileView({
               { label: 'Employee ID', value: employee.id ? employee.id.toUpperCase() : 'N/A' },
               { label: 'Position', value: employee.position },
               { label: 'Department', value: employee.department },
+              ...(employee.team && employee.team !== 'None' ? [
+                { label: 'Team', value: employee.team },
+                { label: 'Team Lead', value: employee.teamLead || 'Not Assigned' }
+              ] : []),
+              ...(employee.leadsTeams ? [
+                { label: 'Leads Team', value: employee.leadsTeams }
+              ] : []),
               { label: 'Join Date', value: new Date(employee.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
               { label: 'Date of Birth', value: employee.dateOfBirth ? new Date(employee.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' },
               { label: 'Tenure', value: `${yearsTenure} yr${yearsTenure !== 1 ? 's' : ''} ${monthsTenure} mo${monthsTenure !== 1 ? 's' : ''}` },

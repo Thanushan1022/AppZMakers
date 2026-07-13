@@ -28,7 +28,8 @@ export const getDashboard = async (req, res) => {
     await syncCompanyEmployeeCounts();
 
     const cid = comp.legacyId || comp._id.toString();
-    const compEmployees = await Employee.find({ companyId: cid }).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
+    const employeeQuery = comp.isTeam ? { teamId: cid } : { companyId: cid };
+    const compEmployees = await Employee.find(employeeQuery).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = compEmployees.map(toEmployeeJSON);
     const employeeIds = employeesJson.map((e) => e.id);
 
@@ -88,7 +89,8 @@ export const getReports = async (req, res) => {
 
     const { startDate, endDate } = req.query;
 
-    const employees = await Employee.find({ companyId: legacyId }).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
+    const employeeQuery = comp.isTeam ? { teamId: legacyId } : { companyId: legacyId };
+    const employees = await Employee.find(employeeQuery).select('-cvData -cvName').sort({ createdAt: -1 }).lean();
     const employeesJson = employees.map(toEmployeeJSON);
     const activeEmployees = employeesJson.filter((e) => e.status === 'active');
     const employeeIds = activeEmployees.map((e) => e.id);
@@ -280,7 +282,8 @@ export const createShiftNotice = async (req, res) => {
           await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
         }
       } else {
-        const companyEmployees = await Employee.find({ companyId: cid });
+        const employeeQuery = company.isTeam ? { teamId: cid } : { companyId: cid };
+        const companyEmployees = await Employee.find(employeeQuery);
         for (const emp of companyEmployees) {
           await LeaveRequest.create({
             employeeId: emp.legacyId || emp._id.toString(),
@@ -423,7 +426,8 @@ export const updateShiftNotice = async (req, res) => {
           await syncLeaveBalance(emp.legacyId || emp._id.toString(), emp.joinDate);
         }
       } else {
-        const companyEmployees = await Employee.find({ companyId: cid });
+        const employeeQuery = company.isTeam ? { teamId: cid } : { companyId: cid };
+        const companyEmployees = await Employee.find(employeeQuery);
         for (const emp of companyEmployees) {
           await LeaveRequest.create({
             employeeId: emp.legacyId || emp._id.toString(),

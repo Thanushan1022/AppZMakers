@@ -40,6 +40,22 @@ export const getProfile = async (req, res) => {
           companyTeaBreakAllowed = comp.teaBreakAllowed !== false;
         }
       }
+      if (emp.teamId) {
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(emp.teamId);
+        const teamQuery = isValidObjectId
+          ? { $or: [{ legacyId: emp.teamId }, { _id: emp.teamId }] }
+          : { legacyId: emp.teamId };
+        const teamComp = await Company.findOne(teamQuery);
+        if (teamComp) {
+          empJson.teamLead = teamComp.contact;
+        }
+      }
+      
+      const teamsLed = await Company.find({ isTeam: true, contact: emp.name });
+      if (teamsLed && teamsLed.length > 0) {
+        empJson.leadsTeams = teamsLed.map(t => t.name).join(', ');
+      }
+
       empJson.companyTeaBreakAllowed = companyTeaBreakAllowed;
     }
 

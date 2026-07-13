@@ -9,7 +9,8 @@ export const syncCompanyEmployeeCounts = async () => {
   const counts = await Promise.all(
     companies.map(async (company) => {
       const cid = company.legacyId || company._id.toString();
-      const count = await Employee.countDocuments({ companyId: cid });
+      const query = company.isTeam ? { teamId: cid } : { companyId: cid };
+      const count = await Employee.countDocuments(query);
       return { _id: company._id, count };
     })
   );

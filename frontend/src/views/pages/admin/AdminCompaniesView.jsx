@@ -4,6 +4,11 @@ import { Building2, Users, Mail, Phone, Briefcase, ChevronRight, User, MapPin } 
 export function AdminCompaniesView({ companies = [], employees = [] }) {
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [activeTab, setActiveTab] = useState('clients');
+
+  const clientCompanies = companies.filter(c => !c.isTeam);
+  const teamCompanies = companies.filter(c => c.isTeam);
+  const displayedCompanies = activeTab === 'clients' ? clientCompanies : teamCompanies;
 
   const FormatMultilineName = ({ name }) => {
     if (!name) return null;
@@ -18,12 +23,12 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
   };
 
   // If no company is selected, select the first one by default if list is not empty
-  const activeCompanyId = selectedCompanyId || (companies[0]?.id || null);
+  const activeCompanyId = selectedCompanyId || (displayedCompanies[0]?.id || null);
   const selectedCompany = companies.find(c => c.id === activeCompanyId);
 
   // Get employees assigned to the active company
   const companyEmployees = selectedCompany
-    ? employees.filter(e => e.companyId === selectedCompany.id)
+    ? employees.filter(e => selectedCompany.isTeam ? e.teamId === selectedCompany.id : e.companyId === selectedCompany.id)
     : [];
 
   return (
@@ -37,12 +42,34 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
         {/* Left Column: Companies List */}
         <div className="md:col-span-1 space-y-3">
           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2rem] border border-white dark:border-slate-800 p-6 shadow-xl shadow-slate-200/40 dark:shadow-none relative z-10">
-            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-base mb-4">Client/Lead Companies</h3>
+            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-base mb-4">Companies</h3>
+            <div className="flex gap-2 mb-4 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-xl border border-border">
+              <button
+                onClick={() => { setActiveTab('clients'); setSelectedCompanyId(null); }}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'clients'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-border/50'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                Clients
+              </button>
+              <button
+                onClick={() => { setActiveTab('teams'); setSelectedCompanyId(null); }}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'teams'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-border/50'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                Internal Teams
+              </button>
+            </div>
             <div className="max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               <div className="space-y-2">
-                {companies.map(co => {
+                {displayedCompanies.map(co => {
                   const isSelected = co.id === activeCompanyId;
-                  const empCount = employees.filter(e => e.companyId === co.id).length;
+                  const empCount = employees.filter(e => co.isTeam ? e.teamId === co.id : e.companyId === co.id).length;
                   return (
                     <div
                       key={co.id}
@@ -78,8 +105,8 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                     </div>
                   );
                 })}
-                {companies.length === 0 && (
-                  <div className="py-8 text-center text-slate-400 text-sm">No client/lead companies found</div>
+                {displayedCompanies.length === 0 && (
+                  <div className="py-8 text-center text-slate-400 text-sm">No companies found</div>
                 )}
               </div>
             </div>
@@ -172,7 +199,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                     {companyEmployees.length === 0 && (
                       <div className="sm:col-span-2 lg:col-span-3 py-16 text-center text-slate-400 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
                         <Users className="w-10 h-10 mx-auto mb-3 opacity-30 text-indigo-400" />
-                        <p className="text-base font-bold">No employees assigned to this client/lead yet</p>
+                        <p className="text-base font-bold">No employees assigned yet</p>
                       </div>
                     )}
                   </div>

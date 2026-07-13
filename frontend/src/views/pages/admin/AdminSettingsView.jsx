@@ -480,7 +480,7 @@ export function AdminSettingsView({
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Client/Lead Companies
+                Companies & Teams
               </button>
               <button
                 onClick={() => { setAllocationTab('employees'); setFilterQuery(''); }}
