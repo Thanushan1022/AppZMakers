@@ -34,8 +34,8 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
   return (
     <div className="space-y-6" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="relative z-10">
-        <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>Clients/Leads & Teams</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">View client/lead companies and the employees assigned to them</p>
+        <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>Clients & Teams</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">View client companies and the employees assigned to them</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -244,7 +244,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                 { icon: Mail, label: 'Email', value: selectedEmployee.email },
                 { icon: Phone, label: 'Phone', value: selectedEmployee.phone || 'N/A' },
                 { icon: Briefcase, label: 'Department', value: selectedEmployee.department || 'General' },
-                { icon: Building2, label: 'Company / Client/Lead', value: selectedEmployee.company || 'General (Our Company)' },
+                { icon: Building2, label: 'Company / Client', value: selectedEmployee.company || 'General (Our Company)' },
                 { icon: MapPin, label: 'Address', value: selectedEmployee.address || 'N/A' },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-start gap-3">

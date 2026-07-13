@@ -144,7 +144,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
   const tabs = [
     { id: 'employees', label: 'Employees', icon: Users, count: employees.length },
     { id: 'hr', label: 'HR Managers', icon: ShieldCheck, count: hrUsers.length },
-    { id: 'companies', label: 'Clients/Leads', icon: Building2, count: companies.length },
+    { id: 'companies', label: 'Clients', icon: Building2, count: companies.length },
   ];
 
   return (
@@ -152,13 +152,13 @@ export const AdminUsersView = React.memo(function AdminUsersView({
       <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
         <div>
           <h1 className="text-slate-800 dark:text-slate-100" style={{ fontWeight: 800, fontSize: '1.75rem' }}>User Management</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage all employees, HR managers, and clients/leads in the platform</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage all employees, HR managers, and clients in the platform</p>
         </div>
         <button
           onClick={handleAddClick}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 shadow-indigo-500/25 cursor-pointer"
         >
-          <Plus className="w-5 h-5" />Add {activeTab === 'employees' ? 'Employee' : activeTab === 'hr' ? 'HR Manager' : 'Client/Lead'}
+          <Plus className="w-5 h-5" />Add {activeTab === 'employees' ? 'Employee' : activeTab === 'hr' ? 'HR Manager' : 'Client'}
         </button>
       </div>
 
@@ -215,7 +215,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
                 <table className="w-full text-sm min-w-[800px]">
                   <thead className="z-10">
                     <tr className="border-b border-border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                      {['Employee', 'Position', 'Department', 'Client/Lead', 'Status', 'Actions'].map((h, i) => {
+                      {['Employee', 'Position', 'Department', 'Client', 'Status', 'Actions'].map((h, i) => {
                         const minWidths = ['min-w-[200px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[150px]', 'min-w-[100px]', 'min-w-[100px]'];
                         return (
                           <th key={h} className={`sticky top-0 text-left text-slate-600 dark:text-slate-300 font-bold py-3 px-4 bg-slate-50 dark:bg-slate-800/90 z-20 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(30,41,59,1)] ${minWidths[i]}`}>{h}</th>
@@ -1322,7 +1322,7 @@ export const AdminUsersView = React.memo(function AdminUsersView({
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col border border-transparent dark:border-slate-800">
             <div className="flex justify-between items-center pb-4 border-b border-border dark:border-slate-800">
               <div>
-                <h3 className="text-slate-800 dark:text-slate-100 font-semibold">Assign Workers to Client/Lead</h3>
+                <h3 className="text-slate-800 dark:text-slate-100 font-semibold">Assign Workers to Client</h3>
                 <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Manage workforce assigned to <strong className="text-slate-700 dark:text-slate-200">{assigningCompany.name}</strong></p>
               </div>
               <button
