@@ -65,6 +65,8 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   overtimeState = { status: 'idle', confirmedHours: 0, nextConfirmDueAt: null },
   handleConfirmOvertime,
   nextShiftStartInfo,
+  showTeaExceedPopup,
+  handleEndTeaExceed,
 }) {
   const recentAttendance = filteredAttendance.slice(0, 5);
 
@@ -646,6 +648,31 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tea Exceed Modal */}
+      {showTeaExceedPopup && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+            <div className="p-8 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-amber-200 dark:border-amber-800">
+                <Coffee className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+              </div>
+              <h3 className="text-slate-800 dark:text-slate-100 text-xl font-black tracking-tight mb-4">
+                Your tea break ended
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
+                Your allowed tea break time is over. The session timer has been paused. Please continue your work to restart the timer.
+              </p>
+              <button
+                onClick={handleEndTeaExceed}
+                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-black tracking-wider py-4 px-6 rounded-2xl shadow-lg shadow-emerald-500/30 transition-all duration-200 text-sm active:scale-95"
+              >
+                CONTINUE WORK
+              </button>
+            </div>
           </div>
         </div>
       )}

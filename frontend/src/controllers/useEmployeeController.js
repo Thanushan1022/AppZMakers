@@ -50,6 +50,9 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
   const [sessionSecs, setSessionSecs] = useState(0);
   const [breakSecs, setBreakSecs] = useState(0);
   const [teaBreakSecs, setTeaBreakSecs] = useState(0);
+  const [teaExceedSecs, setTeaExceedSecs] = useState(0);
+  const [onTeaExceed, setOnTeaExceed] = useState(false);
+  const [showTeaExceedPopup, setShowTeaExceedPopup] = useState(false);
   const [checkInTime, setCheckInTime] = useState(null);
   const [checkInDate, setCheckInDate] = useState(null);
   const [breaks, setBreaks] = useState([]);
@@ -167,9 +170,14 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
           const recBreaks = todayRecord.breaks || [];
           const recOnBreak = !!todayRecord.onBreak;
           const recOnTeaBreak = !!todayRecord.onTeaBreak;
+          const recOnTeaExceed = !!todayRecord.onTeaExceed;
           setBreaks(recBreaks);
           setOnBreak(recOnBreak);
           setOnTeaBreak(recOnTeaBreak);
+          setOnTeaExceed(recOnTeaExceed);
+          if (recOnTeaExceed) {
+            setShowTeaExceedPopup(true);
+          }
 
           if (todayRecord.checkIn && !todayRecord.checkOut) {
 
@@ -197,12 +205,19 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
 
             let accumulatedBreakSecs = 0;
             let accumulatedTeaSecs = 0;
+            let accumulatedTeaExceedSecs = 0;
             recBreaks.forEach(b => {
               if (b.type === 'tea') {
                 if (b.start && b.end) {
                   accumulatedTeaSecs += (getAdjustedSecs(b.end) - getAdjustedSecs(b.start));
                 } else if (b.start && !b.end) {
                   accumulatedTeaSecs += (nowSecs - getAdjustedSecs(b.start));
+                }
+              } else if (b.type === 'tea_exceed') {
+                if (b.start && b.end) {
+                  accumulatedTeaExceedSecs += (getAdjustedSecs(b.end) - getAdjustedSecs(b.start));
+                } else if (b.start && !b.end) {
+                  accumulatedTeaExceedSecs += (nowSecs - getAdjustedSecs(b.start));
                 }
               } else {
                 if (b.start && b.end) {
@@ -215,10 +230,11 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
 
             setBreakSecs(Math.max(0, accumulatedBreakSecs));
             setTeaBreakSecs(Math.max(0, accumulatedTeaSecs));
+            setTeaExceedSecs(Math.max(0, accumulatedTeaExceedSecs));
 
-            // Net work secs = elapsed total secs since check-in minus ONLY extra break secs (allowed breaks are included in work hours)
+            // Net work secs = elapsed total secs since check-in minus extra break secs and excess tea secs
             const totalElapsedSecs = nowSecs - checkInSecs;
-            const netWorkSecs = totalElapsedSecs - accumulatedBreakSecs;
+            const netWorkSecs = totalElapsedSecs - accumulatedBreakSecs - accumulatedTeaExceedSecs;
             setSessionSecs(Math.max(0, netWorkSecs));
           }
         }
@@ -312,6 +328,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
 
       let accumulatedBreakSecs = 0;
       let accumulatedTeaSecs = 0;
+      let accumulatedTeaExceedSecs = 0;
       const recBreaks = breaks || [];
 
       recBreaks.forEach(b => {
@@ -320,6 +337,12 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
             accumulatedTeaSecs += (getAdjustedSecs(b.end) - getAdjustedSecs(b.start));
           } else if (b.start && !b.end) {
             accumulatedTeaSecs += (nowSecs - getAdjustedSecs(b.start));
+          }
+        } else if (b.type === 'tea_exceed') {
+          if (b.start && b.end) {
+            accumulatedTeaExceedSecs += (getAdjustedSecs(b.end) - getAdjustedSecs(b.start));
+          } else if (b.start && !b.end) {
+            accumulatedTeaExceedSecs += (nowSecs - getAdjustedSecs(b.start));
           }
         } else {
           if (b.start && b.end) {
@@ -332,9 +355,10 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
 
       setBreakSecs(Math.max(0, accumulatedBreakSecs));
       setTeaBreakSecs(Math.max(0, accumulatedTeaSecs));
+      setTeaExceedSecs(Math.max(0, accumulatedTeaExceedSecs));
 
       const totalElapsedSecs = nowSecs - checkInSecs;
-      const netWorkSecs = totalElapsedSecs - accumulatedBreakSecs;
+      const netWorkSecs = totalElapsedSecs - accumulatedBreakSecs - accumulatedTeaExceedSecs;
       setSessionSecs(Math.max(0, netWorkSecs));
     };
 
@@ -369,11 +393,13 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
       const teaBreaksList = breaks.filter(b => b.type === 'tea');
       const completedTeaCount = teaBreaksList.filter(b => b.end).length;
 
-      if (teaBreaksList.length > 0 && teaBreaksList.length < teaBreaksMax && !onTeaBreak) {
-        // Find the last tea break end time
-        const lastTea = teaBreaksList[teaBreaksList.length - 1];
-        if (lastTea && lastTea.end) {
-          const parts = lastTea.end.split(':').map(Number);
+      if (teaBreaksList.length > 0 && teaBreaksList.length < teaBreaksMax && !onTeaBreak && !onTeaExceed) {
+        // Find the last tea break or tea_exceed break end time
+        const lastRelevant = [...breaks]
+          .reverse()
+          .find(b => (b.type === 'tea' || b.type === 'tea_exceed') && b.end);
+        if (lastRelevant && lastRelevant.end) {
+          const parts = lastRelevant.end.split(':').map(Number);
           const lastEndSecs = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
 
           const now = new Date();
@@ -431,7 +457,9 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
           const currentBreakDurationSecs = nowSecs - startSecs;
 
           if (currentBreakDurationSecs >= limitSecs) {
-            handleTeaBreak();
+            // Trigger fetchData which will cause the backend to auto-end the tea break
+            // and transition to tea_exceed, thereby showing the popup.
+            fetchData();
           }
         }
       };
@@ -600,6 +628,7 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
             sessionSecs,
             breakSecs,
             teaBreakSecs,
+            teaExceedSecs,
             tasks: todayTasks,
             checkInTime,
             checkOutTime: timeNow
@@ -700,6 +729,33 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
       } else {
         const errData = await res.json();
         alert(errData.error || 'Failed to toggle Tea Break');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEndTeaExceed = async () => {
+    const todayStr = getLocalTodayStr();
+    const timeNow = getTimeString();
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/employees/${userId}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'end-tea-exceed',
+          time: timeNow,
+          date: todayStr
+        })
+      });
+      if (res.ok) {
+        setOnTeaExceed(false);
+        setShowTeaExceedPopup(false);
+        fetchData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to end excess tea break time');
       }
     } catch (err) {
       console.error(err);
@@ -1150,6 +1206,9 @@ export function useEmployeeController(userId, updateAuth, handleLogout) {
     setShowTaskWarning,
     overtimeState,
     handleConfirmOvertime,
+    showTeaExceedPopup,
+    handleEndTeaExceed,
+    teaExceedSecs,
 
     // Tea break helpers
     teaBreakEnabled: settings.teaBreakEnabled !== false,

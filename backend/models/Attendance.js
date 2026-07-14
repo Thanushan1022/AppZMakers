@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const breakSchema = new mongoose.Schema(
-  { start: String, end: String, type: { type: String, enum: ['normal', 'meal', 'tea'], default: 'meal' }, startTimestamp: { type: Number, default: null } },
+  { start: String, end: String, type: { type: String, enum: ['normal', 'meal', 'tea', 'tea_exceed'], default: 'meal' }, startTimestamp: { type: Number, default: null } },
   { _id: false }
 );
 
@@ -23,6 +23,7 @@ const attendanceSchema = new mongoose.Schema(
     lessHours: { type: Number, default: 0 },
     onBreak: { type: Boolean, default: false },
     onTeaBreak: { type: Boolean, default: false },
+    onTeaExceed: { type: Boolean, default: false },
     breaks: [breakSchema],
     adjusted: { type: Boolean, default: false },
     adjustedBy: { type: String, default: null },

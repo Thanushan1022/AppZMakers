@@ -516,9 +516,9 @@ export function TodayAttendanceView({
                 <div className="bg-amber-50/50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800/50 rounded-xl p-3">
                   <div className="text-amber-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>Meal Break</div>
                   <div className="font-mono text-amber-900 dark:text-amber-100 font-bold text-base">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes, selectedRecord.checkOut)}</div>
-                  {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea').length > 0 && (
+                  {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea' && b.type !== 'tea_exceed').length > 0 && (
                     <div className="mt-2 space-y-1">
-                      {selectedRecord.breaks.filter(b => b.type !== 'tea').map((b, i) => (
+                      {selectedRecord.breaks.filter(b => b.type !== 'tea' && b.type !== 'tea_exceed').map((b, i) => (
                         <div key={i} className="text-[11px] font-bold text-amber-700/80 dark:text-amber-400 flex items-center gap-1.5">
                           {i + 1}{['st', 'nd', 'rd'][i] || 'th'} meal: {b.start} - {b.end || 'Ongoing'}
                         </div>
@@ -529,13 +529,57 @@ export function TodayAttendanceView({
                 <div className="bg-teal-50/50 dark:bg-teal-900/30 border border-teal-100 dark:border-teal-800/50 rounded-xl p-3">
                   <div className="text-teal-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>Tea Break</div>
                   <div className="font-mono text-teal-900 dark:text-teal-100 font-bold text-base">{getTeaBreakDetails(selectedRecord.breaks)}</div>
-                  {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type === 'tea').length > 0 && (
+                  {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type === 'tea' || b.type === 'tea_exceed').length > 0 && (
                     <div className="mt-2 space-y-1">
-                      {selectedRecord.breaks.filter(b => b.type === 'tea').map((b, i) => (
-                        <div key={i} className="text-[11px] font-bold text-teal-700/80 dark:text-teal-400 flex items-center gap-1.5">
-                          {i + 1}{['st', 'nd', 'rd'][i] || 'th'} tea: {b.start} - {b.end || 'Ongoing'}
-                        </div>
-                      ))}
+                      {(() => {
+                        const teaBreaksList = [];
+                        for (let i = 0; i < selectedRecord.breaks.length; i++) {
+                          const b = selectedRecord.breaks[i];
+                          if (b.type === 'tea') {
+                            const teaStart = b.start;
+                            let teaEnd = b.end || 'Ongoing';
+                            let extraSecs = 0;
+                            let hasExtra = false;
+                            
+                            const nextB = selectedRecord.breaks[i + 1];
+                            if (nextB && nextB.type === 'tea_exceed') {
+                              hasExtra = true;
+                              if (nextB.end) {
+                                teaEnd = nextB.end;
+                                const startParts = nextB.start.split(':').map(Number);
+                                const endParts = nextB.end.split(':').map(Number);
+                                const startSecs = (startParts[0]||0)*3600 + (startParts[1]||0)*60 + (startParts[2]||0);
+                                let endSecs = (endParts[0]||0)*3600 + (endParts[1]||0)*60 + (endParts[2]||0);
+                                if (endSecs < startSecs) endSecs += 24 * 3600;
+                                extraSecs = endSecs - startSecs;
+                              } else {
+                                teaEnd = 'Ongoing';
+                              }
+                            }
+                            
+                            teaBreaksList.push({ start: teaStart, end: teaEnd, hasExtra, extraSecs, isExceedOngoing: hasExtra && !nextB.end });
+                          }
+                        }
+
+                        return teaBreaksList.map((teaData, idx) => (
+                          <div key={`tea-group-${idx}`} className="flex flex-col gap-1">
+                            <div className="text-[11px] font-bold text-teal-700/80 dark:text-teal-400 flex items-center gap-1.5">
+                              {idx + 1}{['st', 'nd', 'rd'][idx] || 'th'} tea: {teaData.start} - {teaData.end}
+                            </div>
+                            {teaData.hasExtra && (
+                              <div className="text-[11px] font-bold text-rose-700/80 dark:text-rose-400 flex items-center gap-1.5">
+                                Extra time: {teaData.isExceedOngoing ? 'Ongoing' : (() => {
+                                  const h = Math.floor(teaData.extraSecs / 3600);
+                                  const m = Math.floor((teaData.extraSecs % 3600) / 60);
+                                  if (h > 0) return `${h}h ${m}min`;
+                                  if (m === 0 && teaData.extraSecs > 0) return `< 1min`;
+                                  return `${m}min`;
+                                })()}
+                              </div>
+                            )}
+                          </div>
+                        ));
+                      })()}
                     </div>
                   )}
                 </div>

@@ -83,6 +83,7 @@ export const toAttendanceJSON = (doc) => {
     lessHours: o.lessHours,
     onBreak: o.onBreak,
     onTeaBreak: o.onTeaBreak,
+    onTeaExceed: o.onTeaExceed,
     breaks: o.breaks,
     adjusted: o.adjusted,
     adjustedBy: o.adjustedBy,

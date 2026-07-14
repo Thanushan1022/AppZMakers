@@ -46,21 +46,19 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
             <div className="flex gap-2 mb-4 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-xl border border-border">
               <button
                 onClick={() => { setActiveTab('clients'); setSelectedCompanyId(null); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === 'clients'
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === 'clients'
                     ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-border/50'
                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
+                  }`}
               >
                 Clients
               </button>
               <button
                 onClick={() => { setActiveTab('teams'); setSelectedCompanyId(null); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === 'teams'
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === 'teams'
                     ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-border/50'
                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
+                  }`}
               >
                 Internal Teams
               </button>
@@ -78,8 +76,8 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                         setSelectedEmployee(null);
                       }}
                       className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between group hover:-translate-y-0.5 ${isSelected
-                          ? 'border-indigo-300 dark:border-indigo-500/50 bg-gradient-to-r from-indigo-50 dark:from-indigo-900/40 to-blue-50/50 dark:to-blue-900/20 shadow-md shadow-indigo-100/50 dark:shadow-none'
-                          : 'border-slate-100 dark:border-slate-700/50 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-50/50 dark:hover:shadow-none hover:bg-white dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'
+                        ? 'border-indigo-300 dark:border-indigo-500/50 bg-gradient-to-r from-indigo-50 dark:from-indigo-900/40 to-blue-50/50 dark:to-blue-900/20 shadow-md shadow-indigo-100/50 dark:shadow-none'
+                        : 'border-slate-100 dark:border-slate-700/50 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-50/50 dark:hover:shadow-none hover:bg-white dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'
                         }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -120,7 +118,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
               <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-[2.5rem] border border-white dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-emerald-500/5 to-transparent opacity-50"></div>
                 <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-10"></div>
-                
+
                 <div className="p-8 relative z-10">
                   <div className="flex items-start justify-between gap-4 flex-wrap mb-8">
                     <div className="flex items-center gap-5">
@@ -173,7 +171,7 @@ export function AdminCompaniesView({ companies = [], employees = [] }) {
                     Assigned Employees ({companyEmployees.length})
                   </h3>
                 </div>
-                
+
                 <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {companyEmployees.map(emp => (

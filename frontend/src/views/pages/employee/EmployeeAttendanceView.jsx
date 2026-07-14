@@ -74,6 +74,9 @@ export function EmployeeAttendanceView({ mySalary,
   setShowSessionOverModal,
   sessionOverModalType = 'cooldown',
   nextShiftStartInfo,
+  showTeaExceedPopup,
+  handleEndTeaExceed,
+  teaExceedSecs,
 }) {
   const [isTaskBoxExpanded, setIsTaskBoxExpanded] = useState(false);
   const [taskDesc, setTaskDesc] = useState('');
@@ -450,11 +453,12 @@ export function EmployeeAttendanceView({ mySalary,
           </div>
 
           {checkedIn && (
-            <div className={`grid grid-cols-2 ${teaBreakEnabled && teaBreakAllowed ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4 mt-6 pt-6 border-t border-white/10`}>
+            <div className={`grid grid-cols-2 ${teaBreakEnabled && teaBreakAllowed ? (teaExceedSecs > 0 ? 'sm:grid-cols-5' : 'sm:grid-cols-4') : 'sm:grid-cols-3'} gap-4 mt-6 pt-6 border-t border-white/10`}>
               {[
                 { label: 'Work Time', value: formatDuration(netWork), color: 'text-emerald-400' },
                 { label: 'Meal Break', value: formatDuration(breakSecs), color: 'text-amber-400' },
                 ...(teaBreakEnabled && teaBreakAllowed ? [{ label: 'Tea Break', value: formatDuration(teaBreakSecs), color: 'text-emerald-300' }] : []),
+                ...(teaExceedSecs > 0 ? [{ label: 'Tea Extra', value: formatDuration(teaExceedSecs), color: 'text-rose-400' }] : []),
                 { label: 'Remaining', value: formatDuration(Math.max(0, currentTarget - netWork)), color: 'text-indigo-300' },
               ].map(s => (
                 <div key={s.label} className="text-center bg-black/20 p-3 rounded-2xl border border-white/5 backdrop-blur-md">
@@ -983,9 +987,9 @@ export function EmployeeAttendanceView({ mySalary,
                     <Utensils className="w-3.5 h-3.5" /> Meal Break
                   </div>
                   <div className="font-mono text-amber-900 dark:text-amber-100 font-bold text-lg">{getMealBreakDetails(selectedRecord.breaks, selectedRecord.breakMinutes, selectedRecord.checkOut)}</div>
-                  {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea').length > 0 && (
+                  {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type !== 'tea' && b.type !== 'tea_exceed').length > 0 && (
                     <div className="mt-2 space-y-1">
-                      {selectedRecord.breaks.filter(b => b.type !== 'tea').map((b, i) => (
+                      {selectedRecord.breaks.filter(b => b.type !== 'tea' && b.type !== 'tea_exceed').map((b, i) => (
                         <div key={i} className="text-[11px] font-bold text-amber-700/80 dark:text-amber-400/80 flex items-center gap-2">
                           <span className="w-1 h-1 rounded-full bg-amber-400"></span>
                           {i + 1}{['st', 'nd', 'rd'][i] || 'th'} meal: {b.start} - {b.end || 'Ongoing'}
@@ -1000,14 +1004,69 @@ export function EmployeeAttendanceView({ mySalary,
                       <Coffee className="w-3.5 h-3.5" /> Tea Break
                     </div>
                     <div className="font-mono text-emerald-900 dark:text-emerald-100 font-bold text-lg">{getTeaBreakDetails(selectedRecord.breaks)}</div>
-                    {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type === 'tea').length > 0 && (
+                    {selectedRecord.breaks && selectedRecord.breaks.filter(b => b.type === 'tea' || b.type === 'tea_exceed').length > 0 && (
                       <div className="mt-2 space-y-1">
-                        {selectedRecord.breaks.filter(b => b.type === 'tea').map((b, i) => (
-                          <div key={i} className="text-[11px] font-bold text-emerald-700/80 dark:text-emerald-400/80 flex items-center gap-2">
-                            <span className="w-1 h-1 rounded-full bg-emerald-400"></span>
-                            {i + 1}{['st', 'nd', 'rd'][i] || 'th'} tea: {b.start} - {b.end || 'Ongoing'}
-                          </div>
-                        ))}
+                        {(() => {
+                          const teaBreaksList = [];
+                          for (let i = 0; i < selectedRecord.breaks.length; i++) {
+                            const b = selectedRecord.breaks[i];
+                            if (b.type === 'tea') {
+                              const teaStart = b.start;
+                              let teaEnd = b.end || 'Ongoing';
+                              let extraSecs = 0;
+                              let hasExtra = false;
+                              
+                              // Check if next break is tea_exceed
+                              const nextB = selectedRecord.breaks[i + 1];
+                              if (nextB && nextB.type === 'tea_exceed') {
+                                hasExtra = true;
+                                if (nextB.end) {
+                                  teaEnd = nextB.end;
+                                  
+                                  // calculate duration
+                                  const startParts = nextB.start.split(':').map(Number);
+                                  const endParts = nextB.end.split(':').map(Number);
+                                  const startSecs = (startParts[0]||0)*3600 + (startParts[1]||0)*60 + (startParts[2]||0);
+                                  let endSecs = (endParts[0]||0)*3600 + (endParts[1]||0)*60 + (endParts[2]||0);
+                                  // Handle cross-midnight if needed
+                                  if (endSecs < startSecs) endSecs += 24 * 3600;
+                                  extraSecs = endSecs - startSecs;
+                                } else {
+                                  teaEnd = 'Ongoing'; // The exceed is ongoing
+                                }
+                              }
+                              
+                              teaBreaksList.push({
+                                start: teaStart,
+                                end: teaEnd,
+                                hasExtra,
+                                extraSecs,
+                                isExceedOngoing: hasExtra && !nextB.end
+                              });
+                            }
+                          }
+
+                          return teaBreaksList.map((teaData, idx) => (
+                            <div key={`tea-group-${idx}`} className="flex flex-col gap-1">
+                              <div className="text-[11px] font-bold text-emerald-700/80 dark:text-emerald-400/80 flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-emerald-400"></span>
+                                {idx + 1}{['st', 'nd', 'rd'][idx] || 'th'} tea: {teaData.start} - {teaData.end}
+                              </div>
+                              {teaData.hasExtra && (
+                                <div className="text-[11px] font-bold text-rose-700/80 dark:text-rose-400/80 flex items-center gap-2">
+                                  <span className="w-1 h-1 rounded-full bg-rose-400"></span>
+                                  Extra time: {teaData.isExceedOngoing ? 'Ongoing' : (() => {
+                                    const h = Math.floor(teaData.extraSecs / 3600);
+                                    const m = Math.floor((teaData.extraSecs % 3600) / 60);
+                                    if (h > 0) return `${h}h ${m}min`;
+                                    if (m === 0 && teaData.extraSecs > 0) return `< 1min`;
+                                    return `${m}min`;
+                                  })()}
+                                </div>
+                              )}
+                            </div>
+                          ));
+                        })()}
                       </div>
                     )}
                   </div>
@@ -1205,6 +1264,31 @@ export function EmployeeAttendanceView({ mySalary,
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tea Exceed Modal */}
+      {showTeaExceedPopup && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+            <div className="p-8 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-amber-200 dark:border-amber-800">
+                <Coffee className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+              </div>
+              <h3 className="text-slate-800 dark:text-slate-100 text-xl font-black tracking-tight mb-4">
+                Your tea break ended
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
+                Your allowed tea break time is over. The session timer has been paused. Please continue your work to restart the timer.
+              </p>
+              <button
+                onClick={handleEndTeaExceed}
+                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-black tracking-wider py-4 px-6 rounded-2xl shadow-lg shadow-emerald-500/30 transition-all duration-200 text-sm active:scale-95"
+              >
+                CONTINUE WORK
+              </button>
             </div>
           </div>
         </div>

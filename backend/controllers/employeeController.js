@@ -214,7 +214,7 @@ export const logAttendance = async (req, res) => {
       if (teaCount > 0) {
         const lastTeaBreak = [...todayRecord.breaks]
           .reverse()
-          .find(b => b.type === 'tea' && b.end);
+          .find(b => (b.type === 'tea' || b.type === 'tea_exceed') && b.end);
         if (lastTeaBreak) {
           const gapMin = settings.teaBreakGap !== undefined ? settings.teaBreakGap : 120;
           const lastEndSecs = getSecsFromTime(lastTeaBreak.end);
@@ -241,12 +241,20 @@ export const logAttendance = async (req, res) => {
       const activeTeaBreak = todayRecord.breaks.find((b) => b.type === 'tea' && !b.end);
       if (activeTeaBreak) activeTeaBreak.end = time;
       await todayRecord.save();
+    } else if (action === 'end-tea-exceed') {
+      if (!todayRecord) return res.status(400).json({ error: 'Not clocked in' });
+      todayRecord.onTeaExceed = false;
+      if (!todayRecord.breaks) todayRecord.breaks = [];
+      const activeExceedBreak = todayRecord.breaks.find((b) => b.type === 'tea_exceed' && !b.end);
+      if (activeExceedBreak) activeExceedBreak.end = time;
+      await todayRecord.save();
     } else if (action === 'clock-out') {
       if (!todayRecord) return res.status(400).json({ error: 'Not clocked in' });
 
       let breaksModified = false;
       todayRecord.onBreak = false;
       todayRecord.onTeaBreak = false;
+      todayRecord.onTeaExceed = false;
       if (todayRecord.breaks) {
         todayRecord.breaks.forEach((b) => {
           if (!b.end) {

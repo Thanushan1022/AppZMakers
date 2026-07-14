@@ -50,17 +50,30 @@ export const autoEndOverdueTeaBreaks = async (records, settings) => {
         if (elapsedMs >= limitMs) {
           // Calculate the end time exactly relative to the original client string
           // This keeps the display strings visually correct for the user's local timezone
+          let endString;
           if (activeTeaBreak.start) {
              const startSecs = getSecsFromTime(activeTeaBreak.start);
              const endSecs = startSecs + (teaDuration * 60);
-             activeTeaBreak.end = getTimeStringFromSecs(endSecs);
+             endString = getTimeStringFromSecs(endSecs);
           } else {
-             activeTeaBreak.end = getTimeStringFromSecs(getSecsFromTime('00:00:00') + (teaDuration * 60));
+             endString = getTimeStringFromSecs(getSecsFromTime('00:00:00') + (teaDuration * 60));
           }
+          activeTeaBreak.end = endString;
           record.onTeaBreak = false;
+          
+          // Immediately start a tea_exceed break
+          record.onTeaExceed = true;
+          const exceedStartTimestamp = activeTeaBreak.startTimestamp ? (activeTeaBreak.startTimestamp + limitMs) : Date.now();
+          record.breaks.push({
+             start: endString,
+             end: null,
+             type: 'tea_exceed',
+             startTimestamp: exceedStartTimestamp
+          });
+
           await Attendance.updateOne(
             { _id: record._id },
-            { $set: { onTeaBreak: false, breaks: record.breaks } }
+            { $set: { onTeaBreak: false, onTeaExceed: true, breaks: record.breaks } }
           );
         }
       }
