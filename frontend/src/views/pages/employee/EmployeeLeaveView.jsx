@@ -335,7 +335,7 @@ export function EmployeeLeaveView({
                         </span>
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${st.bg} ${st.text}`}>
                           {st.icon && <span className="scale-75">{st.icon}</span>}
-                          {leave.status}
+                          {leave.status === 'cancelled' && leave.cancelledBy ? `cancelled by ${leave.cancelledBy}` : leave.status}
                         </span>
                         <span className="text-slate-800 dark:text-slate-100 font-black text-sm bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600">
                           {leave.days} day{leave.days !== 1 ? 's' : ''}

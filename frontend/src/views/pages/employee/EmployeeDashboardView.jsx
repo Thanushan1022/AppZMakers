@@ -95,8 +95,6 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
     return employee.dateOfBirth.endsWith(`${mm}-${dd}`);
   })();
 
-
-
   useEffect(() => {
     if (isBirthday) {
       const duration = 3000;
@@ -140,45 +138,6 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
     }
     return { isAnniversary: false, yearsOfService: 0 };
   })();
-
-  useEffect(() => {
-    if (isAnniversary) {
-      const duration = 10000; // 10 seconds of fireworks
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100, colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'] };
-
-      const randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-      const interval = setInterval(() => {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-        // Firework 1 (left side)
-        confetti(Object.assign({}, defaults, { 
-          particleCount, 
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } 
-        }));
-        // Firework 2 (right side)
-        confetti(Object.assign({}, defaults, { 
-          particleCount, 
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } 
-        }));
-        // Firework 3 (center)
-        if (Math.random() > 0.5) {
-            confetti(Object.assign({}, defaults, { 
-            particleCount: particleCount * 1.5, 
-            origin: { x: randomInRange(0.4, 0.6), y: Math.random() - 0.3 } 
-            }));
-        }
-      }, 250);
-
-      return () => clearInterval(interval);
-    }
-  }, [isAnniversary]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();

@@ -14,6 +14,7 @@ const leaveRequestSchema = new mongoose.Schema(
     appliedOn: { type: String, default: () => new Date().toISOString().split('T')[0] },
     hrNote: { type: String },
     rejectionReason: { type: String },
+    cancelledBy: { type: String },
     hiddenForEmployee: { type: Boolean, default: false },
     hiddenForAdmins: { type: Boolean, default: false },
   },

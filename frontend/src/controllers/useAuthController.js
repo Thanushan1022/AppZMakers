@@ -27,6 +27,16 @@ export function useAuthController() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [pendingAuthData, setPendingAuthData] = useState(null);
+
+  const completeLogin = () => {
+    if (pendingAuthData) {
+      persistAuth(pendingAuthData);
+      setPendingAuthData(null);
+    }
+    setShowWelcome(false);
+  };
 
   const handleRoleChange = (role) => {
     setSelectedRole(role);
@@ -77,7 +87,8 @@ export function useAuthController() {
         throw new Error(data.error || data.message || 'Login failed');
       }
 
-      persistAuth(data);
+      setPendingAuthData(data);
+      setShowWelcome(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -120,7 +131,8 @@ export function useAuthController() {
         return;
       }
 
-      persistAuth(loginData);
+      setPendingAuthData(loginData);
+      setShowWelcome(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -216,5 +228,8 @@ export function useAuthController() {
     error,
     setError,
     loading,
+    showWelcome,
+    pendingAuthData,
+    completeLogin,
   };
 }

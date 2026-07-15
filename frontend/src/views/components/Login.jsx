@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   User, IdCard, Briefcase, Shield, Users, Building2,
   Activity, CalendarDays, Mail, Lock, Eye, EyeOff, LogIn
@@ -6,6 +6,10 @@ import {
 import logoImg from '../../assets/AppZLogo.png';
 import appzMakersLogo from '../../assets/APPZ New Logo.png';
 import bgVideo from '../../assets/Employee_Enters_Office_Lobby_GIF.mp4';
+import morningRobImg from '../../assets/MorningRob.png';
+import afternoonRobImg from '../../assets/AfternoonRob.png';
+import eveningRobImg from '../../assets/EveningRob.png';
+import { WelcomeAnimation } from './WelcomeAnimation';
 
 const roles = [
   { id: 'employee', label: 'Employee', icon: User },
@@ -57,6 +61,9 @@ export function Login({
   error,
   setError,
   loading,
+  showWelcome,
+  pendingAuthData,
+  completeLogin,
 }) {
   const isSignup = mode === 'signup';
   const isForgot = mode === 'forgot';
@@ -64,6 +71,14 @@ export function Login({
   const [forgotEmail, setForgotEmail] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+
+  const getDynamicRobImg = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return morningRobImg;
+    if (hour >= 12 && hour < 17) return afternoonRobImg;
+    return eveningRobImg;
+  };
+  const currentRobImg = getDynamicRobImg();
 
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
@@ -173,8 +188,9 @@ export function Login({
       <div className="flex-1 overflow-y-auto h-screen z-10 bg-transparent">
         <div className="min-h-full flex flex-col items-center justify-center p-6 sm:p-12 lg:p-16">
           {/* Blurred Login Box Container */}
-          <div className="w-full max-w-lg bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[32px] p-8 sm:p-10 space-y-6 relative overflow-hidden group">
-            {/* Subtle liquid glow inside */}
+          <div className="w-full max-w-lg relative z-30">
+            <div className="w-full bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[32px] p-8 sm:p-10 space-y-6 relative overflow-hidden group">
+              {/* Subtle liquid glow inside */}
             <div className="absolute -inset-24 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-1000 -z-10" />
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
             <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -361,6 +377,7 @@ export function Login({
               </form>
             )}
 
+            </div>
           </div>
 
           {/* Bottom Section: Footer Copyright (Mobile View) */}
@@ -375,6 +392,13 @@ export function Login({
           </div>
         </div>
       </div>
+      {/* Welcome Animation Overlay */}
+      <WelcomeAnimation 
+        isOpen={showWelcome} 
+        userName={pendingAuthData?.name || name} 
+        robotImage={currentRobImg} 
+        onComplete={completeLogin} 
+      />
     </div>
   );
 }

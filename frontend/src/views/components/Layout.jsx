@@ -182,9 +182,9 @@ export function Layout({ role, onLogout, auth, children }) {
           }
         }
 
-        // Fetch pending leaves count for HR and Admin
-        if (role === 'hr' || role === 'superadmin') {
-          const endpoint = role === 'superadmin' ? 'admin' : 'hr';
+        // Fetch pending leaves count for Employee, HR, and Admin
+        if (role === 'employee' || role === 'hr' || role === 'superadmin') {
+          const endpoint = role === 'employee' ? `employees/${auth.userId}` : (role === 'superadmin' ? 'admin' : 'hr');
           const res = await fetch(`${BACKEND_URL}/${endpoint}/leaves`);
           if (res.ok) {
             const leaves = await res.json();
@@ -281,7 +281,7 @@ export function Layout({ role, onLogout, auth, children }) {
                   {unreadCount}
                 </span>
               )}
-              {item.id === 'leave-approvals' && pendingLeavesCount > 0 && (
+              {(item.id === 'leave-approvals' || item.id === 'leave') && pendingLeavesCount > 0 && (
                 <span className="flex items-center justify-center bg-amber-500 text-white text-[10px] font-bold h-5 min-w-5 rounded-full px-1.5 shadow-sm animate-pulse mr-1">
                   {pendingLeavesCount}
                 </span>

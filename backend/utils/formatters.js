@@ -110,6 +110,7 @@ export const toLeaveJSON = (doc) => {
     appliedOn: o.appliedOn,
     hrNote: o.hrNote,
     rejectionReason: o.rejectionReason,
+    cancelledBy: o.cancelledBy,
   };
 };
 

@@ -130,7 +130,9 @@ export function HRLeaveApprovalsView({
                     leave.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
                     leave.status === 'rejected' ? 'bg-red-50 text-red-600' : 
                     leave.status === 'cancelled' ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-amber-50 text-amber-600'
-                  }`}>{leave.status}</span>
+                  }`}>
+                    {leave.status === 'cancelled' && leave.cancelledBy ? `cancelled by ${leave.cancelledBy}` : leave.status}
+                  </span>
                 </div>
 
                 <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">

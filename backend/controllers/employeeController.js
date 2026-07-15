@@ -397,10 +397,14 @@ export const cancelLeaveRequest = async (req, res) => {
     const leave = await LeaveRequest.findOne({ _id: leaveId, employeeId: id });
     if (!leave) return res.status(404).json({ error: 'Leave request not found' });
     
+    const emp = await findEmployee(id);
+    
     leave.status = 'cancelled';
+    if (emp) {
+      leave.cancelledBy = emp.name;
+    }
     await leave.save();
     
-    const emp = await findEmployee(id);
     if (emp) {
       await syncLeaveBalance(getEmployeeLegacyId(emp), emp.joinDate);
     }
