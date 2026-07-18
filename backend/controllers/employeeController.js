@@ -122,7 +122,7 @@ export const logAttendance = async (req, res) => {
       if (empShift === 'night') {
         // For night shift, block check-ins before start time, but only if it's afternoon/evening of the same day.
         // This allows very late check-ins past midnight (e.g., 01:00 AM) while blocking early check-ins (e.g., 20:00).
-        if (attemptSecs < allowedSecs && attemptSecs > 43200) {
+        if (attemptSecs < allowedSecs && attemptSecs > 103200) {
           isTooEarly = true;
         }
       } else {

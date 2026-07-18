@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { LogIn, LogOut, Coffee, Utensils, Clock, Calendar, ChevronLeft, ChevronRight, AlertCircle, ClipboardList, Plus, ChevronDown, ChevronUp, CheckCircle2, Timer } from 'lucide-react';
+import { WelcomeAnimation } from '../../components/WelcomeAnimation';
 import sessionVideo from '../../../assets/Video_Generation_Successful.mp4';
+import teaRobImg from '../../../assets/Tea.png';
+import checkoutRobImg from '../../../assets/welcome.png';
 import { formatDecimalHours, formatBreakMinutes } from '../../../utils/timeFormatter';
 
 const statusStyles = {
@@ -78,8 +81,27 @@ export function EmployeeAttendanceView({ mySalary,
   handleEndTeaExceed,
   teaExceedSecs,
 }) {
+  const [showTeaAnimation, setShowTeaAnimation] = useState(false);
+  const [showCheckoutAnim, setShowCheckoutAnim] = useState(false);
   const [isTaskBoxExpanded, setIsTaskBoxExpanded] = useState(false);
   const [taskDesc, setTaskDesc] = useState('');
+
+  const onCheckoutProceedClick = () => {
+    setShowCheckoutConfirm(false);
+    setShowCheckoutAnim(true);
+  };
+
+  useEffect(() => {
+    if (showTeaAnimation) {
+      const timer = setTimeout(() => setShowTeaAnimation(false), 120000);
+      return () => clearTimeout(timer);
+    }
+  }, [showTeaAnimation]);
+
+  const startTeaBreak = () => {
+    setShowTeaAnimation(true);
+    handleTeaBreak();
+  };
   const [taskTime, setTaskTime] = useState('');
   const [taskError, setTaskError] = useState('');
   const [selectedTasks, setSelectedTasks] = useState(null);
@@ -414,13 +436,22 @@ export function EmployeeAttendanceView({ mySalary,
                 {teaBreakEnabled && teaBreakAllowed && (
                   <>
                     {onTeaBreak ? (
-                      <button
-                        onClick={handleTeaBreak}
-                        className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 border-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30 shadow-lg shadow-emerald-500/20"
-                      >
-                        <Coffee className="w-5 h-5 text-emerald-400" />
-                        End Tea Break
-                      </button>
+                      <div className="relative flex-1">
+                        <button
+                          onClick={handleTeaBreak}
+                          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 border-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30 shadow-lg shadow-emerald-500/20"
+                        >
+                          <Coffee className="w-5 h-5 text-emerald-400" />
+                          End Tea Break
+                        </button>
+                        {showTeaAnimation && (
+                          <img 
+                            src={teaRobImg} 
+                            alt="Tea Time" 
+                            className="absolute -top-14 -right-8 w-28 h-auto animate-bounce pointer-events-none drop-shadow-xl z-[100]"
+                          />
+                        )}
+                      </div>
                     ) : teaBreakLimitReached || isTeaBreakOver ? (
                       <span className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl text-sm font-bold bg-slate-800 text-slate-500 border-2 border-dashed border-slate-700">
                         Tea Limit Reached
@@ -431,7 +462,7 @@ export function EmployeeAttendanceView({ mySalary,
                       </span>
                     ) : (
                       <button
-                        onClick={handleTeaBreak}
+                        onClick={startTeaBreak}
                         disabled={onBreak}
                         className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold transition-all duration-300 transform active:scale-95 border-2 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/5"
                       >
@@ -1186,7 +1217,7 @@ export function EmployeeAttendanceView({ mySalary,
 
                 {/* Proceed to Check-out */}
                 <button
-                  onClick={confirmCheckOut}
+                  onClick={onCheckoutProceedClick}
                   className={`w-full flex items-center justify-center gap-3 ${sessionConfirmLevel > 0 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700' : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/25'} font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer active:scale-95 tracking-widest uppercase`}
                 >
                   <LogOut className="w-5 h-5" />
@@ -1332,6 +1363,17 @@ export function EmployeeAttendanceView({ mySalary,
           </div>
         </div>
       )}
+
+      <WelcomeAnimation
+        isOpen={showCheckoutAnim}
+        robotImage={checkoutRobImg}
+        title="Checking out?"
+        subtitle="See you next time!"
+        onComplete={() => {
+          setShowCheckoutAnim(false);
+          confirmCheckOut();
+        }}
+      />
     </div>
   );
 }

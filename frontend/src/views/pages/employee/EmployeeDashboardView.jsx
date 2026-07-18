@@ -3,6 +3,9 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { formatDecimalHours } from '../../../utils/timeFormatter';
 import confetti from 'canvas-confetti';
 import React, { useEffect, useMemo, useCallback } from 'react';
+import { WelcomeAnimation } from '../../components/WelcomeAnimation';
+import teaRobImg from '../../../assets/Tea.png';
+import checkoutRobImg from '../../../assets/welcome.png';
 
 export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   employee,
@@ -69,6 +72,25 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
   handleEndTeaExceed,
 }) {
   const recentAttendance = filteredAttendance.slice(0, 5);
+  const [showTeaAnimation, setShowTeaAnimation] = React.useState(false);
+  const [showCheckoutAnim, setShowCheckoutAnim] = React.useState(false);
+
+  const onCheckoutProceedClick = () => {
+    setShowCheckoutConfirm(false);
+    setShowCheckoutAnim(true);
+  };
+
+  useEffect(() => {
+    if (showTeaAnimation) {
+      const timer = setTimeout(() => setShowTeaAnimation(false), 120000);
+      return () => clearTimeout(timer);
+    }
+  }, [showTeaAnimation]);
+
+  const startTeaBreak = () => {
+    setShowTeaAnimation(true);
+    handleTeaBreak();
+  };
 
   const formatGapTime = (secs) => {
     const h = Math.floor(secs / 3600);
@@ -410,13 +432,22 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
                     {teaBreakEnabled && teaBreakAllowed && (
                       <>
                         {onTeaBreak ? (
-                          <button
-                            onClick={handleTeaBreak}
-                            className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 transform active:scale-95 border-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/50 shadow-lg shadow-emerald-200/50 dark:shadow-none hover:bg-emerald-200 dark:hover:bg-emerald-900/70 hover:shadow-emerald-300/50"
-                          >
-                            <Coffee className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                            End Tea Break
-                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={handleTeaBreak}
+                              className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 transform active:scale-95 border-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/50 shadow-lg shadow-emerald-200/50 dark:shadow-none hover:bg-emerald-200 dark:hover:bg-emerald-900/70 hover:shadow-emerald-300/50"
+                            >
+                              <Coffee className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                              End Tea Break
+                            </button>
+                            {showTeaAnimation && (
+                              <img 
+                                src={teaRobImg} 
+                                alt="Tea Time" 
+                                className="absolute -top-14 -right-8 w-28 h-auto animate-bounce pointer-events-none drop-shadow-xl z-[100]"
+                              />
+                            )}
+                          </div>
                         ) : (teaBreakLimitReached || isTeaBreakOver) ? (
                           <span className="text-slate-400 dark:text-slate-500 text-sm font-bold px-6 py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
                             Tea Limit Reached
@@ -428,7 +459,7 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
                           </span>
                         ) : (
                           <button
-                            onClick={handleTeaBreak}
+                            onClick={startTeaBreak}
                             disabled={onBreak}
                             className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 transform active:scale-95 border-2 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50 shadow-lg shadow-emerald-100/50 dark:shadow-none hover:bg-emerald-50 dark:hover:bg-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                           >
@@ -684,7 +715,7 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
                   <button
                     onClick={() => {
                       setShowCheckoutConfirm(false);
-                      handleTeaBreak();
+                      startTeaBreak();
                     }}
                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 text-sm font-bold uppercase tracking-wider transition-all transform active:scale-95 shadow-sm"
                   >
@@ -695,7 +726,7 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
 
                 {/* Proceed to Check-out */}
                 <button
-                  onClick={confirmCheckOut}
+                  onClick={onCheckoutProceedClick}
                   className={`w-full flex items-center justify-center gap-3 ${sessionConfirmLevel > 0 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700' : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/25'} font-black py-4 px-6 rounded-2xl transition-all text-sm cursor-pointer active:scale-95 tracking-widest uppercase`}
                 >
                   <LogOut className="w-5 h-5" />
@@ -753,6 +784,17 @@ export const EmployeeDashboardView = React.memo(function EmployeeDashboardView({
           </div>
         </div>
       )}
+
+      <WelcomeAnimation
+        isOpen={showCheckoutAnim}
+        robotImage={checkoutRobImg}
+        title="Checking out?"
+        subtitle="See you next time!"
+        onComplete={() => {
+          setShowCheckoutAnim(false);
+          confirmCheckOut();
+        }}
+      />
     </div>
   );
 });

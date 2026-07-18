@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete }) {
+export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete, title, subtitle, hideBubble }) {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
@@ -21,10 +21,10 @@ export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete }) {
         setPhase(4);
       }, 2000);
 
-      // Call onComplete at 3.5s
+      // Call onComplete at 2.5s
       const completeTimer = setTimeout(() => {
         onComplete();
-      }, 3500);
+      }, 2500);
 
       return () => {
         document.body.style.overflow = '';
@@ -35,7 +35,7 @@ export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete }) {
     } else {
       document.body.style.overflow = '';
     }
-  }, [isOpen, onComplete]);
+  }, [isOpen]); // Removed onComplete from deps to prevent re-triggering timer on parent re-renders
 
   return (
     <AnimatePresence>
@@ -45,7 +45,7 @@ export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#090d16]/80 backdrop-blur-xl"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#090d16]/30 backdrop-blur-sm"
           style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
         >
           {/* Main container */}
@@ -80,7 +80,7 @@ export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete }) {
                   <img
                     src={robotImage}
                     alt="Welcome Robot"
-                    className="w-64 h-auto md:w-80 lg:w-96 drop-shadow-[0_20px_40px_rgba(64,214,162,0.4)] pointer-events-none"
+                    className="w-80 h-auto md:w-96 lg:w-[500px] drop-shadow-[0_20px_40px_rgba(64,214,162,0.4)] pointer-events-none"
                   />
                 </motion.div>
                 
@@ -132,38 +132,42 @@ export function WelcomeAnimation({ isOpen, userName, robotImage, onComplete }) {
             </AnimatePresence>
 
             {/* Speech Bubble */}
-            <AnimatePresence>
-              {phase >= 3 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0, x: -30, y: 30 }}
-                  animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                  transition={{ 
-                    type: 'spring', 
-                    stiffness: 250, 
-                    damping: 18,
-                    mass: 0.8
-                  }}
-                  className="absolute z-30 bottom-[60%] left-[65%] md:left-[70%] max-w-[220px]"
-                >
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-                    className="relative bg-white/95 backdrop-blur-sm px-6 py-4 rounded-3xl rounded-bl-sm shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/20"
+            {!hideBubble && (
+              <AnimatePresence>
+                {phase >= 3 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0, x: -30, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                    transition={{ 
+                      type: 'spring', 
+                      stiffness: 250, 
+                      damping: 18,
+                      mass: 0.8
+                    }}
+                    className="absolute z-30 bottom-[60%] left-[65%] md:left-[70%] max-w-[220px]"
                   >
-                    <p className="text-slate-800 text-sm md:text-base font-extrabold leading-snug">
-                      {userName ? (
-                        <>Hi {userName} 👋<br/><span className="text-slate-500 text-[13px] font-bold">Welcome back!</span></>
-                      ) : (
-                        <>👋 Welcome back,<br/><span className="text-slate-500 text-[13px] font-bold">Have a productive day!</span></>
-                      )}
-                    </p>
-                    {/* Bubble tail */}
-                    <div className="absolute -bottom-2 left-0 w-6 h-6 bg-white/95 transform rotate-45 rounded-sm z-[-1]"></div>
+                    <motion.div 
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ duration: 3.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+                      className="relative bg-white/95 backdrop-blur-sm px-6 py-4 rounded-3xl rounded-bl-sm shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/20"
+                    >
+                      <p className="text-slate-800 text-sm md:text-base font-extrabold leading-snug">
+                        {title ? (
+                          <>{title}<br/><span className="text-slate-500 text-[13px] font-bold">{subtitle}</span></>
+                        ) : userName ? (
+                          <>Hi {userName} 👋<br/><span className="text-slate-500 text-[13px] font-bold">Welcome back!</span></>
+                        ) : (
+                          <>👋 Welcome back,<br/><span className="text-slate-500 text-[13px] font-bold">Have a productive day!</span></>
+                        )}
+                      </p>
+                      {/* Bubble tail */}
+                      <div className="absolute -bottom-2 left-0 w-6 h-6 bg-white/95 transform rotate-45 rounded-sm z-[-1]"></div>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+              </AnimatePresence>
+            )}
 
           </div>
         </motion.div>

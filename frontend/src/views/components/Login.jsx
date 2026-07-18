@@ -6,10 +6,7 @@ import {
 import logoImg from '../../assets/AppZLogo.png';
 import appzMakersLogo from '../../assets/APPZ New Logo.png';
 import bgVideo from '../../assets/Employee_Enters_Office_Lobby_GIF.mp4';
-import morningRobImg from '../../assets/MorningRob.png';
-import afternoonRobImg from '../../assets/AfternoonRob.png';
 import eveningRobImg from '../../assets/EveningRob.png';
-import { WelcomeAnimation } from './WelcomeAnimation';
 
 const roles = [
   { id: 'employee', label: 'Employee', icon: User },
@@ -61,9 +58,6 @@ export function Login({
   error,
   setError,
   loading,
-  showWelcome,
-  pendingAuthData,
-  completeLogin,
 }) {
   const isSignup = mode === 'signup';
   const isForgot = mode === 'forgot';
@@ -71,14 +65,6 @@ export function Login({
   const [forgotEmail, setForgotEmail] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
-
-  const getDynamicRobImg = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return morningRobImg;
-    if (hour >= 12 && hour < 17) return afternoonRobImg;
-    return eveningRobImg;
-  };
-  const currentRobImg = getDynamicRobImg();
 
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
@@ -392,13 +378,6 @@ export function Login({
           </div>
         </div>
       </div>
-      {/* Welcome Animation Overlay */}
-      <WelcomeAnimation 
-        isOpen={showWelcome} 
-        userName={pendingAuthData?.name || name} 
-        robotImage={currentRobImg} 
-        onComplete={completeLogin} 
-      />
     </div>
   );
 }

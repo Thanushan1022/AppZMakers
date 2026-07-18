@@ -89,6 +89,11 @@ import { BACKEND_URL } from '../../config';
 import logoImg from '../../assets/AppZLogo2.png';
 import appzMakersLogo from '../../assets/APPZ New Logo.png';
 
+import { WelcomeAnimation } from './WelcomeAnimation';
+import morningRobImg from '../../assets/MorningRob.png';
+import afternoonRobImg from '../../assets/AfternoonRob.png';
+import eveningRobImg from '../../assets/EveningRob.png';
+
 export function Layout({ role, onLogout, auth, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -96,6 +101,22 @@ export function Layout({ role, onLogout, auth, children }) {
   const [readIds, setReadIds] = useState([]);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
+
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('justLoggedIn') === 'true') {
+      setShowWelcome(true);
+      sessionStorage.removeItem('justLoggedIn');
+    }
+  }, []);
+
+  const getDynamicRobImg = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return morningRobImg;
+    if (hour >= 12 && hour < 17) return afternoonRobImg;
+    return eveningRobImg;
+  };
 
   const themeKey = auth?.userId ? `theme_${auth.userId}` : 'theme';
   const [theme, setTheme] = useState(() => localStorage.getItem(themeKey) || 'light');
@@ -441,6 +462,12 @@ export function Layout({ role, onLogout, auth, children }) {
           </main>
         </div>
       </div>
+      <WelcomeAnimation
+        isOpen={showWelcome}
+        userName={auth?.name}
+        robotImage={getDynamicRobImg()}
+        onComplete={() => setShowWelcome(false)}
+      />
     </div>
   );
 }
